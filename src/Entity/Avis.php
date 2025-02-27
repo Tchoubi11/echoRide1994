@@ -10,7 +10,7 @@ class Avis
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: "avis_id", type: "integer")]
+    #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
@@ -25,23 +25,6 @@ class Avis
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'avis')]
-    #[ORM\JoinColumn(nullable: false)] // L'avis doit toujours avoir un utilisateur
-    private ?Utilisateur $utilisateur = null;
-
-
-    public function getUtilisateur(): ?Utilisateur
-    {
-        return $this->utilisateur;
-    }
-
-    public function setUtilisateur(?Utilisateur $utilisateur): self
-    {
-        $this->utilisateur = $utilisateur;
-
-        return $this;
     }
 
     public function getCommentaire(): ?string
