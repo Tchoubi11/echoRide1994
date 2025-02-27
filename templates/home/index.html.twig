@@ -5,7 +5,7 @@
         <h1>Bienvenue sur EcoRide</h1>
         <p>La plateforme de covoiturage écologique et économique</p>
 
-        <!-- Carrousel d'images et descriptions -->
+        <!-- Carrousel d'images et descriptions (Diaporama en haut de la page) -->
         <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <!-- Première diapositive : Réduire l'empreinte carbone -->
@@ -16,7 +16,7 @@
                         <p>Avec EcoRide, chaque trajet participe à un avenir plus vert !</p>
                     </div>
                 </div>
-                <!-- Autres diapositives ... -->
+                <!-- Deuxième diapositive : Voyagez à petit prix -->
                 <div class="carousel-item">
                     <img src="{{ asset('images/image2.jpg') }}" class="d-block w-100" alt="Voyagez à petit prix">
                     <div class="carousel-caption d-none d-md-block">
@@ -24,15 +24,14 @@
                         <p>Des solutions économiques pour vos déplacements quotidiens.</p>
                     </div>
                 </div>
-                 <!-- Troisième diapositive : Covoiturage facilité -->
-                 <div class="carousel-item">
+                <!-- Troisième diapositive : Covoiturage facilité -->
+                <div class="carousel-item">
                     <img src="{{ asset('images/image3.jpg') }}" class="d-block w-100" alt="Covoiturage facilité">
                     <div class="carousel-caption d-none d-md-block">
                         <h5>Covoiturez en toute simplicité</h5>
                         <p>Des trajets faciles à trouver, des conducteurs et passagers prêts à partager.</p>
                     </div>
                 </div>
-              
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -76,10 +75,24 @@
         {% endif %}
     </div>
 
-    <!-- Bas de page -->
-    <footer class="bg-dark text-white text-center py-3 mt-5">
-        <p>Contactez-nous : <a href="mailto:contact@ecoride.com" class="text-white">contact@ecoride.com</a></p>
-        <p><a href="{{ path('legal_mentions') }}" class="text-white">Mentions légales</a></p>
-    </footer>
+    <!-- Trois images en bas de la page pour décrire l'entreprise -->
+    <div class="container mt-5">
+        <h2>Notre Mission</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <img src="{{ asset('images/mission1.jpg') }}" class="img-fluid" alt="Mission écologique">
+                <p class="text-center">Réduire l'empreinte carbone avec des trajets partagés.</p>
+            </div>
+            <div class="col-md-4">
+                <img src="{{ asset('images/mission2.jpg') }}" class="img-fluid" alt="Voyage économique">
+                <p class="text-center">Offrir des solutions économiques pour vos déplacements.</p>
+            </div>
+            <div class="col-md-4">
+                <img src="{{ asset('images/mission3.jpg') }}" class="img-fluid" alt="Communauté EcoRide">
+                <p class="text-center">Créer une communauté de conducteurs et passagers écoresponsables.</p>
+            </div>
+        </div>
+    </div>
+
 
 {% endblock %}

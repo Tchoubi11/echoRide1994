@@ -1,0 +1,16 @@
+
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1>Recherche de Covoiturages</h1>
+        <p>Veuillez remplir le formulaire pour rechercher des covoiturages disponibles.</p>
+
+        <!-- Formulaire de recherche -->
+        <form action="{{ path('search_route') }}" method="get">
+            <input type="text" name="departure" placeholder="Votre départ" required>
+            <input type="text" name="destination" placeholder="Votre destination" required>
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+        </form>
+    </div>
+{% endblock %}
