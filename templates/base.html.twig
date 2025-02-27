@@ -1,28 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EcoRide{% endblock %}</title>
-
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJgD3L5/JY1HpM7gVx3huD5z7hbYpENR88Yg9dmmWoLBKh0xjGV1oR8/3Kzp" crossorigin="anonymous">
-
-    <!-- Votre CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Ton fichier CSS -->
     <link rel="stylesheet" href="{{ asset('styles.css') }}">
 </head>
-
 <body>
 
     {% block body %}{% endblock %}
 
     <!-- Bootstrap JS et Popper.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gyb6sS1NGdRrN2F7BHDgG8lPi9N9fh7f5n7b45DJk/zzY3y8HD" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0v8FqFjcJ2Aq0g5b5op3tnbD5JxuHkYv1k7rGgKkR66szQJd" crossorigin="anonymous"></script>
-
-    <!-- Votre JS personnalisé -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <!-- Ton fichier JS personnalisé -->
     <script src="{{ asset('scripts/home.js') }}"></script>
-</body>
 
+</body>
 </html>
