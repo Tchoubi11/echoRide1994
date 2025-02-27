@@ -1,0 +1,12 @@
+ 
+
+{% block title %}Télécharger une image{% endblock %}
+
+{% block body %}
+    <h1>Télécharger une image</h1>
+
+    {{ form_start(form) }}
+        {{ form_row(form.imageFile) }}
+        <button class="btn btn-primary">Envoyer</button>
+    {{ form_end(form) }}
+{% endblock %}

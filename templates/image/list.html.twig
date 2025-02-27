@@ -1,0 +1,15 @@
+
+
+{% block title %}Liste des images{% endblock %}
+
+{% block body %}
+    <h1>Liste des images</h1>
+
+    {% for image in images %}
+        <div>
+            <img src="{{ asset('uploads/images/' ~ image.imagePath) }}" alt="Image {{ image.id }}" style="max-width: 200px;">
+        </div>
+    {% else %}
+        <p>Aucune image disponible.</p>
+    {% endfor %}
+{% endblock %}
