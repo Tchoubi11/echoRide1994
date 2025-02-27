@@ -5,29 +5,34 @@
         <h1>Bienvenue sur EcoRide</h1>
         <p>La plateforme de covoiturage écologique et économique</p>
 
+        <!-- Carrousel d'images et descriptions -->
         <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
+                <!-- Première diapositive : Réduire l'empreinte carbone -->
                 <div class="carousel-item active">
-                    <img src="{{ asset('images/image1.jpg') }}" class="d-block w-100" alt="Image 1">
+                    <img src="{{ asset('images/image1.jpg') }}" class="d-block w-100" alt="Réduire l'empreinte carbone">
                     <div class="carousel-caption d-none d-md-block">
                         <h5>Réduisez votre empreinte carbone</h5>
-                        <p>Adoptez le covoiturage avec EcoRide pour un avenir plus vert !</p>
+                        <p>Avec EcoRide, chaque trajet participe à un avenir plus vert !</p>
                     </div>
                 </div>
+                <!-- Autres diapositives ... -->
                 <div class="carousel-item">
-                    <img src="{{ asset('images/image2.jpg') }}" class="d-block w-100" alt="Image 2">
+                    <img src="{{ asset('images/image2.jpg') }}" class="d-block w-100" alt="Voyagez à petit prix">
                     <div class="carousel-caption d-none d-md-block">
                         <h5>Voyagez à petit prix</h5>
                         <p>Des solutions économiques pour vos déplacements quotidiens.</p>
                     </div>
                 </div>
-                <div class="carousel-item">
-                    <img src="{{ asset('images/image3.jpg') }}" class="d-block w-100" alt="Image 3">
+                 <!-- Troisième diapositive : Covoiturage facilité -->
+                 <div class="carousel-item">
+                    <img src="{{ asset('images/image3.jpg') }}" class="d-block w-100" alt="Covoiturage facilité">
                     <div class="carousel-caption d-none d-md-block">
                         <h5>Covoiturez en toute simplicité</h5>
                         <p>Des trajets faciles à trouver, des conducteurs et passagers prêts à partager.</p>
                     </div>
                 </div>
+              
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -38,5 +43,43 @@
                 <span class="visually-hidden">Next</span>
             </button>
         </div>
+
+        <!-- Formulaire de recherche de covoiturage -->
+        <div class="mt-5">
+            <h2>Trouver un covoiturage</h2>
+            {{ form_start(form) }}
+                {{ form_row(form.departure) }}
+                {{ form_row(form.destination) }}
+                {{ form_row(form.date) }}
+                <button type="submit" class="btn btn-primary">Rechercher</button>
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Affichage des résultats de recherche -->
+        {% if covoiturages is not empty %}
+            <h3>Covoiturages disponibles</h3>
+            <ul class="list-group mt-4">
+                {% for covoiturage in covoiturages %}
+                    <li class="list-group-item">
+                        <p><strong>{{ covoiturage.driver.username }}</strong> ({{ covoiturage.driver.rating }} ⭐)</p>
+                        <p>Départ : {{ covoiturage.departure }} -> Arrivée : {{ covoiturage.destination }}</p>
+                        <p>Place restante : {{ covoiturage.remainingSeats }}</p>
+                        <p>Prix : {{ covoiturage.price }} €</p>
+                        <p>Date et heure : {{ covoiturage.departureTime|date('d-m-Y H:i') }} -> {{ covoiturage.arrivalTime|date('d-m-Y H:i') }}</p>
+                        <p>{{ covoiturage.ecological ? 'Covoiturage écologique' : 'Covoiturage standard' }}</p>
+                        <a href="{{ path('covoiturage_detail', {'id': covoiturage.id}) }}" class="btn btn-info">Détail</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Aucun covoiturage trouvé pour ces critères.</p>
+        {% endif %}
     </div>
+
+    <!-- Bas de page -->
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>Contactez-nous : <a href="mailto:contact@ecoride.com" class="text-white">contact@ecoride.com</a></p>
+        <p><a href="{{ path('legal_mentions') }}" class="text-white">Mentions légales</a></p>
+    </footer>
+
 {% endblock %}

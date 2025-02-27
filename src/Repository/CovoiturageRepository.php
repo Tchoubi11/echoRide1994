@@ -6,9 +6,6 @@ use App\Entity\Covoiturage;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Covoiturage>
- */
 class CovoiturageRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +13,24 @@ class CovoiturageRepository extends ServiceEntityRepository
         parent::__construct($registry, Covoiturage::class);
     }
 
-    //    /**
-    //     * @return Covoiturage[] Returns an array of Covoiturage objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Trouver des covoiturages en fonction des critères de recherche
+     *
+     * @param string $departure
+     * @param string $destination
+     * @param \DateTime $date
+     * @return Covoiturage[]
+     */
+    public function findByCriteria(string $departure, string $destination, \DateTime $date): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->andWhere('c.departure = :departure')
+            ->andWhere('c.destination = :destination')
+            ->andWhere('c.departureTime >= :date')
+            ->setParameter('departure', $departure)
+            ->setParameter('destination', $destination)
+            ->setParameter('date', $date->format('Y-m-d H:i:s'));
 
-    //    public function findOneBySomeField($value): ?Covoiturage
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $qb->getQuery()->getResult();
+    }
 }
