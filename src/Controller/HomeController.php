@@ -26,7 +26,7 @@ class HomeController extends AbstractController
             $destination = $data['destination'];
             $date = $data['date'];
 
-            // Récupérer les covoiturages selon les critères (à ajuster selon la logique de votre application)
+            // on récupère les covoiturages selon les critères 
             $covoiturages = $covoiturageRepository->findByCriteria($departure, $destination, $date);
         }
 
@@ -43,12 +43,6 @@ class HomeController extends AbstractController
         return $this->render('security/login.html.twig');
     }
 
-    // Route pour la recherche de covoiturage 
-    #[Route('/search', name: 'search_route')]
-    public function search(): Response
-    {
-        return $this->render('home/search.html.twig');
-    }
 
     // Route pour la page de contact 
     #[Route('/contact', name: 'contact')]

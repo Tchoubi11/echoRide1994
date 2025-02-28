@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1>Recherche de Covoiturages</h1>
+        <p>Veuillez remplir le formulaire pour rechercher des covoiturages disponibles.</p>
+
+        <!-- Formulaire de recherche -->
+        {{ form_start(form) }}
+            {{ form_row(form.departure) }}
+            {{ form_row(form.destination) }}
+            {{ form_row(form.date) }}
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+        {{ form_end(form) }}
+
+        {% if rides is not empty %}
+            <h3>Résultats de la recherche</h3>
+            <div class="row">
+                {% for ride in rides %}
+                    <div class="col-md-4">
+                        <div class="card">
+                            <img src="{{ asset('uploads/images/' ~ ride.driver.profile_picture) }}" class="card-img-top" alt="Photo du conducteur">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ ride.driver.pseudo }}</h5>
+                                <p class="card-text">Note : {{ ride.driver.rating }}</p>
+                                <p>Places restantes : {{ ride.available_seats }}</p>
+                                <p>Prix : {{ ride.price }} €</p>
+                                <p>Date : {{ ride.departure_time|date('d/m/Y') }}</p>
+                                <p>Heure de départ : {{ ride.departure_time|date('H:i') }}</p>
+                                <p>Heure d'arrivée : {{ ride.arrival_time|date('H:i') }}</p>
+                                <p>
+                                    {% if ride.is_ecological %}
+                                        <span class="badge bg-success">Voyage écologique</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Non écologique</span>
+                                    {% endif %}
+                                </p>
+                                <a href="{{ path('ride_details', {'id': ride.id}) }}" class="btn btn-info">Détail</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% if nextRide %}
+                <p>Aucun covoiturage trouvé pour cette date. Voulez-vous modifier la date à {{ nextRide.departure_time|date('d/m/Y') }} ?</p>
+            {% else %}
+                <p>Aucun covoiturage trouvé pour ces critères.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}

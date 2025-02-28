@@ -13,7 +13,19 @@ security:
         main:
             lazy: true
             provider: users_in_memory
+            form_login:
+                login_path: app_login
+                check_path: app_login
+            # Vous pouvez aussi avoir une configuration de logout
+            logout:
+                path: app_logout
+                target: app_home
 
+
+            remember_me:
+                secret: '%kernel.secret%'  #A verifier avec ça si ça marche secret: '%env(APP_SECRET)%'
+                lifetime: 604800 # 1 semaine
+                path: /    
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 
