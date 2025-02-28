@@ -6,13 +6,33 @@
         <p>Veuillez remplir le formulaire pour rechercher des covoiturages disponibles.</p>
 
         <!-- Formulaire de recherche -->
-        {{ form_start(form) }}
+        <div class="mt-5">
+            <h2>Trouver un covoiturage</h2>
+            {{ form_start(form) }}
+            
+            <!-- Départ -->
             {{ form_row(form.departure) }}
+            {% for error in form.departure.vars.errors %}
+                <div class="alert alert-danger">{{ error.message }}</div>
+            {% endfor %}
+            
+            <!-- Destination -->
             {{ form_row(form.destination) }}
+            {% for error in form.destination.vars.errors %}
+                <div class="alert alert-danger">{{ error.message }}</div>
+            {% endfor %}
+            
+            <!-- Date -->
             {{ form_row(form.date) }}
+            {% for error in form.date.vars.errors %}
+                <div class="alert alert-danger">{{ error.message }}</div>
+            {% endfor %}
+            
             <button type="submit" class="btn btn-primary">Rechercher</button>
-        {{ form_end(form) }}
-
+            
+            {{ form_end(form) }}
+        </div>
+        
         {% if rides is not empty %}
             <h3>Résultats de la recherche</h3>
             <div class="row">
