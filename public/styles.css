@@ -1,101 +1,218 @@
-
+/* Généralités */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f5f5f5;
+    background-color: #e8f7e7;  /* Vert pâle très doux pour un fond apaisant */
+    color: #333;  /* Texte sombre pour une bonne lisibilité */
 }
 
+/* Style de l'en-tête */
 header {
-    text-align: center;
-    background-color: #4CAF50;
-    color: white;
+    background-color: #4CAF50; /* Un vert qui symbolise la nature et la croissance */
+    color: white; /* Utilisation du blanc pour le texte */
     padding: 30px 0;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
+header h1 {
     margin: 0;
+    font-size: 2.5rem;
+    font-weight: bold;
 }
 
+/* Modifications spécifiques à la barre de navigation */
+nav.navbar {
+    background-color: #388E3C !important;  /* Vert foncé pour la barre de navigation */
+    box-shadow: none !important; /* Supprimer l'ombre de la barre de navigation */
+    border: none !important;  /* Supprimer toute bordure de la barre de navigation */
+}
+
+/* Le logo de la marque, ici on le garde blanc */
+nav.navbar .navbar-brand {
+    color: white !important; /* S'assurer que le texte de la marque reste blanc */
+    box-shadow: none !important; /* Supprimer l'ombre du logo */
+    border: none !important; /* Supprimer toute bordure du logo */
+}
+
+/* Liens de navigation : on cible .nav-link pour Bootstrap */
+nav.navbar .nav-link {
+    color: white !important; /* Couleur blanche pour les liens */
+    text-decoration: none;
+    padding: 10px 20px; /* Ajouter un peu d'espace autour des liens */
+    box-shadow: none !important; /* Supprimer l'ombre des liens */
+    border: none !important;  /* Supprimer toute bordure des liens */
+}
+
+/* Effet au survol des liens */
+nav.navbar .nav-link:hover {
+    background-color: #66bb6a !important; /* Vert plus clair au survol */
+    border-radius: 5px;
+    color: white !important;  /* S'assurer que le texte reste blanc lors du survol */
+    box-shadow: none !important; /* Supprimer l'ombre au survol */
+    border: none !important;  /* Supprimer toute bordure au survol */
+}
+
+/* Lorsqu'un lien est actif (en surbrillance) */
+nav.navbar .nav-item.active .nav-link {
+    background-color: #2c6e32 !important;  /* Vert plus foncé pour l'élément actif */
+    color: white !important;  /* Texte blanc pour l'élément actif */
+    border-radius: 5px;
+    box-shadow: none !important; /* Supprimer l'ombre de l'élément actif */
+    border: none !important; /* Supprimer toute bordure de l'élément actif */
+}
+
+/* Modifier la couleur du lien de la barre de navigation sur focus */
+nav.navbar .nav-link:focus {
+    background-color: #66bb6a !important; /* Même couleur au focus que survol */
+    color: white !important;
+    box-shadow: none !important; /* Supprimer l'ombre au focus */
+    border: none !important; /* Supprimer toute bordure au focus */
+}
+
+/* Modifier la couleur du texte des liens au focus pour éviter des problèmes d'accessibilité */
+nav.navbar .nav-link:focus, nav.navbar .nav-link:hover {
+    text-decoration: none;
+    color: white !important; /* Garantir que la couleur du texte soit toujours blanche */
+    box-shadow: none !important; /* Supprimer l'ombre des liens au focus et survol */
+    border: none !important; /* Supprimer toute bordure */
+}
+
+/* Carrousel */
 .carousel {
     position: relative;
     max-width: 100%;
     overflow: hidden;
 }
 
-.carousel-item {
-    display: none;
-    position: relative;
-}
-
 .carousel-item img {
     width: 100%;
     height: auto;
+    max-height: 400px; /* Limiter la hauteur des images */
+    object-fit: cover;
 }
 
 .carousel-caption {
     position: absolute;
-    bottom: 10%;
-    left: 10%;
-    background-color: rgba(0, 0, 0, 0.5);
+    bottom: 20px;
+    left: 20px;
+    background-color: rgba(0, 0, 0, 0.5);  /* Ombre légère pour contraster le texte */
     color: white;
-    padding: 20px;
+    padding: 15px;
+    border-radius: 5px;
 }
 
-.carousel-control-prev, .carousel-control-next {
-    position: absolute;
-    top: 50%;
-    z-index: 10;
-    font-size: 30px;
+.carousel-caption h5, .carousel-caption p {
+    color: #fff; /* Texte en blanc pour une meilleure lisibilité */
+}
+
+/* Boutons */
+.btn {
+    background-color: #4CAF50; /* Vert principal */
     color: white;
-    background-color: rgba(0, 0, 0, 0.5);
+    padding: 12px 25px;
     border: none;
+    border-radius: 25px;
+    text-transform: uppercase;
+    font-size: 1rem;
     cursor: pointer;
-    padding: 10px;
-    transform: translateY(-50%);
 }
 
-.carousel-control-prev {
-    left: 10px;
+.btn:hover {
+    background-color: #388E3C;  /* Effet de survol plus sombre */
 }
 
-.carousel-control-next {
-    right: 10px;
-}
-
+/* Formulaire de recherche */
 .search-container {
     text-align: center;
     padding: 50px;
-    background-color: #ffffff;
+    background-color: #fff;
     margin: 20px 0;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
-#searchForm input {
-    padding: 10px;
-    margin: 10px;
-    width: 200px;
+.search-container input,
+.search-container button {
+    padding: 12px;
+    font-size: 1rem;
+    margin: 10px 0;
     border-radius: 5px;
-    border: 1px solid #ccc;
 }
 
-#searchForm button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
+.search-container input {
+    border: 1px solid #4CAF50;
+    width: 250px;
+}
+
+.search-container button {
+    background-color: #388E3C;
     color: white;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
 }
 
-footer {
+.search-container button:hover {
+    background-color: #66bb6a;
+}
+
+/* Section avec des images de mission */
+.container {
+    margin-top: 50px;
+}
+
+.container h2 {
     text-align: center;
-    padding: 20px;
+    color: #388E3C; /* Un vert doux pour les titres */
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+.row img {
+    max-width: 100%;
+    border-radius: 10px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.row img:hover {
+    transform: scale(1.05); /* Effet zoom au survol */
+}
+
+.text-center {
+    color: #4CAF50;
+}
+
+/* Footer */
+footer {
     background-color: #333;
     color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 1rem;
 }
 
 footer a {
-    color: #4CAF50;
+    color: #66bb6a;  /* Lien vert clair */
     text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsivité */
+@media (max-width: 768px) {
+    .carousel-caption {
+        bottom: 10px;
+        left: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .search-container {
+        padding: 30px;
+    }
+
+    .container h2 {
+        font-size: 1.5rem;
+    }
 }
