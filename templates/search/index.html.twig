@@ -5,7 +5,7 @@
         <h1>Recherche de Covoiturages</h1>
         <p>Veuillez remplir le formulaire pour rechercher des covoiturages disponibles.</p>
 
-        <!-- Formulaire de recherche -->
+        <!-- Formulaire de recherche de covoiturage -->
         <div class="mt-5">
             <h2>Trouver un covoiturage</h2>
             {{ form_start(form) }}
@@ -27,11 +27,29 @@
             {% for error in form.date.vars.errors %}
                 <div class="alert alert-danger">{{ error.message }}</div>
             {% endfor %}
+        
+            <!-- Nombre de personnes pour le covoiturage -->
+            <div class="form-group">
+                <label for="num_people">
+                    <i class="fas fa-users" id="toggle-passenger" style="cursor: pointer;"></i> Nombre de passagers
+                </label>
+                <div class="input-group" id="passenger-controls" style="display: none;">
+                    
+                    <button type="button" class="btn btn-outline-secondary" id="decrement">-</button>
+                    <input type="number" class="form-control" id="num_people" name="num_people" value="1" min="1" max="10" readonly>
+                    <button type="button" class="btn btn-outline-secondary" id="increment">+</button>
+                </div>
+                <div class="invalid-feedback" id="num_people_error" style="display: none;">Le nombre de passagers ne peut pas être inférieur à 1.</div>
+            </div>
             
-            <button type="submit" class="btn btn-primary">Rechercher</button>
+            <button type="submit" class="btn btn-primary mt-3">Rechercher</button>
             
             {{ form_end(form) }}
         </div>
+        
+        
+        <script src="{{ asset('scripts/passager.js') }}"></script>
+        
         
         {% if rides is not empty %}
             <h3>Résultats de la recherche</h3>
