@@ -46,9 +46,12 @@
         {% block body %}{% endblock %}
     </main>
 
-    <footer class="bg-dark text-white text-center py-3 mt-5">
-        <p>Contactez-nous : <a href="mailto:contact@ecoride.com" class="text-white">contact@ecoride.com</a></p>
-        <p><a href="{{ path('legal_mentions') }}" class="text-white">Mentions légales</a></p>
+    <!-- Bas de page avec adresse et mentions légales -->
+    <footer class="mt-5">
+        <div class="d-flex justify-content-between">
+            <p><strong>Contact :</strong> contact@ecoride.com</p>
+            <p><a href="{{ path('legal_mentions') }}">Mentions légales</a></p>
+        </div>
     </footer>
 
     <!-- Bootstrap JS -->

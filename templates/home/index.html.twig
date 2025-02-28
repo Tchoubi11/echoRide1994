@@ -5,10 +5,18 @@
         <h1>Bienvenue sur EcoRide</h1>
         <p>La plateforme de covoiturage écologique et économique</p>
 
-        <!-- Carrousel d'images et descriptions (Diaporama en haut de la page) -->
+        <!-- Barre de recherche pour l'itinéraire -->
+        <div class="d-flex justify-content-between mb-4">
+            <form class="d-flex w-100" method="get" action="{{ path('search_route') }}">
+                <input type="text" class="form-control" placeholder="Trouver un itinéraire..." name="query" required>
+                <button type="submit" class="btn btn-primary ms-2">Rechercher</button>
+            </form>
+        </div>
+
+        <!-- Carrousel d'images et descriptions -->
         <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
-                <!-- Première diapositive : Réduire l'empreinte carbone -->
+                
                 <div class="carousel-item active">
                     <img src="{{ asset('uploads/images/67c0e83e9bf87.jpg') }}" class="d-block w-100 img-fluid" alt="Réduire l'empreinte carbone">
                     <div class="carousel-caption d-none d-md-block">
@@ -16,7 +24,7 @@
                         <p>Avec EcoRide, chaque trajet participe à un avenir plus vert !</p>
                     </div>
                 </div>
-                <!-- Deuxième diapositive : Voyagez à petit prix -->
+                
                 <div class="carousel-item">
                     <img src="{{ asset('uploads/images/67c0e85b22232.jpg') }}" class="d-block w-100 img-fluid" alt="Voyagez à petit prix">
                     <div class="carousel-caption d-none d-md-block">
@@ -24,7 +32,7 @@
                         <p>Des solutions économiques pour vos déplacements quotidiens.</p>
                     </div>
                 </div>
-                <!-- Troisième diapositive : Covoiturage facilité -->
+                
                 <div class="carousel-item">
                     <img src="{{ asset('uploads/images/67c1afcb57201.jpg') }}" class="d-block w-100 img-fluid" alt="Covoiturage facilité">
                     <div class="carousel-caption d-none d-md-block">
@@ -33,7 +41,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Contrôles du carrousel -->
+           
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Previous</span>
@@ -76,22 +84,23 @@
         {% endif %}
     </div>
 
-    <!-- Trois images en bas de la page pour décrire l'entreprise -->
+    
     <div class="container mt-5">
         <h2>Notre Mission</h2>
         <div class="row">
             <div class="col-md-4">
                 <img src="{{ asset('uploads/images/67c0e8723e8e5.jpg') }}" class="img-fluid" alt="Mission écologique">
-                <p class="text-center">Réduire l'empreinte carbone avec des trajets partagés.</p>
+                <p class="text-center">Nous nous engageons à réduire l'empreinte carbone en facilitant les trajets partagés. Chaque kilomètre parcouru ensemble est un pas vers un avenir plus vert, et chaque conducteur qui se joint à notre communauté aide à diminuer la pollution tout en rendant les trajets plus économiques et agréables.</p>
             </div>
             <div class="col-md-4">
                 <img src="{{ asset('uploads/images/67c0e8854ca31.jpg') }}" class="img-fluid" alt="Voyage économique">
-                <p class="text-center">Offrir des solutions économiques pour vos déplacements.</p>
+                <p class="text-center">EcoRide offre une alternative économique pour vos déplacements quotidiens. En optant pour le covoiturage, vous pouvez partager les frais de transport avec d'autres personnes, rendant chaque trajet plus abordable tout en préservant l'environnement. Une solution pratique pour voyager à moindre coût.</p>
             </div>
             <div class="col-md-4">
                 <img src="{{ asset('uploads/images/67c0e8993dfef.jpg') }}" class="img-fluid" alt="Communauté EcoRide">
-                <p class="text-center">Créer une communauté de conducteurs et passagers écoresponsables.</p>
+                <p class="text-center">Notre mission est de créer une véritable communauté de conducteurs et passagers écoresponsables. En rejoignant EcoRide, vous participez à une initiative collective pour un avenir plus durable, en partageant vos trajets avec des personnes qui partagent vos valeurs écologiques.</p>
             </div>
         </div>
     </div>
+    
 {% endblock %}

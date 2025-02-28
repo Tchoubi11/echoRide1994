@@ -1,16 +1,16 @@
-/* Généralités */
+
 body {
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #e8f7e7;  /* Vert pâle très doux pour un fond apaisant */
-    color: #333;  /* Texte sombre pour une bonne lisibilité */
+    background-color: #e8f7e7;  
+    color: #333; 
 }
 
-/* Style de l'en-tête */
+
 header {
-    background-color: #4CAF50; /* Un vert qui symbolise la nature et la croissance */
-    color: white; /* Utilisation du blanc pour le texte */
+    background-color: #4CAF50; 
+    color: white; 
     padding: 30px 0;
     text-align: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -22,64 +22,50 @@ header h1 {
     font-weight: bold;
 }
 
-/* Modifications spécifiques à la barre de navigation */
+
 nav.navbar {
-    background-color: #388E3C !important;  /* Vert foncé pour la barre de navigation */
-    box-shadow: none !important; /* Supprimer l'ombre de la barre de navigation */
-    border: none !important;  /* Supprimer toute bordure de la barre de navigation */
+    background-color: #66BB6A !important;  
+    box-shadow: none !important; 
+    border: none !important;  
 }
 
-/* Le logo de la marque, ici on le garde blanc */
-nav.navbar .navbar-brand {
-    color: white !important; /* S'assurer que le texte de la marque reste blanc */
-    box-shadow: none !important; /* Supprimer l'ombre du logo */
-    border: none !important; /* Supprimer toute bordure du logo */
-}
 
-/* Liens de navigation : on cible .nav-link pour Bootstrap */
+
 nav.navbar .nav-link {
-    color: white !important; /* Couleur blanche pour les liens */
+    color: white !important; 
     text-decoration: none;
-    padding: 10px 20px; /* Ajouter un peu d'espace autour des liens */
-    box-shadow: none !important; /* Supprimer l'ombre des liens */
-    border: none !important;  /* Supprimer toute bordure des liens */
+    padding: 10px 20px; 
+    box-shadow: none !important; 
+    border: none !important;  
 }
 
-/* Effet au survol des liens */
+
 nav.navbar .nav-link:hover {
-    background-color: #66bb6a !important; /* Vert plus clair au survol */
+    background-color: #81c784 !important; 
     border-radius: 5px;
-    color: white !important;  /* S'assurer que le texte reste blanc lors du survol */
-    box-shadow: none !important; /* Supprimer l'ombre au survol */
-    border: none !important;  /* Supprimer toute bordure au survol */
+    color: white !important;  
+    box-shadow: none !important; 
+    border: none !important;  
 }
 
-/* Lorsqu'un lien est actif (en surbrillance) */
+
 nav.navbar .nav-item.active .nav-link {
-    background-color: #2c6e32 !important;  /* Vert plus foncé pour l'élément actif */
-    color: white !important;  /* Texte blanc pour l'élément actif */
+    background-color: #4caf50 !important;  
+    color: white !important;  
     border-radius: 5px;
-    box-shadow: none !important; /* Supprimer l'ombre de l'élément actif */
-    border: none !important; /* Supprimer toute bordure de l'élément actif */
+    box-shadow: none !important; 
+    border: none !important;
 }
 
-/* Modifier la couleur du lien de la barre de navigation sur focus */
+
 nav.navbar .nav-link:focus {
-    background-color: #66bb6a !important; /* Même couleur au focus que survol */
+    background-color: #81c784 !important; 
     color: white !important;
-    box-shadow: none !important; /* Supprimer l'ombre au focus */
-    border: none !important; /* Supprimer toute bordure au focus */
+    box-shadow: none !important; 
+    border: none !important; 
 }
 
-/* Modifier la couleur du texte des liens au focus pour éviter des problèmes d'accessibilité */
-nav.navbar .nav-link:focus, nav.navbar .nav-link:hover {
-    text-decoration: none;
-    color: white !important; /* Garantir que la couleur du texte soit toujours blanche */
-    box-shadow: none !important; /* Supprimer l'ombre des liens au focus et survol */
-    border: none !important; /* Supprimer toute bordure */
-}
 
-/* Carrousel */
 .carousel {
     position: relative;
     max-width: 100%;
@@ -89,7 +75,7 @@ nav.navbar .nav-link:focus, nav.navbar .nav-link:hover {
 .carousel-item img {
     width: 100%;
     height: auto;
-    max-height: 400px; /* Limiter la hauteur des images */
+    max-height: 400px; 
     object-fit: cover;
 }
 
@@ -97,19 +83,19 @@ nav.navbar .nav-link:focus, nav.navbar .nav-link:hover {
     position: absolute;
     bottom: 20px;
     left: 20px;
-    background-color: rgba(0, 0, 0, 0.5);  /* Ombre légère pour contraster le texte */
+    background-color: rgba(0, 0, 0, 0.5);  
     color: white;
     padding: 15px;
     border-radius: 5px;
 }
 
 .carousel-caption h5, .carousel-caption p {
-    color: #fff; /* Texte en blanc pour une meilleure lisibilité */
+    color: #fff; 
 }
 
-/* Boutons */
+
 .btn {
-    background-color: #4CAF50; /* Vert principal */
+    background-color: #4CAF50; 
     color: white;
     padding: 12px 25px;
     border: none;
@@ -120,10 +106,10 @@ nav.navbar .nav-link:focus, nav.navbar .nav-link:hover {
 }
 
 .btn:hover {
-    background-color: #388E3C;  /* Effet de survol plus sombre */
+    background-color: #388E3C; 
 }
 
-/* Formulaire de recherche */
+
 .search-container {
     text-align: center;
     padding: 50px;
@@ -156,14 +142,14 @@ nav.navbar .nav-link:focus, nav.navbar .nav-link:hover {
     background-color: #66bb6a;
 }
 
-/* Section avec des images de mission */
+
 .container {
     margin-top: 50px;
 }
 
 .container h2 {
     text-align: center;
-    color: #388E3C; /* Un vert doux pour les titres */
+    color: #388E3C; 
     font-size: 2rem;
     margin-bottom: 30px;
 }
@@ -175,14 +161,14 @@ nav.navbar .nav-link:focus, nav.navbar .nav-link:hover {
 }
 
 .row img:hover {
-    transform: scale(1.05); /* Effet zoom au survol */
+    transform: scale(1.05); 
 }
 
 .text-center {
     color: #4CAF50;
 }
 
-/* Footer */
+
 footer {
     background-color: #333;
     color: white;
@@ -192,7 +178,7 @@ footer {
 }
 
 footer a {
-    color: #66bb6a;  /* Lien vert clair */
+    color: #66bb6a;  
     text-decoration: none;
 }
 
@@ -215,4 +201,8 @@ footer a:hover {
     .container h2 {
         font-size: 1.5rem;
     }
+}
+
+.container .row p {
+    color: #000;  
 }
