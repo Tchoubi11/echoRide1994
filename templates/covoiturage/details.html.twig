@@ -1,0 +1,20 @@
+{# templates/covoiturage/details.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h2>Détails du covoiturage</h2>
+
+        <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.username }}</p>
+        <p><strong>Note :</strong> {{ ride.driver.rating }}</p>
+        <p><strong>Lieu de départ :</strong> {{ ride.lieu_depart }}</p>
+        <p><strong>Lieu d'arrivée :</strong> {{ ride.lieu_arrivee }}</p>
+        <p><strong>Prix :</strong> {{ ride.prix_personne }} €</p>
+        <p><strong>Date et Heure de départ :</strong> {{ ride.date_depart|date('d/m/Y') }} à {{ ride.heure_depart|date('H:i') }}</p>
+        <p><strong>Date et Heure d'arrivée :</strong> {{ ride.date_arrivee|date('d/m/Y') }} à {{ ride.heure_arrivee|date('H:i') }}</p>
+        <p><strong>Voyage écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
+
+        <a href="{{ path('search_route') }}" class="btn btn-primary mt-3">Retour à la recherche</a>
+    </div>
+{% endblock %}
