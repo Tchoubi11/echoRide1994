@@ -5,7 +5,6 @@ namespace App\Repository;
 use App\Entity\Covoiturage;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\ORM\QueryBuilder;
 
 class CovoiturageRepository extends ServiceEntityRepository
 {
@@ -14,22 +13,22 @@ class CovoiturageRepository extends ServiceEntityRepository
         parent::__construct($registry, Covoiturage::class);
     }
 
-    // Trouver les covoiturages disponibles en fonction des critères
+    // On trouve les covoiturages disponibles en fonction des critères
     public function findAvailableRides(string $departure, string $destination, \DateTime $date): array
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.departureAddress LIKE :departure')
-            ->andWhere('c.arrivalAddress LIKE :destination')
-            ->andWhere('c.departureTime >= :date')
-            ->andWhere('c.availableSeats > 0')
-            ->setParameter('departure', '%' . $departure . '%')
-            ->setParameter('destination', '%' . $destination . '%')
-            ->setParameter('date', $date)
-            ->getQuery()
-            ->getResult();
-    }
+{
+    return $this->createQueryBuilder('c')
+        ->andWhere('c.lieu_depart LIKE :departure')
+        ->andWhere('c.lieu_arrivee LIKE :destination')
+        ->andWhere('c.date_depart >= :date')
+        ->andWhere('c.nb_place > 0')  
+        ->setParameter('departure', '%' . $departure . '%')
+        ->setParameter('destination', '%' . $destination . '%')
+        ->setParameter('date', $date)
+        ->getQuery()
+        ->getResult();
+}
 
-    // Trouver le trajet suivant disponible pour les mêmes critères (si aucun trajet n'est trouvé pour la date donnée)
+    // On trouve le trajet suivant disponible pour les mêmes critères (si aucun trajet n'est trouvé pour la date donnée)
     public function findNextAvailableRide(string $departure, string $destination, \DateTime $date): ?Covoiturage
     {
         return $this->createQueryBuilder('c')

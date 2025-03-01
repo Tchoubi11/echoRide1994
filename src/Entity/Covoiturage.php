@@ -41,6 +41,9 @@ class Covoiturage
     #[ORM\Column]
     private ?float $prix_personne = null;
 
+    #[ORM\Column(type: "boolean")]
+    private bool $isEco = false;  
+
     public function getId(): ?int
     {
         return $this->id;
@@ -151,6 +154,18 @@ class Covoiturage
     {
         $this->prix_personne = $prix_personne;
 
+        return $this;
+    }
+
+    // J'ajoute cette logique pour indiquer si le covoiturage est écologique
+    public function getIsEco(): bool
+    {
+        return $this->isEco;
+    }
+
+    public function setIsEco(bool $isEco): self
+    {
+        $this->isEco = $isEco;
         return $this;
     }
 }

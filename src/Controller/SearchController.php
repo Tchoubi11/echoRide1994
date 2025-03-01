@@ -14,44 +14,37 @@ class SearchController extends AbstractController
     #[Route('/search', name: 'search_route')]
 
     public function search(Request $request, CovoiturageRepository $covoiturageRepository): Response
-    {
-        // ici on crée et traite le formulaire
-        $form = $this->createForm(CovoiturageSearchType::class);
-        $form->handleRequest($request);
+{
+    //On crée et traite le formulaire
+    $form = $this->createForm(CovoiturageSearchType::class);
+    $form->handleRequest($request);
 
-        // Si le formulaire est soumis et valide
-        if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $departure = $data['departure'];
-            $destination = $data['destination'];
-            $date = $data['date'];
+    // On initialise les variables
+    $rides = [];
+    $nextRide = null;
 
-            // on recherche les covoiturages correspondant à la recherche
-            $rides = $covoiturageRepository->findAvailableRides($departure, $destination, $date);
+    // Si le formulaire est soumis et valide
+    if ($form->isSubmitted() && $form->isValid()) {
+        $data = $form->getData();
+        $departure = $data['departure'];
+        $destination = $data['destination'];
+        $date = $data['date'];
 
-            // Si aucun trajet n'est trouvé,on propose une autre date (le trajet le plus proche)
-            if (empty($rides)) {
-                $nextRide = $covoiturageRepository->findNextAvailableRide($departure, $destination, $date);
-                return $this->render('search/index.html.twig', [
-                    'form' => $form->createView(),
-                    'rides' => [],  // Aucun trajet trouvé
-                    'nextRide' => $nextRide, // Propose le prochain trajet
-                ]);
-            }
+        // On recherche des covoiturages disponibles
+        $rides = $covoiturageRepository->findAvailableRides($departure, $destination, $date);
 
-            // Si des trajets sont trouvés
-            return $this->render('search/index.html.twig', [
-                'form' => $form->createView(),
-                'rides' => $rides,
-                'nextRide' => null, // Aucun trajet suivant nécessaire
-            ]);
+        // Si aucun covoiturage trouvé, on propose le prochain covoiturage disponible
+        if (empty($rides)) {
+            $nextRide = $covoiturageRepository->findNextAvailableRide($departure, $destination, $date);
         }
-
-        // Si le formulaire n'a pas encore été soumis
-        return $this->render('search/index.html.twig', [
-            'form' => $form->createView(),
-            'rides' => [],  // Aucun trajet trouvé
-            'nextRide' => null,  // Aucun trajet suivant nécessaire
-        ]);
     }
+
+    // Affichage du formulaire et des résultats
+    return $this->render('search/index.html.twig', [
+        'form' => $form->createView(),
+        'rides' => $rides,
+        'nextRide' => $nextRide,  
+    ]);
+}
+
 }

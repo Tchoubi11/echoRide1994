@@ -28,63 +28,41 @@
                 <div class="alert alert-danger">{{ error.message }}</div>
             {% endfor %}
         
-            <!-- Nombre de personnes pour le covoiturage -->
-            <div class="form-group">
-                <label for="num_people">
-                    <i class="fas fa-users" id="toggle-passenger" style="cursor: pointer;"></i> Nombre de passagers
-                </label>
-                <div class="input-group" id="passenger-controls" style="display: none;">
-                    
-                    <button type="button" class="btn btn-outline-secondary" id="decrement">-</button>
-                    <input type="number" class="form-control" id="num_people" name="num_people" value="1" min="1" max="10" readonly>
-                    <button type="button" class="btn btn-outline-secondary" id="increment">+</button>
-                </div>
-                <div class="invalid-feedback" id="num_people_error" style="display: none;">Le nombre de passagers ne peut pas être inférieur à 1.</div>
-            </div>
-            
             <button type="submit" class="btn btn-primary mt-3">Rechercher</button>
             
             {{ form_end(form) }}
         </div>
         
-        
-        <script src="{{ asset('scripts/passager.js') }}"></script>
-        
-        
-        {% if rides is not empty %}
-            <h3>Résultats de la recherche</h3>
-            <div class="row">
+        {% if rides is empty %}
+            <p>Aucun covoiturage trouvé.</p>
+            {% if nextRide %}
+                <p>Aucun covoiturage disponible pour cette date. Nous vous suggérons de modifier votre date de départ pour : {{ nextRide.date_depart|date('d/m/Y') }}.</p>
+            {% endif %}
+        {% else %}
+            <h3>Itinéraires disponibles :</h3>
+            <div class="covoiturages-list">
                 {% for ride in rides %}
-                    <div class="col-md-4">
-                        <div class="card">
-                            <img src="{{ asset('uploads/images/' ~ ride.driver.profile_picture) }}" class="card-img-top" alt="Photo du conducteur">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ ride.driver.pseudo }}</h5>
-                                <p class="card-text">Note : {{ ride.driver.rating }}</p>
-                                <p>Places restantes : {{ ride.available_seats }}</p>
-                                <p>Prix : {{ ride.price }} €</p>
-                                <p>Date : {{ ride.departure_time|date('d/m/Y') }}</p>
-                                <p>Heure de départ : {{ ride.departure_time|date('H:i') }}</p>
-                                <p>Heure d'arrivée : {{ ride.arrival_time|date('H:i') }}</p>
-                                <p>
-                                    {% if ride.is_ecological %}
-                                        <span class="badge bg-success">Voyage écologique</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Non écologique</span>
-                                    {% endif %}
-                                </p>
-                                <a href="{{ path('ride_details', {'id': ride.id}) }}" class="btn btn-info">Détail</a>
-                            </div>
-                        </div>
+                    <div class="covoiturage-item">
+                        <img src="{{ asset('uploads/images/' ~ ride.driver.profile_picture) }}" alt="Photo du chauffeur" class="driver-photo">
+                        <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
+                        <p><strong>Note :</strong> {{ ride.driver.rating }}</p>
+                        <p><strong>Places restantes :</strong> {{ ride.nb_place }}</p>
+                        <p><strong>Prix :</strong> {{ ride.prix_personne }} €</p>
+                        <p><strong>Date et Heure de départ :</strong> {{ ride.date_depart|date('d/m/Y') }} à {{ ride.heure_depart|date('H:i') }}</p>
+                        <p><strong>Date et Heure d'arrivée :</strong> {{ ride.date_arrivee|date('d/m/Y') }} à {{ ride.heure_arrivee|date('H:i') }}</p>
+                        <p><strong>Voyage écologique :</strong> 
+                            {% if ride.is_ecological %}
+                                Oui
+                            {% else %}
+                                Non
+                            {% endif %}
+                        </p>
+                        <a href="{{ path('ride_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
                     </div>
                 {% endfor %}
             </div>
-        {% else %}
-            {% if nextRide %}
-                <p>Aucun covoiturage trouvé pour cette date. Voulez-vous modifier la date à {{ nextRide.departure_time|date('d/m/Y') }} ?</p>
-            {% else %}
-                <p>Aucun covoiturage trouvé pour ces critères.</p>
-            {% endif %}
         {% endif %}
     </div>
+
+    <script src="{{ asset('scripts/passager.js') }}"></script>
 {% endblock %}
