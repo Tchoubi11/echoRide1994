@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\UtilisateurRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 class Utilisateur
@@ -21,7 +23,7 @@ class Utilisateur
     private ?string $prenom = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $eamil = null;
+    private ?string $email = null;
 
     #[ORM\Column(length: 50)]
     private ?string $password = null;
@@ -41,6 +43,15 @@ class Utilisateur
     #[ORM\Column(length: 50)]
     private ?string $pseudo = null;
 
+    // Relation OneToMany avec Covoiturage
+    #[ORM\OneToMany(mappedBy: "driver", targetEntity: Covoiturage::class)]
+    private Collection $covoiturages;
+
+    public function __construct()
+    {
+        $this->covoiturages = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -54,7 +65,6 @@ class Utilisateur
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
-
         return $this;
     }
 
@@ -66,19 +76,17 @@ class Utilisateur
     public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
-
         return $this;
     }
 
-    public function getEamil(): ?string
+    public function getEmail(): ?string
     {
-        return $this->eamil;
+        return $this->email;
     }
 
-    public function setEamil(string $eamil): static
+    public function setEmail(string $email): static
     {
-        $this->eamil = $eamil;
-
+        $this->email = $email;
         return $this;
     }
 
@@ -90,7 +98,6 @@ class Utilisateur
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -102,7 +109,6 @@ class Utilisateur
     public function setTelephone(string $telephone): static
     {
         $this->telephone = $telephone;
-
         return $this;
     }
 
@@ -114,7 +120,6 @@ class Utilisateur
     public function setAdresse(string $adresse): static
     {
         $this->adresse = $adresse;
-
         return $this;
     }
 
@@ -126,7 +131,6 @@ class Utilisateur
     public function setDateNaissance(string $date_naissance): static
     {
         $this->date_naissance = $date_naissance;
-
         return $this;
     }
 
@@ -138,7 +142,6 @@ class Utilisateur
     public function setPhoto($photo): static
     {
         $this->photo = $photo;
-
         return $this;
     }
 
@@ -150,7 +153,12 @@ class Utilisateur
     public function setPseudo(string $pseudo): static
     {
         $this->pseudo = $pseudo;
-
         return $this;
+    }
+
+    // Cette fonction retourne les covoiturages associés à un utilisateur
+    public function getCovoiturages(): Collection
+    {
+        return $this->covoiturages;
     }
 }
