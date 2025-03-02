@@ -19,6 +19,10 @@ class Image
 
     private ?UploadedFile $imageFile = null;
 
+
+    #[ORM\OneToOne(mappedBy: "photo", targetEntity: Utilisateur::class)]
+    private ?Utilisateur $utilisateur = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -43,6 +47,17 @@ class Image
     public function setImageFile(?UploadedFile $imageFile): static
     {
         $this->imageFile = $imageFile;
+        return $this;
+    }
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): static
+    {
+        $this->utilisateur = $utilisateur;
         return $this;
     }
 }

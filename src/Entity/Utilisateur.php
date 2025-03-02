@@ -37,13 +37,14 @@ class Utilisateur
     #[ORM\Column(length: 50)]
     private ?string $date_naissance = null;
 
-    #[ORM\Column(type: Types::BLOB)]
-    private $photo;
 
     #[ORM\Column(length: 50)]
     private ?string $pseudo = null;
 
-    // Relation OneToMany avec Covoiturage
+    #[ORM\OneToOne(targetEntity: Image::class, cascade: ["persist", "remove"])]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Image $photo = null;
+    
     #[ORM\OneToMany(mappedBy: "driver", targetEntity: Covoiturage::class)]
     private Collection $covoiturages;
 
