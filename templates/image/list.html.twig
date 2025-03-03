@@ -1,4 +1,4 @@
-
+{% extends 'base.html.twig' %}
 
 {% block title %}Liste des images{% endblock %}
 
@@ -12,4 +12,9 @@
     {% else %}
         <p>Aucune image disponible.</p>
     {% endfor %}
+
+    <div><a href="{{ path('app_home') }}" class="btn btn-primary">
+        ⬅ Retour à l'accueil
+    </a>
+    </div>
 {% endblock %}

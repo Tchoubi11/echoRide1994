@@ -1,3 +1,5 @@
+{% extends 'base.html.twig' %}
+
 {% if utilisateur is not null %}
     {% if utilisateur.photo %}
         <img src="{{ asset('uploads/' ~ utilisateur.photo.imagePath) }}" alt="Photo de profil">
@@ -9,3 +11,7 @@
 {% else %}
     <p>Utilisateur introuvable.</p>
 {% endif %}
+<div><a href="{{ path('app_home') }}" class="btn btn-primary">
+    ⬅ Retour à l'accueil
+</a>
+</div>

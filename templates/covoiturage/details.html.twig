@@ -1,4 +1,4 @@
-{# templates/covoiturage/details.html.twig #}
+
 
 {% extends 'base.html.twig' %}
 
@@ -16,5 +16,11 @@
         <p><strong>Voyage écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
 
         <a href="{{ path('search_route') }}" class="btn btn-primary mt-3">Retour à la recherche</a>
+        
     </div>
+    <a href="{{ path('app_home') }}" class="btn btn-primary">
+        ⬅ Retour à l'accueil
+    </a>
+    
+    
 {% endblock %}

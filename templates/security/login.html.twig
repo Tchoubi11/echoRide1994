@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+    <h1>Connexion</h1>
+
+    <form method="post">
+        <label>Email :</label>
+        <input type="text" name="_username" required>
+
+        <label>Mot de passe :</label>
+        <input type="password" name="_password" required>
+
+        <button type="submit">Se connecter</button>
+    </form>
+    <div><a href="{{ path('app_home') }}" class="btn btn-primary mt-3">
+        ⬅ Retour à l'accueil
+    </a>
+    </div>
+{% endblock %}
