@@ -1,0 +1,11 @@
+{% if utilisateur is not null %}
+    {% if utilisateur.photo %}
+        <img src="{{ asset('uploads/' ~ utilisateur.photo.imagePath) }}" alt="Photo de profil">
+    {% else %}
+        <img src="{{ asset('uploads/default-avatar.png') }}" alt="Photo par défaut">
+    {% endif %}
+    <p>Nom : {{ utilisateur.nom }} {{ utilisateur.prenom }}</p>
+    <p>Email : {{ utilisateur.email }}</p>
+{% else %}
+    <p>Utilisateur introuvable.</p>
+{% endif %}
