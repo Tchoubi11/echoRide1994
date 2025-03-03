@@ -27,7 +27,8 @@ class HomeController extends AbstractController
             $date = $data['date'];
 
             // on récupère les covoiturages selon les critères 
-            $covoiturages = $covoiturageRepository->findByCriteria($departure, $destination, $date);
+            $covoiturages = $covoiturageRepository->findAvailableRides($departure, $destination, $date);
+
         }
 
         return $this->render('home/index.html.twig', [

@@ -8,6 +8,10 @@
         <!-- Formulaire de recherche de covoiturage -->
         <div class="mt-5">
             <h2>Trouver un covoiturage</h2>
+            
+            <!-- Inject search route into a div with data-search-route -->
+            <div id="searchRoute" data-search-route="{{ path('search_route') }}"></div>
+
             {{ form_start(form) }}
             
             <!-- Départ -->
@@ -43,30 +47,32 @@
             <div class="covoiturages-list">
                 {% for ride in rides %}
                     <div class="covoiturage-item">
-                        <img src="{{ asset('uploads/images/' ~ ride.driver.profile_picture) }}" alt="Photo du chauffeur" class="driver-photo">
+                        <img src="{{ asset('uploads/images/' ~ ride.driver.photo.imagePath) }}" alt="Photo du chauffeur" class="driver-photo">
+
                         <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
-                        <p><strong>Note :</strong> {{ ride.driver.rating }}</p>
-                        <p><strong>Places restantes :</strong> {{ ride.nb_place }}</p>
-                        <p><strong>Prix :</strong> {{ ride.prix_personne }} €</p>
-                        <p><strong>Date et Heure de départ :</strong> {{ ride.date_depart|date('d/m/Y') }} à {{ ride.heure_depart|date('H:i') }}</p>
-                        <p><strong>Date et Heure d'arrivée :</strong> {{ ride.date_arrivee|date('d/m/Y') }} à {{ ride.heure_arrivee|date('H:i') }}</p>
+                        <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
+                        <p><strong>Places restantes :</strong> {{ ride.getNbPlace() }}</p>
+                        <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
+                        <p><strong>Date et Heure de départ :</strong> {{ ride.getDateDepart()|date('d/m/Y') }} à {{ ride.getHeureDepart()|date('H:i') }}</p>
+                        <p><strong>Date et Heure d'arrivée :</strong> {{ ride.getDateArrivee()|date('d/m/Y') }} à {{ ride.getHeureArrivee()|date('H:i') }}</p>
                         <p><strong>Voyage écologique :</strong> 
-                            {% if ride.is_ecological %}
+                            {% if ride.getIsEco() %}
                                 Oui
                             {% else %}
                                 Non
                             {% endif %}
                         </p>
-                        <a href="{{ path('ride_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
+                        <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
     </div>
-    <div><a href="{{ path('app_home') }}" class="btn btn-primary">
+    <div><a href="{{ path('app_home') }}" class="btn btn-primary mt-3">
         ⬅ Retour à l'accueil
     </a>
     </div>
 
+    <!-- Include the JavaScript file -->
     <script src="{{ asset('scripts/passager.js') }}"></script>
 {% endblock %}

@@ -36,7 +36,9 @@ class Utilisateur
 
     #[ORM\Column(length: 50)]
     private ?string $date_naissance = null;
-
+ 
+    #[ORM\Column(type: "float", nullable: true)]
+    private ?float $rating = null; 
 
     #[ORM\Column(length: 50)]
     private ?string $pseudo = null;
@@ -161,5 +163,16 @@ class Utilisateur
     public function getCovoiturages(): Collection
     {
         return $this->covoiturages;
+    }
+
+    public function getRating(): ?float
+    {
+        return $this->rating;
+    }
+
+    public function setRating(?float $rating): static
+    {
+        $this->rating = $rating;
+        return $this;
     }
 }

@@ -1,26 +1,57 @@
-
-
 {% extends 'base.html.twig' %}
 
 {% block body %}
     <div class="container mt-5">
         <h2>Détails du covoiturage</h2>
 
-        <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.username }}</p>
+        <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.pseudo }}</p>
         <p><strong>Note :</strong> {{ ride.driver.rating }}</p>
-        <p><strong>Lieu de départ :</strong> {{ ride.lieu_depart }}</p>
-        <p><strong>Lieu d'arrivée :</strong> {{ ride.lieu_arrivee }}</p>
-        <p><strong>Prix :</strong> {{ ride.prix_personne }} €</p>
-        <p><strong>Date et Heure de départ :</strong> {{ ride.date_depart|date('d/m/Y') }} à {{ ride.heure_depart|date('H:i') }}</p>
-        <p><strong>Date et Heure d'arrivée :</strong> {{ ride.date_arrivee|date('d/m/Y') }} à {{ ride.heure_arrivee|date('H:i') }}</p>
-        <p><strong>Voyage écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
+        
+        <!-- Lieu de départ -->
+        <p><strong>Lieu de départ :</strong> {{ ride.getLieuDepart() }}</p>
+        
+        <!-- Lieu d'arrivée -->
+        <p><strong>Lieu d'arrivée :</strong> {{ ride.getLieuArrivee() }}</p>
+        
+        <!-- Prix -->
+        <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
 
+        <!-- Date et Heure de départ -->
+        <p><strong>Date et Heure de départ :</strong> 
+            {{ ride.getDateDepart() | date('d/m/Y') }} à {{ ride.getHeureDepart() | date('H:i') }}
+        </p>
+
+        <!-- Date et Heure d'arrivée -->
+        <p><strong>Date et Heure d'arrivée :</strong> 
+            {{ ride.getDateArrivee() | date('d/m/Y') }} à {{ ride.getHeureArrivee() | date('H:i') }}
+        </p>
+
+        <!-- Voyage écologique -->
+        <p><strong>Voyage écologique :</strong> {{ ride.getIsEco() ? 'Oui' : 'Non' }}</p>
+
+        <!-- Liste des passagers inscrits -->
+        <h3>Passagers inscrits :</h3>
+        <ul>
+            {% for passenger in ride.getPassengers() %}
+                <li>{{ passenger.pseudo }} (Note : {{ passenger.rating }})</li>
+            {% else %}
+                <li>Aucun passager inscrit pour l’instant.</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Bouton d'annulation de réservation -->
+        {% if ride.getPassengers().contains(app.user) %}
+            <a href="{{ path('covoiturage_cancel', {'id': ride.id}) }}" class="btn btn-danger">Annuler ma réservation</a>
+        {% endif %}
+
+        <!-- Retour à la recherche -->
         <a href="{{ path('search_route') }}" class="btn btn-primary mt-3">Retour à la recherche</a>
         
     </div>
-    <a href="{{ path('app_home') }}" class="btn btn-primary">
+
+    <!-- Retour à l'accueil -->
+    <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">
         ⬅ Retour à l'accueil
     </a>
-    
     
 {% endblock %}

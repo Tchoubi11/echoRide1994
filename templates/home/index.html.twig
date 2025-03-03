@@ -104,13 +104,13 @@
             <ul class="list-group mt-4">
                 {% for covoiturage in covoiturages %}
                     <li class="list-group-item">
-                        <p><strong>{{ covoiturage.driver.username }}</strong> ({{ covoiturage.driver.rating }} ⭐)</p>
-                        <p>Départ : {{ covoiturage.departure }} -> Arrivée : {{ covoiturage.destination }}</p>
-                        <p>Place restante : {{ covoiturage.remainingSeats }}</p>
-                        <p>Prix : {{ covoiturage.price }} €</p>
-                        <p>Date et heure : {{ covoiturage.departureTime|date('d-m-Y H:i') }} -> {{ covoiturage.arrivalTime|date('d-m-Y H:i') }}</p>
-                        <p>{{ covoiturage.ecological ? 'Covoiturage écologique' : 'Covoiturage standard' }}</p>
-                        <a href="{{ path('covoiturage_detail', {'id': covoiturage.id}) }}" class="btn btn-info">Détail</a>
+                        <p><strong>{{ covoiturage.driver.pseudo }}</strong> ({{ covoiturage.driver.rating }} ⭐)</p>
+                        <p>Départ : {{ covoiturage.getLieuDepart() }} -> Arrivée : {{ covoiturage.getLieuArrivee() }}</p>
+                        <p>Place restante : {{ covoiturage.getNbPlace() }}</p>
+                        <p>Prix : {{ covoiturage.getPrixPersonne() }} €</p>
+                        <p>Date et heure : {{ covoiturage.getHeureDepart()|date('d-m-Y H:i') }} -> {{ covoiturage.getHeureArrivee()|date('d-m-Y H:i') }}</p>
+                        <p>{{ covoiturage.getIsEco() ? 'Covoiturage écologique' : 'Covoiturage standard' }}</p>
+                        <a href="{{ path('covoiturage_details', {'id': covoiturage.id}) }}" class="btn btn-info">Détail</a>
                     </li>
                 {% endfor %}
             </ul>
