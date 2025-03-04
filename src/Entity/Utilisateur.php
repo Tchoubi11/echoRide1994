@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\UtilisateurRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -50,9 +49,13 @@ class Utilisateur
     #[ORM\OneToMany(mappedBy: "driver", targetEntity: Covoiturage::class)]
     private Collection $covoiturages;
 
+    #[ORM\OneToMany(mappedBy: "passenger", targetEntity: Reservation::class, cascade: ["remove"])]
+    private Collection $reservations;
+
     public function __construct()
     {
         $this->covoiturages = new ArrayCollection();
+        $this->reservations = new ArrayCollection();  
     }
 
     public function getId(): ?int
@@ -137,12 +140,12 @@ class Utilisateur
         return $this;
     }
 
-    public function getPhoto()
+    public function getPhoto(): ?Image
     {
         return $this->photo;
     }
 
-    public function setPhoto($photo): static
+    public function setPhoto(?Image $photo): static
     {
         $this->photo = $photo;
         return $this;
@@ -159,7 +162,6 @@ class Utilisateur
         return $this;
     }
 
-    // Cette fonction retourne les covoiturages associés à un utilisateur
     public function getCovoiturages(): Collection
     {
         return $this->covoiturages;
@@ -173,6 +175,32 @@ class Utilisateur
     public function setRating(?float $rating): static
     {
         $this->rating = $rating;
+        return $this;
+    }
+
+    public function getReservations(): Collection
+    {
+        return $this->reservations;
+    }
+
+    public function addReservation(Reservation $reservation): self
+    {
+        if (!$this->reservations->contains($reservation)) {
+            $this->reservations->add($reservation);
+            $reservation->setPassenger($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReservation(Reservation $reservation): self
+    {
+        if ($this->reservations->removeElement($reservation)) {
+            if ($reservation->getPassenger() === $this) {
+                $reservation->setPassenger(null);
+            }
+        }
+
         return $this;
     }
 }

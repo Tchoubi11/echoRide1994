@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\CovoiturageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: CovoiturageRepository::class)]
 class Covoiturage
@@ -17,7 +19,7 @@ class Covoiturage
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $date_depart = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)] // Change to DATETIME
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)] 
     private ?\DateTimeInterface $heure_depart = null;
 
     #[ORM\Column(length: 50)]
@@ -26,7 +28,7 @@ class Covoiturage
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $date_arrivee = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)] // Change to DATETIME
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)] 
     private ?\DateTimeInterface $heure_arrivee = null;
 
     #[ORM\Column(length: 50)]
@@ -44,9 +46,17 @@ class Covoiturage
     #[ORM\Column(type: "boolean")]
     private bool $isEco = false;  
 
+    #[ORM\OneToMany(mappedBy: "covoiturage", targetEntity: Reservation::class, cascade: ["remove"])]
+    private Collection $reservations;
+
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: "driver_id", referencedColumnName: "id", nullable: false)]
     private ?Utilisateur $driver = null; 
+
+    public function __construct()
+    {
+        $this->reservations = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -61,7 +71,6 @@ class Covoiturage
     public function setDateDepart(\DateTimeInterface $date_depart): static
     {
         $this->date_depart = $date_depart;
-
         return $this;
     }
 
@@ -73,7 +82,6 @@ class Covoiturage
     public function setHeureDepart(\DateTimeInterface $heure_depart): static
     {
         $this->heure_depart = $heure_depart;
-
         return $this;
     }
 
@@ -85,7 +93,6 @@ class Covoiturage
     public function setLieuDepart(string $lieu_depart): static
     {
         $this->lieu_depart = $lieu_depart;
-
         return $this;
     }
 
@@ -97,7 +104,6 @@ class Covoiturage
     public function setDateArrivee(\DateTimeInterface $date_arrivee): static
     {
         $this->date_arrivee = $date_arrivee;
-
         return $this;
     }
 
@@ -109,7 +115,6 @@ class Covoiturage
     public function setHeureArrivee(\DateTimeInterface $heure_arrivee): static
     {
         $this->heure_arrivee = $heure_arrivee;
-
         return $this;
     }
 
@@ -121,7 +126,6 @@ class Covoiturage
     public function setLieuArrivee(string $lieu_arrivee): static
     {
         $this->lieu_arrivee = $lieu_arrivee;
-
         return $this;
     }
 
@@ -133,7 +137,6 @@ class Covoiturage
     public function setStatut(string $statut): static
     {
         $this->statut = $statut;
-
         return $this;
     }
 
@@ -145,7 +148,6 @@ class Covoiturage
     public function setNbPlace(int $nb_place): static
     {
         $this->nb_place = $nb_place;
-
         return $this;
     }
 
@@ -157,11 +159,9 @@ class Covoiturage
     public function setPrixPersonne(float $prix_personne): static
     {
         $this->prix_personne = $prix_personne;
-
         return $this;
     }
 
-    // J'ajoute cette logique pour indiquer si le covoiturage est écologique
     public function getIsEco(): bool
     {
         return $this->isEco;
@@ -182,5 +182,19 @@ class Covoiturage
     {
         $this->driver = $driver;
         return $this;
+    }
+
+    public function getReservations(): Collection
+    {
+        return $this->reservations;
+    }
+
+    public function getPlacesRestantes(): int
+    {
+        $placesReservees = array_reduce($this->reservations->toArray(), function ($total, $reservation) {
+            return $total + $reservation->getPlacesReservees();
+        }, 0);
+
+        return $this->nb_place - $placesReservees;
     }
 }
