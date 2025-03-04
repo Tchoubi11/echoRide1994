@@ -16,30 +16,30 @@ class CovoiturageController extends AbstractController
     #[Route('/search', name: 'search_route')]
     public function search(Request $request, CovoiturageRepository $covoiturageRepository): Response
     {
-        // Create and handle the form
+       
         $form = $this->createForm(CovoiturageSearchType::class);
         $form->handleRequest($request);
 
         $rides = [];
         $nextRide = null;
 
-        // If the form is submitted and valid
+        
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $departure = $data['departure'];
             $destination = $data['destination'];
             $date = $data['date'];
 
-            // Search for available rides
+            
             $rides = $covoiturageRepository->findAvailableRides($departure, $destination, $date);
 
-            // If no rides are found, suggest the next available ride
+            
             if (empty($rides)) {
                 $nextRide = $covoiturageRepository->findNextAvailableRide($departure, $destination, $date);
             }
         }
 
-        // Handle the AJAX request and return JSON response
+      
         if ($request->isXmlHttpRequest()) {
             return $this->json([
                 'rides' => $rides,
@@ -47,7 +47,7 @@ class CovoiturageController extends AbstractController
             ]);
         }
 
-        // Otherwise, return the rendered template with the form and results
+        
         return $this->render('covoiturage/search.html.twig', [
             'form' => $form->createView(),
             'rides' => $rides,
@@ -80,6 +80,21 @@ public function cancelReservation(int $id, CovoiturageRepository $covoiturageRep
 
     return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
 }
+
+#[Route('/covoiturage/{id}', name: 'covoiturage_details')]
+public function details(int $id, CovoiturageRepository $covoiturageRepository): Response
+{
+    $ride = $covoiturageRepository->find($id);
+    
+    if (!$ride) {
+        throw $this->createNotFoundException('Covoiturage non trouvé.');
+    }
+
+    return $this->render('covoiturage/details.html.twig', [
+        'ride' => $ride
+    ]);
+}
+
 
 }
 

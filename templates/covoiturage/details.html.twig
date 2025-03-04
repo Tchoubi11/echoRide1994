@@ -30,14 +30,7 @@
         <p><strong>Voyage écologique :</strong> {{ ride.getIsEco() ? 'Oui' : 'Non' }}</p>
 
         <!-- Liste des passagers inscrits -->
-        <h3>Passagers inscrits :</h3>
-        <ul>
-            {% for passenger in ride.getPassengers() %}
-                <li>{{ passenger.pseudo }} (Note : {{ passenger.rating }})</li>
-            {% else %}
-                <li>Aucun passager inscrit pour l’instant.</li>
-            {% endfor %}
-        </ul>
+        
 
         <!-- Bouton d'annulation de réservation -->
         {% if ride.getPassengers().contains(app.user) %}
