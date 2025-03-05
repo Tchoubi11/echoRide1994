@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 
 
 class CovoiturageController extends AbstractController
@@ -48,39 +50,34 @@ class CovoiturageController extends AbstractController
         }
 
         
-        return $this->render('covoiturage/search.html.twig', [
+        return $this->render('search/index.html.twig', [
             'form' => $form->createView(),
             'rides' => $rides,
             'nextRide' => $nextRide,
         ]);
     }
 
-    #[Route('/covoiturage/{id}/cancel', name: 'covoiturage_cancel')]
-public function cancelReservation(int $id, CovoiturageRepository $covoiturageRepository, EntityManagerInterface $em): Response
-{
-    $ride = $covoiturageRepository->find($id);
-    $user = $this->getUser();
+    #[Route('/reservation/{id}/cancel', name: 'reservation_cancel', methods: ['POST'])]
+    public function cancelReservationAjax(int $id, CovoiturageRepository $covoiturageRepository, EntityManagerInterface $em): JsonResponse
+    {
+        $reservation = $covoiturageRepository->findReservationById($id);
+        $user = $this->getUser();
+    
+        if (!$reservation || $reservation->getPassenger() !== $user) {
+            return $this->json(['success' => false, 'message' => 'Réservation non trouvée ou accès refusé.'], Response::HTTP_FORBIDDEN);
+        }
+    
+        $ride = $reservation->getCovoiturage();
+        $ride->removePassenger($user);
+        $ride->setNbPlace($ride->getNbPlace() + 1);
+    
+        $em->remove($reservation);
+        $em->flush();
+    
+        return new JsonResponse(['success' => true, 'message' => 'Réservation annulée.']);
 
-    if (!$ride || !$user) {
-        throw $this->createNotFoundException('Erreur de réservation.');
     }
-
-    if (!$ride->getPassengers()->contains($user)) {
-        $this->addFlash('danger', 'Vous n’êtes pas inscrit à ce covoiturage.');
-        return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
-    }
-
-    $ride->removePassenger($user);
-    $ride->setNbPlace($ride->getNbPlace() + 1);
-
-    $em->persist($ride);
-    $em->flush();
-
-    $this->addFlash('success', 'Votre réservation a été annulée.');
-
-    return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
-}
-
+    
 #[Route('/covoiturage/{id}', name: 'covoiturage_details')]
 public function details(int $id, CovoiturageRepository $covoiturageRepository): Response
 {

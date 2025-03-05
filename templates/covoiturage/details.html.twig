@@ -1,50 +1,62 @@
-{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %} 
 
 {% block body %}
     <div class="container mt-5">
         <h2>Détails du covoiturage</h2>
 
-        <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.pseudo }}</p>
-        <p><strong>Note :</strong> {{ ride.driver.rating }}</p>
+        <div class="card p-3 shadow-sm">
+            <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.pseudo }}</p>
+            <p><strong>Note :</strong> {{ ride.driver.rating }}</p>
+            
+            <p><strong>Lieu de départ :</strong> {{ ride.getLieuDepart() }}</p>
+            <p><strong>Lieu d'arrivée :</strong> {{ ride.getLieuArrivee() }}</p>
+            <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
+
+            <p><strong>Date et Heure de départ :</strong> 
+                {{ ride.getDateDepart() | date('d/m/Y') }} à {{ ride.getHeureDepart() | date('H:i') }}
+            </p>
+
+            <p><strong>Date et Heure d'arrivée :</strong> 
+                {{ ride.getDateArrivee() | date('d/m/Y') }} à {{ ride.getHeureArrivee() | date('H:i') }}
+            </p>
+
+            <p><strong>Voyage écologique :</strong> {{ ride.getIsEco() ? 'Oui' : 'Non' }}</p>
+        </div>
+
+        <h3 class="mt-4">Passagers :</h3>
+        <ul class="list-group" id="reservations-list">
+            {% for reservation in ride.getReservations() %}
+                <li class="list-group-item d-flex justify-content-between align-items-center" id="reservation-{{ reservation.id }}">
+                    {{ reservation.getPassenger().getPseudo() }} ({{ reservation.getStatut() }})
+                    {% if reservation.getPassenger() == app.user %}
+                        <button class="btn btn-danger btn-sm cancel-reservation" data-id="{{ reservation.id }}">
+                            Annuler
+                        </button>
+                    {% endif %}
+                </li>
+            {% else %}
+                <p>Aucun passager pour le moment.</p>
+            {% endfor %}
+        </ul>
         
-        <!-- Lieu de départ -->
-        <p><strong>Lieu de départ :</strong> {{ ride.getLieuDepart() }}</p>
-        
-        <!-- Lieu d'arrivée -->
-        <p><strong>Lieu d'arrivée :</strong> {{ ride.getLieuArrivee() }}</p>
-        
-        <!-- Prix -->
-        <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
 
-        <!-- Date et Heure de départ -->
-        <p><strong>Date et Heure de départ :</strong> 
-            {{ ride.getDateDepart() | date('d/m/Y') }} à {{ ride.getHeureDepart() | date('H:i') }}
-        </p>
-
-        <!-- Date et Heure d'arrivée -->
-        <p><strong>Date et Heure d'arrivée :</strong> 
-            {{ ride.getDateArrivee() | date('d/m/Y') }} à {{ ride.getHeureArrivee() | date('H:i') }}
-        </p>
-
-        <!-- Voyage écologique -->
-        <p><strong>Voyage écologique :</strong> {{ ride.getIsEco() ? 'Oui' : 'Non' }}</p>
-
-        <!-- Liste des passagers inscrits -->
-        
-
-        <!-- Bouton d'annulation de réservation -->
-        {% if ride.getPassengers().contains(app.user) %}
-            <a href="{{ path('covoiturage_cancel', {'id': ride.id}) }}" class="btn btn-danger">Annuler ma réservation</a>
+        {% if ride.getPlacesRestantes() > 0 %}
+            <a href="{{ path('reservation_book', {'id': ride.id}) }}" class="btn btn-success mt-3">Réserver</a>
+        {% else %}
+            <p class="mt-3 text-danger">Plus de places disponibles.</p>
         {% endif %}
 
-        <!-- Retour à la recherche -->
-        <a href="{{ path('search_route') }}" class="btn btn-primary mt-3">Retour à la recherche</a>
-        
-    </div>
+        {% if ride.getPassengers().contains(app.user) %}
+            <a href="{{ path('covoiturage_cancel', {'id': ride.id}) }}" class="btn btn-warning mt-3">Annuler ma réservation</a>
+        {% endif %}
 
-    <!-- Retour à l'accueil -->
-    <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">
-        ⬅ Retour à l'accueil
-    </a>
-    
+        <div class="mt-4">
+            <a href="{{ path('search_route') }}" class="btn btn-primary">🔍 Retour à la recherche</a>
+            <a href="{{ path('app_home') }}" class="btn btn-secondary">🏠 Retour à l'accueil</a>
+        </div>
+    </div>
+    {% block javascripts %}
+    {{ parent() }} 
+{% endblock %}
+
 {% endblock %}

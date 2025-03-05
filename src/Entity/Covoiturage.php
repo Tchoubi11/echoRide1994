@@ -197,4 +197,12 @@ class Covoiturage
 
         return $this->nb_place - $placesReservees;
     }
+
+    public function getPassengers(): Collection
+{
+    return new ArrayCollection(
+        $this->reservations->map(fn ($reservation) => $reservation->getPassenger())->toArray()
+    );
+}
+
 }
