@@ -11,49 +11,37 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class CovoiturageSearchType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('departure', TextType::class, [
+            ->add('lieu_depart', TextType::class, [
                 'label' => 'Départ',
                 'attr' => ['placeholder' => 'Votre départ'],
                 'constraints' => [
                     new Assert\NotBlank(['message' => 'Veuillez saisir un lieu de départ.']),
-                    new Assert\Length([
-                        'max' => 255, 
-                        'maxMessage' => 'Le lieu de départ ne doit pas dépasser {{ limit }} caractères.'
-                    ]),
                 ]
             ])
-            ->add('destination', TextType::class, [
+            ->add('lieu_arrivee', TextType::class, [
                 'label' => 'Destination',
                 'attr' => ['placeholder' => 'Votre destination'],
                 'constraints' => [
                     new Assert\NotBlank(['message' => 'Veuillez saisir une destination.']),
-                    new Assert\Length([
-                        'max' => 255, 
-                        'maxMessage' => 'La destination ne doit pas dépasser {{ limit }} caractères.'
-                    ]),
                 ]
             ])
-            ->add('date', DateType::class, [
+            ->add('date_depart', DateType::class, [
                 'label' => 'Date',
                 'widget' => 'single_text',
-                'attr' => ['placeholder' => 'Date du trajet'],
+                'input' => 'datetime',
+                'attr' => [
+                    'min' => (new \DateTime())->format('Y-m-d'),
+                ],
                 'constraints' => [
                     new Assert\NotBlank(['message' => 'Veuillez saisir une date.']),
-                    new Assert\Type([
-                        'type' => \DateTime::class, 
-                        'message' => 'La date doit être valide.'
-                    ]),
+                    new Assert\GreaterThanOrEqual([
+                        'value' => new \DateTime(),
+                        'message' => 'La date doit être égale ou supérieure à aujourd\'hui.'
+                    ])
                 ]
             ]);
-    }
-
-    public function configureOptions(OptionsResolver $resolver)
-    {
-        $resolver->setDefaults([
-            'data_class' => null,
-        ]);
     }
 }

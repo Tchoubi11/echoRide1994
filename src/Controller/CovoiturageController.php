@@ -7,91 +7,124 @@ use App\Repository\CovoiturageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
-
-
+use App\Entity\Reservation;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class CovoiturageController extends AbstractController
 {
-    #[Route('/search', name: 'search_route')]
-    public function search(Request $request, CovoiturageRepository $covoiturageRepository): Response
+    
+    #[Route('/covoiturage', name: 'covoiturage_home')]
+    public function covoiturageIndex(Request $request, CovoiturageRepository $covoiturageRepository): Response
     {
-       
+        $form = $this->createForm(CovoiturageSearchType::class);
+        $form->handleRequest($request);
+    
+        $rides = []; 
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $rides = $covoiturageRepository->findAvailableRides(
+                $data['departure'],
+                $data['destination'],
+                $data['date']
+            );
+        }
+    
+        return $this->render('home/index.html.twig', [
+            'form' => $form->createView(),
+            'rides' => $rides, 
+        ]);
+    }
+
+    #[Route('/search', name: 'search_route', methods: ['GET', 'POST'])]
+    public function search(Request $request, CovoiturageRepository $covoiturageRepository, SessionInterface $session): Response
+    {
         $form = $this->createForm(CovoiturageSearchType::class);
         $form->handleRequest($request);
 
         $rides = [];
-        $nextRide = null;
+        $searchPerformed = false;
 
-        
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $departure = $data['departure'];
-            $destination = $data['destination'];
-            $date = $data['date'];
 
-            
-            $rides = $covoiturageRepository->findAvailableRides($departure, $destination, $date);
+            $dateDepartObj = $data['date_depart'] ?? null;
+            if ($dateDepartObj && !$dateDepartObj instanceof \DateTimeInterface) {
+                $dateDepartObj = \DateTime::createFromFormat('Y-m-d', (string) $dateDepartObj);
+            }
 
-            
-            if (empty($rides)) {
-                $nextRide = $covoiturageRepository->findNextAvailableRide($departure, $destination, $date);
+            if ($dateDepartObj) {
+                $rides = $covoiturageRepository->findAvailableRides(
+                    $data['lieu_depart'],
+                    $data['lieu_arrivee'],
+                    $dateDepartObj
+                );
+
+                $session->set('search_criteria', [
+                    'date_depart' => $dateDepartObj->format('Y-m-d'),
+                    'lieu_depart' => $data['lieu_depart'],
+                    'lieu_arrivee' => $data['lieu_arrivee']
+                ]);
+
+                $searchPerformed = true;
+            }
+        } else {
+            $searchCriteria = $session->get('search_criteria', []);
+            if (!empty($searchCriteria) && isset($searchCriteria['date_depart'])) {
+                try {
+                    $dateDepartObj = new \DateTime($searchCriteria['date_depart']);
+                    $rides = $covoiturageRepository->findAvailableRides(
+                        $searchCriteria['lieu_depart'],
+                        $searchCriteria['lieu_arrivee'],
+                        $dateDepartObj
+                    );
+                    $searchPerformed = true;
+                } catch (\Exception $e) {
+                    
+                }
             }
         }
 
-      
-        if ($request->isXmlHttpRequest()) {
-            return $this->json([
-                'rides' => $rides,
-                'nextRide' => $nextRide ? $nextRide : null
-            ]);
-        }
-
-        
         return $this->render('search/index.html.twig', [
             'form' => $form->createView(),
             'rides' => $rides,
-            'nextRide' => $nextRide,
+            'searchPerformed' => $searchPerformed,
+        ]);
+    }
+    
+
+    
+
+    
+
+    #[Route('/covoiturage/{id}', name: 'covoiturage_details')]
+    public function details(int $id, CovoiturageRepository $covoiturageRepository): Response
+    {
+        $ride = $covoiturageRepository->find($id);
+        if (!$ride) {
+            throw $this->createNotFoundException('Covoiturage non trouvé.');
+        }
+
+        return $this->render('covoiturage/details.html.twig', [
+            'ride' => $ride
         ]);
     }
 
-    #[Route('/reservation/{id}/cancel', name: 'reservation_cancel', methods: ['POST'])]
-    public function cancelReservationAjax(int $id, CovoiturageRepository $covoiturageRepository, EntityManagerInterface $em): JsonResponse
+    #[Route('/reservation/{id}/cancel', name: 'cancel_reservation', methods: ['POST'])]
+    public function cancelReservation(int $id, EntityManagerInterface $em): JsonResponse
     {
-        $reservation = $covoiturageRepository->findReservationById($id);
-        $user = $this->getUser();
-    
-        if (!$reservation || $reservation->getPassenger() !== $user) {
-            return $this->json(['success' => false, 'message' => 'Réservation non trouvée ou accès refusé.'], Response::HTTP_FORBIDDEN);
+        $reservation = $em->getRepository(Reservation::class)->find($id);
+
+        if (!$reservation) {
+            return new JsonResponse(['success' => false, 'message' => 'Réservation introuvable.'], 404);
         }
-    
-        $ride = $reservation->getCovoiturage();
-        $ride->removePassenger($user);
-        $ride->setNbPlace($ride->getNbPlace() + 1);
-    
+
         $em->remove($reservation);
         $em->flush();
-    
-        return new JsonResponse(['success' => true, 'message' => 'Réservation annulée.']);
 
+        return new JsonResponse(['success' => true, 'message' => 'Réservation annulée avec succès.']);
     }
-    
-#[Route('/covoiturage/{id}', name: 'covoiturage_details')]
-public function details(int $id, CovoiturageRepository $covoiturageRepository): Response
-{
-    $ride = $covoiturageRepository->find($id);
-    
-    if (!$ride) {
-        throw $this->createNotFoundException('Covoiturage non trouvé.');
-    }
-
-    return $this->render('covoiturage/details.html.twig', [
-        'ride' => $ride
-    ]);
 }
-
-
-}
-

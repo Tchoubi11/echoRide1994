@@ -13,10 +13,9 @@
             </form>
         </div>
 
-        <!-- Carrousel d'images et descriptions -->
+        <!-- Carrousel d'images -->
         <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
-                
                 <div class="carousel-item active">
                     <img src="{{ asset('uploads/images/67c0e83e9bf87.jpg') }}" class="d-block w-100 img-fluid" alt="Réduire l'empreinte carbone">
                     <div class="carousel-caption d-none d-md-block">
@@ -24,7 +23,6 @@
                         <p>Avec EcoRide, chaque trajet participe à un avenir plus vert !</p>
                     </div>
                 </div>
-                
                 <div class="carousel-item">
                     <img src="{{ asset('uploads/images/67c0e85b22232.jpg') }}" class="d-block w-100 img-fluid" alt="Voyagez à petit prix">
                     <div class="carousel-caption d-none d-md-block">
@@ -32,7 +30,6 @@
                         <p>Des solutions économiques pour vos déplacements quotidiens.</p>
                     </div>
                 </div>
-                
                 <div class="carousel-item">
                     <img src="{{ asset('uploads/images/67c1afcb57201.jpg') }}" class="d-block w-100 img-fluid" alt="Covoiturage facilité">
                     <div class="carousel-caption d-none d-md-block">
@@ -41,7 +38,6 @@
                     </div>
                 </div>
             </div>
-           
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Previous</span>
@@ -55,87 +51,88 @@
         <!-- Formulaire de recherche de covoiturage -->
         <div class="mt-5">
             <h2>Trouver un covoiturage</h2>
-            {{ form_start(form) }}
-            
+
+            {{ form_start(form, {'attr': {'id': 'search-form'}, 'action': path('search_route'), 'method': 'POST'}) }}
+
             <!-- Départ -->
-            {{ form_row(form.departure) }}
-            {% for error in form.departure.vars.errors %}
+            {{ form_row(form.lieu_depart) }}
+            {% for error in form.lieu_depart.vars.errors %}
                 <div class="alert alert-danger">{{ error.message }}</div>
             {% endfor %}
-            
+
             <!-- Destination -->
-            {{ form_row(form.destination) }}
-            {% for error in form.destination.vars.errors %}
+            {{ form_row(form.lieu_arrivee) }}
+            {% for error in form.lieu_arrivee.vars.errors %}
                 <div class="alert alert-danger">{{ error.message }}</div>
             {% endfor %}
-            
+
             <!-- Date -->
-            {{ form_row(form.date) }}
-            {% for error in form.date.vars.errors %}
+            {{ form_row(form.date_depart) }}
+            {% for error in form.date_depart.vars.errors %}
                 <div class="alert alert-danger">{{ error.message }}</div>
             {% endfor %}
-        
-            <!-- Nombre de personnes pour le covoiturage -->
+
+            <!-- Nombre de passagers -->
             <div class="form-group">
                 <label for="num_people">
                     <i class="fas fa-users" id="toggle-passenger" style="cursor: pointer;"></i> Nombre de passagers
                 </label>
                 <div class="input-group" id="passenger-controls" style="display: none;">
-                    
                     <button type="button" class="btn btn-outline-secondary" id="decrement">-</button>
                     <input type="number" class="form-control" id="num_people" name="num_people" value="1" min="1" max="10" readonly>
                     <button type="button" class="btn btn-outline-secondary" id="increment">+</button>
                 </div>
                 <div class="invalid-feedback" id="num_people_error" style="display: none;">Le nombre de passagers ne peut pas être inférieur à 1.</div>
             </div>
-            
+
             <button type="submit" class="btn btn-primary mt-3">Rechercher</button>
-            
+
             {{ form_end(form) }}
         </div>
-        
-        
-        <script src="{{ asset('scripts/passager.js') }}"></script>
-        
 
-        <!-- Affichage des résultats de recherche -->
-        {% if covoiturages is not empty %}
+        <!-- Résultats de la recherche -->
+        {% if rides is defined and rides is not empty %}
             <h3>Covoiturages disponibles</h3>
             <ul class="list-group mt-4">
-                {% for covoiturage in covoiturages %}
+                {% for ride in rides %}
                     <li class="list-group-item">
-                        <p><strong>{{ covoiturage.driver.pseudo }}</strong> ({{ covoiturage.driver.rating }} ⭐)</p>
-                        <p>Départ : {{ covoiturage.getLieuDepart() }} -> Arrivée : {{ covoiturage.getLieuArrivee() }}</p>
-                        <p>Place restante : {{ covoiturage.getNbPlace() }}</p>
-                        <p>Prix : {{ covoiturage.getPrixPersonne() }} €</p>
-                        <p>Date et heure : {{ covoiturage.getHeureDepart()|date('d-m-Y H:i') }} -> {{ covoiturage.getHeureArrivee()|date('d-m-Y H:i') }}</p>
-                        <p>{{ covoiturage.getIsEco() ? 'Covoiturage écologique' : 'Covoiturage standard' }}</p>
-                        <a href="{{ path('covoiturage_details', {'id': covoiturage.id}) }}" class="btn btn-info">Détail</a>
+                        <p><strong>{{ ride.driver.pseudo }}</strong> ({{ ride.driver.rating }} ⭐)</p>
+                        <p>Départ : {{ ride.lieuDepart }} -> Arrivée : {{ ride.lieuArrivee }}</p>
+                        <p>Places restantes : {{ ride.nbPlace }}</p>
+                        <p>Prix : {{ ride.prixPersonne }} €</p>
+                        <p>Date et heure : {{ ride.dateDepart|date('d-m-Y H:i') }} -> {{ ride.dateArrivee|date('d-m-Y H:i') }}</p>
+                        <p>{{ ride.isEco ? 'Covoiturage écologique' : 'Covoiturage standard' }}</p>
+                        <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-info">Détail</a>
                     </li>
                 {% endfor %}
             </ul>
-        {% else %}
-            <p>Aucun covoiturage trouvé pour ces critères.</p>
+        {% elseif searchPerformed is defined and searchPerformed %}
+            <div class="alert alert-warning" role="alert">
+                Aucun trajet trouvé pour les dates sélectionnées. Essayez de modifier vos dates de départ.
+            </div>
+            {% if nextRide is defined and nextRide is not null %}
+                <p>Nous vous suggérons de modifier votre date pour : {{ nextRide.dateDepart|date('d/m/Y') }}.</p>
+            {% endif %}
         {% endif %}
+
     </div>
 
-    
+    <!-- Notre mission -->
     <div class="container mt-5">
         <h2>Notre Mission</h2>
         <div class="row">
             <div class="col-md-4">
                 <img src="{{ asset('uploads/images/67c0e8723e8e5.jpg') }}" class="img-fluid" alt="Mission écologique">
-                <p class="text-center">Nous nous engageons à réduire l'empreinte carbone en facilitant les trajets partagés. Chaque kilomètre parcouru ensemble est un pas vers un avenir plus vert, et chaque conducteur qui se joint à notre communauté aide à diminuer la pollution tout en rendant les trajets plus économiques et agréables.</p>
+                <p class="text-center">Nous nous engageons à réduire l'empreinte carbone en facilitant les trajets partagés...</p>
             </div>
             <div class="col-md-4">
                 <img src="{{ asset('uploads/images/67c0e8854ca31.jpg') }}" class="img-fluid" alt="Voyage économique">
-                <p class="text-center">EcoRide offre une alternative économique pour vos déplacements quotidiens. En optant pour le covoiturage, vous pouvez partager les frais de transport avec d'autres personnes, rendant chaque trajet plus abordable tout en préservant l'environnement. Une solution pratique pour voyager à moindre coût.</p>
+                <p class="text-center">EcoRide offre une alternative économique pour vos déplacements...</p>
             </div>
             <div class="col-md-4">
                 <img src="{{ asset('uploads/images/67c0e8993dfef.jpg') }}" class="img-fluid" alt="Communauté EcoRide">
-                <p class="text-center">Notre mission est de créer une véritable communauté de conducteurs et passagers écoresponsables. En rejoignant EcoRide, vous participez à une initiative collective pour un avenir plus durable, en partageant vos trajets avec des personnes qui partagent vos valeurs écologiques.</p>
+                <p class="text-center">Notre mission est de créer une véritable communauté...</p>
             </div>
         </div>
     </div>
-    
 {% endblock %}

@@ -1,78 +1,39 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="container mt-5">
-        <h1>Recherche de Covoiturages</h1>
-        <p>Veuillez remplir le formulaire pour rechercher des covoiturages disponibles.</p>
 
-        <!-- Formulaire de recherche de covoiturage -->
-        <div class="mt-5">
-            <h2>Trouver un covoiturage</h2>
-            
-            <!-- Inject search route into a div with data-search-route -->
-            <div id="searchRoute" data-search-route="{{ path('search_route') }}"></div>
-
-            {{ form_start(form) }}
-            
-            <!-- Départ -->
-            {{ form_row(form.departure) }}
-            {% for error in form.departure.vars.errors %}
-                <div class="alert alert-danger">{{ error.message }}</div>
-            {% endfor %}
-            
-            <!-- Destination -->
-            {{ form_row(form.destination) }}
-            {% for error in form.destination.vars.errors %}
-                <div class="alert alert-danger">{{ error.message }}</div>
-            {% endfor %}
-            
-            <!-- Date -->
-            {{ form_row(form.date) }}
-            {% for error in form.date.vars.errors %}
-                <div class="alert alert-danger">{{ error.message }}</div>
-            {% endfor %}
-        
-            <button type="submit" class="btn btn-primary mt-3">Rechercher</button>
-            
-            {{ form_end(form) }}
-        </div>
-        
-        {% if rides is empty %}
-            <p>Aucun covoiturage trouvé.</p>
-            {% if nextRide %}
-                <p>Aucun covoiturage disponible pour cette date. Nous vous suggérons de modifier votre date de départ pour : {{ nextRide.date_depart|date('d/m/Y') }}.</p>
-            {% endif %}
-        {% else %}
-            <h3>Itinéraires disponibles :</h3>
-            <div class="covoiturages-list">
-                {% for ride in rides %}
-                    <div class="covoiturage-item">
-                        <img src="{{ asset('uploads/images/' ~ ride.driver.photo.imagePath) }}" alt="Photo du chauffeur" class="driver-photo">
-
-                        <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
-                        <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
-                        <p><strong>Places restantes :</strong> {{ ride.getNbPlace() }}</p>
-                        <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
-                        <p><strong>Date et Heure de départ :</strong> {{ ride.getDateDepart()|date('d/m/Y') }} à {{ ride.getHeureDepart()|date('H:i') }}</p>
-                        <p><strong>Date et Heure d'arrivée :</strong> {{ ride.getDateArrivee()|date('d/m/Y') }} à {{ ride.getHeureArrivee()|date('H:i') }}</p>
-                        <p><strong>Voyage écologique :</strong> 
-                            {% if ride.getIsEco() %}
-                                Oui
-                            {% else %}
-                                Non
-                            {% endif %}
-                        </p>
-                        <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
+    <!-- Résultats de la recherche  -->
+    {% if rides is not empty %}
+        <h3>Itinéraires disponibles :</h3>
+        <div class="covoiturages-list d-flex flex-wrap">
+            {% for ride in rides %}
+                <div class="covoiturage-item col-md-6 mb-4">
+                    <div class="card">
+                        <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" alt="Profile Photo" class="driver-photo-icon" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                        <div class="card-body">
+                            <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
+                            <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
+                            <p><strong>Places restantes :</strong> {{ ride.getNbPlace() }}</p>
+                            <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
+                            <p><strong>Date et Heure de départ :</strong> {{ ride.getDateDepart()|date('d/m/Y') }} à {{ ride.getHeureDepart()|date('H:i') }}</p>
+                            <p><strong>Date et Heure d'arrivée :</strong> {{ ride.getDateArrivee()|date('d/m/Y') }} à {{ ride.getHeureArrivee()|date('H:i') }}</p>
+                            <p><strong>Voyage écologique :</strong>
+                                {% if ride.getIsEco() %}
+                                    Oui
+                                {% else %}
+                                    Non
+                                {% endif %}
+                            </p>
+                            <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
+                        </div>
                     </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <div><a href="{{ path('app_home') }}" class="btn btn-primary mt-3">
         ⬅ Retour à l'accueil
-    </a>
-    </div>
+    </a></div>
 
-    <!-- Include the JavaScript file -->
-    <script src="{{ asset('scripts/passager.js') }}"></script>
 {% endblock %}

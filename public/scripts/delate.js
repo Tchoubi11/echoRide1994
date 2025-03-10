@@ -1,28 +1,29 @@
+function cancelReservation(reservationId) {
+    fetch(`/reservation/${reservationId}/cancel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ reservationId: reservationId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            document.getElementById(`reservation-${reservationId}`).remove(); 
+        } else {
+            alert("Erreur : " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert("Une erreur est survenue.");
+    });
+}
 
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.cancel-reservation').forEach(button => {
-        button.addEventListener('click', function () {
-            const reservationId = this.getAttribute('data-id');
-            if (!confirm('Voulez-vous vraiment annuler cette réservation ?')) return;
-
-            fetch(`/reservation/${reservationId}/cancel`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById(`reservation-${reservationId}`).remove();
-                    alert('Réservation annulée avec succès.');
-                } else {
-                    alert('Erreur : ' + data.message);
-                }
-            })
-            .catch(error => console.error('Erreur AJAX :', error));
-        });
+document.querySelectorAll('.cancel-reservation').forEach(button => {
+    button.addEventListener('click', function() {
+        cancelReservation(this.dataset.id);
     });
 });
-
