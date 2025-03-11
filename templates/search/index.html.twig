@@ -1,6 +1,15 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+{% if noResults %}
+    <div id="noResultsAlert" class="alert alert-warning" style="font-size: 1.2rem; font-weight: bold;">
+        Il n'y a pas de trajets disponibles pour la date renseignée .Veuillez modifier la date
+        de voyage à la date du premier itinéraire le plus proche.
+         !
+    </div>
+{% endif %}
+
+
 
     <!-- Résultats de la recherche  -->
     {% if rides is not empty %}
