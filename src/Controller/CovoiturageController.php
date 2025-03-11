@@ -16,28 +16,16 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class CovoiturageController extends AbstractController
 {
     
-    #[Route('/covoiturage', name: 'covoiturage_home')]
-    public function covoiturageIndex(Request $request, CovoiturageRepository $covoiturageRepository): Response
+    #[Route('/covoiturages', name: 'covoiturage_list')]
+    public function listAllRides(CovoiturageRepository $covoiturageRepository): Response
     {
-        $form = $this->createForm(CovoiturageSearchType::class);
-        $form->handleRequest($request);
+        $rides = $covoiturageRepository->findAll(); // Récupère tous les covoiturages
     
-        $rides = []; 
-    
-        if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $rides = $covoiturageRepository->findAvailableRides(
-                $data['departure'],
-                $data['destination'],
-                $data['date']
-            );
-        }
-    
-        return $this->render('home/index.html.twig', [
-            'form' => $form->createView(),
-            'rides' => $rides, 
+        return $this->render('covoiturage/list.html.twig', [
+            'rides' => $rides,
         ]);
     }
+    
 
     #[Route('/search', name: 'search_route', methods: ['GET', 'POST'])]
     public function search(Request $request, CovoiturageRepository $covoiturageRepository, SessionInterface $session): Response

@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Covoiturages{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Liste des Covoiturages</h1>
+
+        {% if rides is empty %}
+            <div class="alert alert-warning">Aucun covoiturage disponible pour le moment.</div>
+        {% else %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Départ</th>
+                        <th>Destination</th>
+                        <th>Date de départ</th>
+                        <th>Heure de départ</th>
+                        <th>Places disponibles</th>
+                        <th>Prix (€)</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ride in rides %}
+                        <tr>
+                            <td>{{ ride.id }}</td>
+                            <td>{{ ride.lieuDepart }}</td>
+                            <td>{{ ride.lieuArrivee }}</td>
+                            <td>{{ ride.dateDepart|date('d/m/Y') }}</td>
+                            <td>{{ ride.heureDepart|date('H:i') }}</td>
+                            <td>{{ ride.nbPlace }}</td>
+                            <td>{{ ride.prixPersonne }}</td>
+                            <td>
+                                {% if ride.statut == 'disponible' %}
+                                    <span class="badge bg-success">Disponible</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Indisponible</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ path('covoiturage_details', { id: ride.id }) }}" class="btn btn-primary btn-sm">Détails</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    <div><a href="{{ path('app_home') }}" class="btn btn-primary mt-3">
+        ⬅ Retour à l'accueil
+    </a></div>
+{% endblock %}
