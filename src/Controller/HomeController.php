@@ -1,5 +1,7 @@
 <?php
 
+// src/Controller/HomeController.php
+
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,24 +13,24 @@ use App\Form\CovoiturageSearchType;
 
 class HomeController extends AbstractController
 {
-    // Route pour la page d'accueil
     #[Route('/', name: 'app_home')]
     public function index(Request $request, CovoiturageRepository $covoiturageRepository): Response
     {
-        // Créer et traiter le formulaire
-        $form = $this->createForm(CovoiturageSearchType::class);
+        // Créer et traiter le formulaire en désactivant les filtres avancés
+        $form = $this->createForm(CovoiturageSearchType::class, null, [
+            'showAdvancedFilters' => false
+        ]);
         $form->handleRequest($request);
 
         $covoiturages = [];
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $departure = $data['departure'];
-            $destination = $data['destination'];
-            $date = $data['date'];
+            $departure = $data['lieu_depart'];
+            $destination = $data['lieu_arrivee'];
+            $date = $data['date_depart'];
 
-            // on récupère les covoiturages selon les critères 
+            // Récupérer les covoiturages selon les critères
             $covoiturages = $covoiturageRepository->findAvailableRides($departure, $destination, $date);
-
         }
 
         return $this->render('home/index.html.twig', [
@@ -37,15 +39,12 @@ class HomeController extends AbstractController
         ]);
     }
 
-    // Route pour la page de connexion
     #[Route('/login', name: 'app_login')]
     public function login(): Response
     {
         return $this->render('security/login.html.twig');
     }
 
-
-    // Route pour la page de contact 
     #[Route('/contact', name: 'contact')]
     public function contact(): Response
     {

@@ -1,38 +1,47 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-{% if noResults %}
-    <div id="noResultsAlert" class="alert alert-warning" style="font-size: 1.2rem; font-weight: bold;">
-        Il n'y a pas de trajets disponibles pour la date renseignée .Veuillez modifier la date
-        de voyage à la date du premier itinéraire le plus proche.
-         !
+    {% if noResults %}
+        <div id="noResultsAlert" class="alert alert-warning">
+            Il n'y a pas de trajets disponibles pour la date renseignée, veuillez modifier la date
+            de voyage à la date du premier itinéraire le plus proche..
+        </div>
+    {% endif %}
+
+    <h4 class="text-center">Rechercher un covoiturage :</h4>
+
+    {{ form_start(form, {'attr': {'id': 'search-form'}}) }}
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_row(form.lieu_depart) }}
+            {{ form_row(form.lieu_arrivee) }}
+            {{ form_row(form.date_depart) }}
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_row(form.is_eco) }}
+            {{ form_row(form.max_price) }}
+            {{ form_row(form.max_duration) }}
+            {{ form_row(form.min_rating) }}
+        </div>
     </div>
-{% endif %}
+    <button type="submit" class="btn btn-primary w-100 mt-2">Rechercher</button>
+    {{ form_end(form) }}
 
-
-
-    <!-- Résultats de la recherche  -->
     {% if rides is not empty %}
         <h3>Itinéraires disponibles :</h3>
-        <div class="covoiturages-list d-flex flex-wrap">
+        <div id="rides-list">
             {% for ride in rides %}
                 <div class="covoiturage-item col-md-6 mb-4">
                     <div class="card">
-                        <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" alt="Profile Photo" class="driver-photo-icon" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                        <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile">
                         <div class="card-body">
                             <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
                             <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
                             <p><strong>Places restantes :</strong> {{ ride.getNbPlace() }}</p>
                             <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
-                            <p><strong>Date et Heure de départ :</strong> {{ ride.getDateDepart()|date('d/m/Y') }} à {{ ride.getHeureDepart()|date('H:i') }}</p>
-                            <p><strong>Date et Heure d'arrivée :</strong> {{ ride.getDateArrivee()|date('d/m/Y') }} à {{ ride.getHeureArrivee()|date('H:i') }}</p>
-                            <p><strong>Voyage écologique :</strong>
-                                {% if ride.getIsEco() %}
-                                    Oui
-                                {% else %}
-                                    Non
-                                {% endif %}
-                            </p>
+                            <p><strong>Départ :</strong> {{ ride.getDateDepart()|date('d/m/Y H:i') }}</p>
+                            <p><strong>Arrivée :</strong> {{ ride.getDateArrivee()|date('d/m/Y H:i') }}</p>
+                            <p><strong>Écologique :</strong> {{ ride.getIsEco() ? 'Oui' : 'Non' }}</p>
                             <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
                         </div>
                     </div>
@@ -41,8 +50,29 @@
         </div>
     {% endif %}
 
-    <div><a href="{{ path('app_home') }}" class="btn btn-primary mt-3">
-        ⬅ Retour à l'accueil
-    </a></div>
+    <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("search-form").addEventListener("submit", function (event) {
+        event.preventDefault(); // Empêcher le rechargement de la page
+
+        let formData = new FormData(this);
+
+        fetch(this.action, {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.text())
+        .then(html => {
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(html, "text/html");
+            document.getElementById("rides-list").innerHTML = doc.getElementById("rides-list").innerHTML;
+        })
+        .catch(error => console.error("Erreur:", error));
+    });
+});
+
+</script>
 
 {% endblock %}

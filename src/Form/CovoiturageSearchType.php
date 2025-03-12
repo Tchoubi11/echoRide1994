@@ -1,5 +1,7 @@
 <?php
 
+// src/Form/CovoiturageSearchType.php
+
 namespace App\Form;
 
 use Symfony\Component\Form\AbstractType;
@@ -8,6 +10,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 
 class CovoiturageSearchType extends AbstractType
 {
@@ -43,5 +47,34 @@ class CovoiturageSearchType extends AbstractType
                     ])
                 ]
             ]);
+
+        // Ajouter les filtres avancés uniquement si 'showAdvancedFilters' est activé
+        if ($options['showAdvancedFilters']) {
+            $builder
+                ->add('is_eco', CheckboxType::class, [
+                    'label' => 'Voyage écologique',
+                    'required' => false,
+                ])
+                ->add('max_price', NumberType::class, [
+                    'label' => 'Prix maximum (€)',
+                    'required' => false,
+                ])
+                ->add('max_duration', NumberType::class, [
+                    'label' => 'Durée max (min)',
+                    'required' => false,
+                ])
+                ->add('min_rating', NumberType::class, [
+                    'label' => 'Note min',
+                    'required' => false,
+                ]);
+        }
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => null,
+            'showAdvancedFilters' => false, // Par défaut, les filtres avancés sont désactivés
+        ]);
     }
 }
