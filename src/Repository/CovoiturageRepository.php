@@ -41,59 +41,61 @@ class CovoiturageRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findFilteredRides(
-        string $departure, 
-        string $destination, 
-        ?\DateTime $dateDepart, 
-        ?string $lieuDepart, 
-        ?string $lieuArrivee, 
-        ?float $maxPrice, 
-        ?int $maxDuration, 
-        ?int $minRating, 
-        ?bool $isEco
-    ) {
-        $queryBuilder = $this->createQueryBuilder('c')
-            ->andWhere('c.lieu_depart = :departure')
-            ->andWhere('c.lieu_arrivee = :destination')
-            ->setParameter('departure', $departure)
-            ->setParameter('destination', $destination);
     
-        if ($dateDepart) {
-            $queryBuilder->andWhere('c.date_depart >= :date')
-                ->setParameter('date', $dateDepart);
-        }
-    
-        if ($lieuDepart) {
-            $queryBuilder->andWhere('c.lieu_depart LIKE :lieuDepart')
-                ->setParameter('lieuDepart', '%'.$lieuDepart.'%');
-        }
-    
-        if ($lieuArrivee) {
-            $queryBuilder->andWhere('c.lieu_arrivee LIKE :lieuArrivee')
-                ->setParameter('lieuArrivee', '%'.$lieuArrivee.'%');
-        }
-    
-        if ($maxPrice) {
-            $queryBuilder->andWhere('c.prixPersonne <= :maxPrice')
-                ->setParameter('maxPrice', $maxPrice);
-        }
-    
-        if ($maxDuration) {
-            $queryBuilder->andWhere('c.duree <= :maxDuration')
-                ->setParameter('maxDuration', $maxDuration);
-        }
-    
-        if ($minRating) {
-            $queryBuilder->andWhere('c.driver.rating >= :minRating')
-                ->setParameter('minRating', $minRating);
-        }
-    
-        if ($isEco !== null) {
-            $queryBuilder->andWhere('c.isEco = :isEco')
-                ->setParameter('isEco', $isEco);
-        }
-    
-        return $queryBuilder->getQuery()->getResult();
+public function findFilteredRides(
+    string $departure, 
+    string $destination, 
+    ?\DateTime $dateDepart, 
+    ?string $lieuDepart, 
+    ?string $lieuArrivee, 
+    ?float $maxPrice, 
+    ?int $maxDuration, 
+    ?int $minRating, 
+    ?bool $isEco
+) {
+    $queryBuilder = $this->createQueryBuilder('c')
+        ->andWhere('c.lieu_depart = :departure')
+        ->andWhere('c.lieu_arrivee = :destination')
+        ->setParameter('departure', $departure)
+        ->setParameter('destination', $destination);
+
+    if ($dateDepart) {
+        $queryBuilder->andWhere('c.date_depart >= :date')
+            ->setParameter('date', $dateDepart);
     }
+
+    if ($lieuDepart) {
+        $queryBuilder->andWhere('c.lieu_depart LIKE :lieuDepart')
+            ->setParameter('lieuDepart', '%' . $lieuDepart . '%');
+    }
+
+    if ($lieuArrivee) {
+        $queryBuilder->andWhere('c.lieu_arrivee LIKE :lieuArrivee')
+            ->setParameter('lieuArrivee', '%' . $lieuArrivee . '%');
+    }
+
+    if ($maxPrice !== null) {
+        $queryBuilder->andWhere('c.prixPersonne <= :maxPrice')
+            ->setParameter('maxPrice', $maxPrice);
+    }
+
+    if ($maxDuration !== null) {
+        $queryBuilder->andWhere('c.duree <= :maxDuration')
+            ->setParameter('maxDuration', $maxDuration);
+    }
+
+    if ($minRating !== null) {
+        $queryBuilder->andWhere('c.driver.rating >= :minRating')
+            ->setParameter('minRating', $minRating);
+    }
+
+    if ($isEco !== null) {
+        $queryBuilder->andWhere('c.isEco = :isEco')
+            ->setParameter('isEco', $isEco);
+    }
+
+    return $queryBuilder->getQuery()->getResult();
+}
+
     
 }

@@ -1,0 +1,25 @@
+{% if rides is not empty %}
+    <div class="row">
+        {% for ride in rides %}
+            <div class="covoiturage-item col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile" style="width: 100px; height: auto;">
+                    <div class="card-body">
+                        <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
+                        <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
+                        <p><strong>Places restantes :</strong> {{ ride.getNbPlace() }}</p>
+                        <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
+                        <p><strong>Départ :</strong> {{ ride.getDateDepart()|date('d/m/Y H:i') }}</p>
+                        <p><strong>Arrivée :</strong> {{ ride.getDateArrivee()|date('d/m/Y H:i') }}</p>
+                        <p><strong>Écologique :</strong> {{ ride.getIsEco() ? 'Oui' : 'Non' }}</p>
+                        <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-warning">
+        Aucun trajet trouvé pour les critères sélectionnés.
+    </div>
+{% endif %}
