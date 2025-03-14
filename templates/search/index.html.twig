@@ -1,39 +1,47 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    {% if noResults %}
-        <div id="noResultsAlert" class="alert alert-warning">
-            Il n'y a pas de trajets disponibles pour la date renseignée, veuillez modifier la date
-            de voyage à la date du premier itinéraire le plus proche..
-        </div>
-    {% endif %}
+    <div class="container mt-5">
+        <!-- Afficher l'alerte avec une icône de valise si aucun trajet n'est trouvé -->
+        {% if noResults %}
+            <div id="noResultsAlert" class="alert alert-warning text-center shadow-sm p-4">
+                <!-- Icône de valise au-dessus du message -->
+                <div class="mb-3">
+                    <i class="fa fa-suitcase fa-3x" style="color: #f39c12;"></i> 
+                </div>
+                <p><strong>Il n'y a pas de trajets disponibles pour la date renseignée, veuillez modifier la date de voyage à la date du premier itinéraire le plus proche.</strong></p>
+                <a href="{{ path('app_home') }}" class="btn btn-primary">Créer une alerte</a>
+            </div>
+        {% else %}
+            <!-- Si des trajets sont trouvés, afficher le formulaire de recherche -->
+            <h4 class="text-center">Ajouter les filtres et rechercher un covoiturage </h4>
 
-    <h4 class="text-center">Rechercher un covoiturage :</h4>
+            {{ form_start(form, {'attr': {'id': 'search-form'}}) }}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form_row(form.lieu_depart) }}
+                    {{ form_row(form.lieu_arrivee) }}
+                    {{ form_row(form.date_depart) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_row(form.is_eco) }}
+                    {{ form_row(form.max_price) }}
+                    {{ form_row(form.max_duration) }}
+                    {{ form_row(form.min_rating) }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-2">Rechercher</button>
+            {{ form_end(form) }}
+        {% endif %}
 
-    {{ form_start(form, {'attr': {'id': 'search-form'}}) }}
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            {{ form_row(form.lieu_depart) }}
-            {{ form_row(form.lieu_arrivee) }}
-            {{ form_row(form.date_depart) }}
-        </div>
-        <div class="col-md-6 mb-3">
-            {{ form_row(form.is_eco) }}
-            {{ form_row(form.max_price) }}
-            {{ form_row(form.max_duration) }}
-            {{ form_row(form.min_rating) }}
-        </div>
-    </div>
-    <button type="submit" class="btn btn-primary w-100 mt-2">Rechercher</button>
-    {{ form_end(form) }}
-
-    {% if rides is not empty %}
+        {% if rides is not empty %}
+        <!-- Affichage des itinéraires -->
         <h3>Itinéraires disponibles :</h3>
-        <div id="rides-list">
+        <div id="rides-list" class="row">
             {% for ride in rides %}
                 <div class="covoiturage-item col-md-6 mb-4">
-                    <div class="card">
-                        <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile">
+                    <div class="card shadow-sm">
+                        <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile" style="width: 100px; height: auto;">
                         <div class="card-body">
                             <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
                             <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
@@ -48,31 +56,31 @@
                 </div>
             {% endfor %}
         </div>
-    {% endif %}
+        {% endif %}
 
-    <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
+        <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
+    </div>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("search-form").addEventListener("submit", function (event) {
-        event.preventDefault(); // Empêcher le rechargement de la page
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("search-form").addEventListener("submit", function (event) {
+                event.preventDefault();
 
-        let formData = new FormData(this);
+                let formData = new FormData(this);
 
-        fetch(this.action, {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.text())
-        .then(html => {
-            let parser = new DOMParser();
-            let doc = parser.parseFromString(html, "text/html");
-            document.getElementById("rides-list").innerHTML = doc.getElementById("rides-list").innerHTML;
-        })
-        .catch(error => console.error("Erreur:", error));
-    });
-});
-
-</script>
+                fetch(this.action, {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(html => {
+                    let parser = new DOMParser();
+                    let doc = parser.parseFromString(html, "text/html");
+                    document.getElementById("rides-list").innerHTML = doc.getElementById("rides-list").innerHTML;
+                })
+                .catch(error => console.error("Erreur:", error));
+            });
+        });
+    </script>
 
 {% endblock %}

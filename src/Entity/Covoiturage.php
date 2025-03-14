@@ -40,6 +40,16 @@ class Covoiturage
     #[ORM\Column]
     private ?int $nb_place = null;
 
+    #[ORM\Column(type: "float", nullable: true)]
+    private ?float $max_price = null;
+
+    #[ORM\Column(type: "float", nullable: true)]
+   private ?float $max_duration = null;
+
+   #[ORM\Column(type: "float", nullable: true)]
+    private ?float $min_rating = null;
+
+
     #[ORM\Column]
     private ?float $prix_personne = null;
 
@@ -203,6 +213,39 @@ class Covoiturage
     return new ArrayCollection(
         $this->reservations->map(fn ($reservation) => $reservation->getPassenger())->toArray()
     );
+}
+
+public function getMaxPrice(): ?float
+{
+    return $this->max_price;
+}
+
+public function setMaxPrice(?float $max_price): self
+{
+    $this->max_price = $max_price;
+    return $this;
+}
+
+public function getMaxDuration(): ?float
+{
+    return $this->max_duration;
+}
+
+public function setMaxDuration(?float $max_duration): self
+{
+    $this->max_duration = $max_duration;
+    return $this;
+}
+
+public function getMinRating(): ?float
+{
+    return $this->min_rating;
+}
+
+public function setMinRating(?float $min_rating): self
+{
+    $this->min_rating = $min_rating;
+    return $this;
 }
 
 }

@@ -9,9 +9,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class CovoiturageSearchType extends AbstractType
 {
@@ -37,7 +37,7 @@ class CovoiturageSearchType extends AbstractType
                 'widget' => 'single_text',
                 'input' => 'datetime',
                 'attr' => [
-                    'min' => (new \DateTime())->format('Y-m-d'),
+                    'min' => (new \DateTime())->format('Ymd'),
                 ],
                 'constraints' => [
                     new Assert\NotBlank(['message' => 'Veuillez saisir une date.']),
@@ -48,12 +48,12 @@ class CovoiturageSearchType extends AbstractType
                 ]
             ]);
 
-        // Ajouter les filtres avancés uniquement si 'showAdvancedFilters' est activé
         if ($options['showAdvancedFilters']) {
             $builder
                 ->add('is_eco', CheckboxType::class, [
                     'label' => 'Voyage écologique',
                     'required' => false,
+                    'data' => false,
                 ])
                 ->add('max_price', NumberType::class, [
                     'label' => 'Prix maximum (€)',
@@ -64,8 +64,10 @@ class CovoiturageSearchType extends AbstractType
                     'required' => false,
                 ])
                 ->add('min_rating', NumberType::class, [
-                    'label' => 'Note min',
                     'required' => false,
+                    'label' => 'Note minimale du conducteur',
+                    'scale' => 1,  
+                    'attr' => ['min' => 0, 'max' => 5]
                 ]);
         }
     }
@@ -74,7 +76,7 @@ class CovoiturageSearchType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => null,
-            'showAdvancedFilters' => false, // Par défaut, les filtres avancés sont désactivés
+            'showAdvancedFilters' => false, 
         ]);
     }
 }
