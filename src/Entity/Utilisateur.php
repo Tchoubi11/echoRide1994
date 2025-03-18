@@ -6,6 +6,7 @@ use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 class Utilisateur
@@ -42,6 +43,9 @@ class Utilisateur
     #[ORM\Column(length: 50)]
     private ?string $pseudo = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $preferences = null;
+
     #[ORM\OneToOne(targetEntity: Image::class, cascade: ["persist", "remove"])]
     #[ORM\JoinColumn(nullable: true)]
     private ?Image $photo = null;
@@ -52,10 +56,18 @@ class Utilisateur
     #[ORM\OneToMany(mappedBy: "passenger", targetEntity: Reservation::class, cascade: ["remove"])]
     private Collection $reservations;
 
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Avis::class)]
+    private Collection $reviews; 
+
+    #[ORM\ManyToOne(targetEntity: Voiture::class, inversedBy: "users")]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Voiture $vehicle = null;
+
     public function __construct()
     {
         $this->covoiturages = new ArrayCollection();
         $this->reservations = new ArrayCollection();  
+        $this->reviews = new ArrayCollection(); 
     }
 
     public function getId(): ?int
@@ -200,6 +212,45 @@ class Utilisateur
                 $reservation->setPassenger(null);
             }
         }
+
+        return $this;
+    }
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Avis $review): self
+{
+    if (!$this->reviews->contains($review)) {
+        $this->reviews[] = $review;
+        $review->setUser($this);  
+    }
+
+    return $this;
+}
+
+
+    public function getVehicle(): ?Voiture
+    {
+        return $this->vehicle;
+    }
+
+    public function setVehicle(?Voiture $vehicle): static
+    {
+        $this->vehicle = $vehicle;
+        return $this;
+    }
+
+
+    public function getPreferences(): ?string
+    {
+        return $this->preferences;
+    }
+
+    public function setPreferences(?string $preferences): static
+    {
+        $this->preferences = $preferences;
 
         return $this;
     }

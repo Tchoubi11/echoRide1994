@@ -5,15 +5,82 @@
         <h2>Détails du covoiturage</h2>
 
         <div class="card p-3 shadow-sm">
-            <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" alt="Profile Photo" class="driver-photo-icon" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+          
+            <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" alt="Photo du chauffeur" class="driver-photo-icon" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
             <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.pseudo }}</p>
-            <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
+            <p><strong>{{ ride.driver.pseudo }}</strong> ({{ ride.driver.rating }} ⭐)</p>
             <p><strong>Lieu de départ :</strong> {{ ride.lieuDepart }}</p>
             <p><strong>Lieu d'arrivée :</strong> {{ ride.lieuArrivee }}</p>
             <p><strong>Prix :</strong> {{ ride.prixPersonne }} €</p>
             <p><strong>Date et Heure de départ :</strong> {{ ride.dateDepart|date('d/m/Y') }} à {{ ride.heureDepart|date('H:i') }}</p>
             <p><strong>Date et Heure d'arrivée :</strong> {{ ride.dateArrivee|date('d/m/Y') }} à {{ ride.heureArrivee|date('H:i') }}</p>
             <p><strong>Voyage écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
+
+            <!-- Véhicule -->
+            <p><strong>Véhicule :</strong></p>
+            <p><strong>Marque et Modèle :</strong> {{ ride.driver.vehicle.marque.libelle }} - {{ ride.driver.vehicle.modele }}</p>
+            <p><strong>Énergie utilisée :</strong> {{ ride.driver.vehicle.energie }}</p>
+
+
+            <p><strong>Avis du conducteur :</strong></p>
+
+            <h3>Commentaires</h3>
+
+            <ul>
+        {% for avis in driverReviews %}
+        <li>
+            <strong>{{ avis.user.pseudo }}</strong>: {{ avis.commentaire }} - {{ avis.note }}⭐
+        </li>
+       {% endfor %}
+       </ul>
+
+
+       {% if driverReviews is empty %}
+     <p>Aucun avis pour ce conducteur.</p>
+     {% endif %}
+
+     {% if app.user %}
+     {% set hasReviewed = false %}
+     {% for review in driverReviews %}
+        {% if review.user == app.user %}
+            {% set hasReviewed = true %}
+        {% endif %}
+     {% endfor %}
+
+     {% if not hasReviewed %}
+        <h3>Ajouter un avis</h3>
+        {{ form_start(form, {'action': path('covoiturage_details', {'id': ride.id})}) }}
+            <div class="form-group">
+                {{ form_row(form.commentaire) }}
+                {% for error in form.commentaire.vars.errors %}
+                    <div class="alert alert-danger">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form_row(form.note) }}
+                {% for error in form.note.vars.errors %}
+                    <div class="alert alert-danger">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <button class="btn btn-primary" type="submit">Ajouter l'avis</button>
+        {{ form_end(form) }}
+     {% else %}
+        <p>Vous avez déjà laissé un avis pour ce conducteur.</p>
+     {% endif %}
+     {% else %}
+    <p>Vous devez être connecté pour laisser un avis.</p>
+    {% endif %}
+
+
+            <!-- Préférences du conducteur -->
+            <p><strong>Préférences du conducteur :</strong></p>
+            {% if driverPreferences %}
+                <p>{{ driverPreferences }}</p>
+            {% else %}
+                <p>Aucune préférence spécifiée.</p>
+            {% endif %}
         </div>
 
         <!-- Boutons de réservation et annulation -->

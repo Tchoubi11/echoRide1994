@@ -16,11 +16,14 @@ class Avis
     #[ORM\Column(length: 50)]
     private ?string $commentaire = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $note = null;
-
+    #[ORM\Column(type: "integer")]  
+    private ?int $note = null; 
     #[ORM\Column(length: 50)]
     private ?string $statut = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "reviews")]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Utilisateur $user = null;
 
     public function getId(): ?int
     {
@@ -39,17 +42,17 @@ class Avis
         return $this;
     }
 
-    public function getNote(): ?string
+    public function getNote(): ?int
     {
         return $this->note;
     }
 
-    public function setNote(string $note): static
+    public function setNote(int $note): static
     {
         $this->note = $note;
-
         return $this;
     }
+
 
     public function getStatut(): ?string
     {
@@ -60,6 +63,16 @@ class Avis
     {
         $this->statut = $statut;
 
+        return $this;
+    }
+    public function getUser(): ?Utilisateur
+    {
+        return $this->user;
+    }
+
+    public function setUser(?Utilisateur $user): static
+    {
+        $this->user = $user;
         return $this;
     }
 }

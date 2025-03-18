@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\VoitureRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: VoitureRepository::class)]
 class Voiture
@@ -28,6 +30,18 @@ class Voiture
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date_premiere_immatriculation = null;
+
+    #[ORM\ManyToOne(targetEntity: Marque::class, inversedBy: 'voitures')]
+    #[ORM\JoinColumn(name: 'marque_id', referencedColumnName: 'marque_id')]
+    private ?Marque $marque = null;
+
+     #[ORM\OneToMany(mappedBy: "vehicle", targetEntity: Utilisateur::class)]
+     private Collection $users;
+
+     public function __construct()
+     {
+         $this->users = new ArrayCollection();
+     }
 
     public function getId(): ?int
     {
@@ -91,6 +105,22 @@ class Voiture
     {
         $this->date_premiere_immatriculation = $date_premiere_immatriculation;
 
+        return $this;
+    }
+
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function getMarque(): ?Marque
+    {
+        return $this->marque;
+    }
+
+    public function setMarque(?Marque $marque): static
+    {
+        $this->marque = $marque;
         return $this;
     }
 }
