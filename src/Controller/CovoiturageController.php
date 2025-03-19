@@ -8,10 +8,8 @@ use App\Repository\CovoiturageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Reservation;
 use App\Entity\Avis;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -160,21 +158,4 @@ public function details(int $id, CovoiturageRepository $covoiturageRepository, R
     ]);
 }
 
-    
-    
-    
-    #[Route('/reservation/{id}/cancel', name: 'cancel_reservation', methods: ['POST'])]
-    public function cancelReservation(int $id, EntityManagerInterface $em): JsonResponse
-    {
-        $reservation = $em->getRepository(Reservation::class)->find($id);
-
-        if (!$reservation) {
-            return new JsonResponse(['success' => false, 'message' => 'Réservation introuvable.'], 404);
-        }
-
-        $em->remove($reservation);
-        $em->flush();
-
-        return new JsonResponse(['success' => true, 'message' => 'Réservation annulée avec succès.']);
-    }
 }

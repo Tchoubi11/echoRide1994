@@ -74,7 +74,7 @@
     {% endif %}
 
 
-            <!-- Préférences du conducteur -->
+            
             <p><strong>Préférences du conducteur :</strong></p>
             {% if driverPreferences %}
                 <p>{{ driverPreferences }}</p>
@@ -82,15 +82,64 @@
                 <p>Aucune préférence spécifiée.</p>
             {% endif %}
         </div>
-
-        <!-- Boutons de réservation et annulation -->
-        {% if ride.nbPlace > 0 %}
-            <a href="{{ path('reservation_book', {'id': ride.id}) }}" class="btn btn-success mt-3">Réserver</a>
-        {% else %}
-            <p class="mt-3 text-danger">Plus de places disponibles.</p>
-        {% endif %}
-
-        <!-- Redirection vers la page de recherche -->
         <a href="{{ path('search_route') }}" class="btn btn-primary mt-3">Retour à la liste des covoiturages</a>
-    </div>
+      
+
+<button id="reserveBtn" class="btn btn-success mt-3" 
+{% if app.user %}
+    {% if ride.nbPlace > 0 and app.user.credits >= ride.prixPersonne %}
+        onclick="showConfirmationModal()"  
+    {% else %}
+        disabled 
+    {% endif %}
+{% else %}
+    onclick="redirectToLogin()"  
+{% endif %}>
+Participer
+</button>
+
+
+{% if app.user and (ride.nbPlace <= 0 or app.user.credits < ride.prixPersonne) %}
+<p class="mt-3 text-danger">
+{% if ride.nbPlace <= 0 %}
+    Plus de places disponibles.
+{% elseif app.user.credits < ride.prixPersonne %}
+    Vous n'avez pas assez de crédits.
+{% endif %}
+</p>
+{% endif %}
+
+
+<div id="confirmationModal" style="display:none;">
+<div>
+<p>Êtes-vous sûr de vouloir réserver ? Cela utilisera {{ ride.prixPersonne }} crédits.</p>
+<button class="btn btn-danger" id="confirmReservationBtn">Confirmer</button>
+<button class="btn btn-secondary" id="cancelReservationBtn">Annuler</button>
+</div>
+</div>
+
+<script>
+
+function redirectToLogin() {
+window.location.href = "{{ path('app_login') }}";  
+}
+
+
+function showConfirmationModal() {
+document.getElementById('confirmationModal').style.display = 'block';
+}
+
+
+document.getElementById('confirmReservationBtn').onclick = function() {
+
+alert("Réservation confirmée !");
+
+};
+
+ 
+document.getElementById('cancelReservationBtn').onclick = function() {
+document.getElementById('confirmationModal').style.display = 'none';
+};
+</script>
+
 {% endblock %}

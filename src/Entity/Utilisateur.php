@@ -43,6 +43,10 @@ class Utilisateur
     #[ORM\Column(length: 50)]
     private ?string $pseudo = null;
 
+    #[ORM\Column(type: "float", nullable: true)]
+    private ?float $credits = null;
+
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $preferences = null;
 
@@ -254,4 +258,15 @@ class Utilisateur
 
         return $this;
     }
+
+    public function getCredits(): ?float
+   {
+        return $this->credits;
+   }
+
+   public function setCredits(?float $credits): static
+  {
+    $this->credits = $credits;
+    return $this;
+  }
 }
