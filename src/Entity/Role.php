@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\RoleRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: RoleRepository::class)]
@@ -18,13 +16,9 @@ class Role
     #[ORM\Column(length: 50)]
     private ?string $libelle = null;
 
-    #[ORM\ManyToMany(targetEntity: Utilisateur::class, mappedBy: "roles")]
-    private Collection $utilisateurs;
-
-    public function __construct()
-    {
-        $this->utilisateurs = new ArrayCollection();
-    }
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "roles")]
+    #[ORM\JoinColumn(name: "utilisateur_id", referencedColumnName: "id", nullable: false)]
+    private ?Utilisateur $utilisateur = null;
 
     public function getRoleId(): ?int
     {
@@ -42,8 +36,14 @@ class Role
         return $this;
     }
 
-    public function getUtilisateurs(): Collection
+    public function getUtilisateur(): ?Utilisateur
     {
-        return $this->utilisateurs;
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): static
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
     }
 }

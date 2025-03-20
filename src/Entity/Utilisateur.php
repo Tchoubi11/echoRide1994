@@ -7,9 +7,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+
+
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
-class Utilisateur
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -67,11 +71,15 @@ class Utilisateur
     #[ORM\JoinColumn(nullable: false)]
     private ?Voiture $vehicle = null;
 
+    #[ORM\OneToMany(mappedBy: "utilisateur", targetEntity: Role::class)]
+    private Collection $roles;
+
     public function __construct()
     {
         $this->covoiturages = new ArrayCollection();
         $this->reservations = new ArrayCollection();  
         $this->reviews = new ArrayCollection(); 
+        $this->roles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -268,5 +276,44 @@ class Utilisateur
   {
     $this->credits = $credits;
     return $this;
+  }
+
+  public function getUserIdentifier(): string
+{
+    return $this->email; 
+}
+public function getRoles(): array
+{
+    $roles = $this->roles->map(fn($role) => $role->getNom())->toArray();
+    $roles[] = 'ROLE_USER';  
+    return array_unique($roles);
+}
+
+
+public function eraseCredentials(): void
+{
+    
+}
+  public function addRole(Role $role): static
+  {
+      if (!$this->roles->contains($role)) {
+          $this->roles->add($role);
+          $role->setUtilisateur($this);
+      }
+
+      return $this;
+  }
+
+  public function removeRole(Role $role): static
+  {
+      if ($this->roles->removeElement($role)) {
+          
+          if ($role->getUtilisateur() === $this) {
+              $role->setUtilisateur(null);
+          }
+      }
+
+
+      return $this;
   }
 }
