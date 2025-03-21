@@ -34,12 +34,15 @@ class RegistrationController extends AbstractController
 
     #[Route('/register', name: 'app_register')]
     public function register(Request $request): Response
-    {
-        $user = new Utilisateur(); 
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
+{
+    $user = new Utilisateur();
+    $form = $this->createForm(RegistrationFormType::class, $user);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+    // Vérifier d'abord si le formulaire a été soumis
+    if ($form->isSubmitted()) {
+        // Ensuite, vérifier si le formulaire est valide
+        if ($form->isValid()) {
             // Vérification du mot de passe avant hachage
             $plainPassword = $form->get('password')->getData();
             if (!$plainPassword) {
@@ -54,20 +57,30 @@ class RegistrationController extends AbstractController
             // Attribution de 20 crédits par défaut
             $user->setCredits(20);
 
-            // Sauvegarde en base de données
+            // Sauvegarde de l'utilisateur en base de données
             $this->entityManager->persist($user);
             $this->entityManager->flush();
 
-            // Connexion automatique après l'inscription
-            return $this->userAuthenticator->authenticateUser(
+            // Authentification automatique après l'inscription
+            $this->userAuthenticator->authenticateUser(
                 $user,
-                $this->authenticator,
+                $this->authenticator, // Utilisation du AppAuthenticator pour l'authentification
                 $request
             );
-        }
 
-        return $this->render('registration/register.html.twig', [
-            'registrationForm' => $form->createView(),
-        ]);
+            // Message de succès et redirection vers la page de connexion
+            $this->addFlash('success', 'Votre compte a été créé avec succès. Bienvenue !');
+            return $this->redirectToRoute('app_login');
+        } else {
+            // Si le formulaire n'est pas valide, afficher un message d'erreur
+            $this->addFlash('error', 'Veuillez corriger les erreurs du formulaire.');
+        }
     }
+
+    // Retour du formulaire d'inscription si non soumis ou invalide
+    return $this->render('registration/register.html.twig', [
+        'registrationForm' => $form->createView(),
+    ]);
+}
+
 }

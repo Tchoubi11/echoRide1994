@@ -3,19 +3,43 @@
 {% block title %}Connexion{% endblock %}
 
 {% block body %}
-    <h1>Connexion</h1>
+    <div class="container mt-5">
+        <h1 class="text-center">Connexion</h1>
 
-    <form method="post">
-        <label>Email :</label>
-        <input type="text" name="_username" required>
+        <!-- Affichage des messages de succès -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
 
-        <label>Mot de passe :</label>
-        <input type="password" name="_password" required>
+        <!-- Affichage des messages d'erreur -->
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
 
-        <button type="submit">Se connecter</button>
-    </form>
-    <div><a href="{{ path('app_home') }}" class="btn btn-primary mt-3">
-        ⬅ Retour à l'accueil
-    </a>
+        <div class="card p-4 shadow-sm">
+            <form method="post" class="mt-4">
+                <div class="mb-3">
+                    <label class="form-label">Email :</label>
+                    <input type="text" name="_username" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mot de passe :</label>
+                    <input type="password" name="_password" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+            </form>
+
+            
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{{ path('app_home') }}" class="btn btn-outline-primary">⬅ Retour à l'accueil</a>
+        </div>
     </div>
 {% endblock %}

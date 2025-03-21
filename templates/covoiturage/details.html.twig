@@ -21,125 +21,114 @@
             <p><strong>Marque et Modèle :</strong> {{ ride.driver.vehicle.marque.libelle }} - {{ ride.driver.vehicle.modele }}</p>
             <p><strong>Énergie utilisée :</strong> {{ ride.driver.vehicle.energie }}</p>
 
-
-            <p><strong>Avis du conducteur :</strong></p>
-
             <h3>Commentaires</h3>
-
             <ul>
-        {% for avis in driverReviews %}
-        <li>
-            <strong>{{ avis.user.pseudo }}</strong>: {{ avis.commentaire }} - {{ avis.note }}⭐
-        </li>
-       {% endfor %}
-       </ul>
-
-
-       {% if driverReviews is empty %}
-     <p>Aucun avis pour ce conducteur.</p>
-     {% endif %}
-
-     {% if app.user %}
-     {% set hasReviewed = false %}
-     {% for review in driverReviews %}
-        {% if review.user == app.user %}
-            {% set hasReviewed = true %}
-        {% endif %}
-     {% endfor %}
-
-     {% if not hasReviewed %}
-        <h3>Ajouter un avis</h3>
-        {{ form_start(form, {'action': path('covoiturage_details', {'id': ride.id})}) }}
-            <div class="form-group">
-                {{ form_row(form.commentaire) }}
-                {% for error in form.commentaire.vars.errors %}
-                    <div class="alert alert-danger">{{ error.message }}</div>
+                {% for avis in driverReviews %}
+                    <li><strong>{{ avis.user.pseudo }}</strong>: {{ avis.commentaire }} - {{ avis.note }}⭐</li>
                 {% endfor %}
-            </div>
-
-            <div class="form-group">
-                {{ form_row(form.note) }}
-                {% for error in form.note.vars.errors %}
-                    <div class="alert alert-danger">{{ error.message }}</div>
-                {% endfor %}
-            </div>
-
-            <button class="btn btn-primary" type="submit">Ajouter l'avis</button>
-        {{ form_end(form) }}
-     {% else %}
-        <p>Vous avez déjà laissé un avis pour ce conducteur.</p>
-     {% endif %}
-     {% else %}
-    <p>Vous devez être connecté pour laisser un avis.</p>
-    {% endif %}
-
-
-            
-            <p><strong>Préférences du conducteur :</strong></p>
-            {% if driverPreferences %}
-                <p>{{ driverPreferences }}</p>
-            {% else %}
-                <p>Aucune préférence spécifiée.</p>
+            </ul>
+            {% if driverReviews is empty %}
+                <p>Aucun avis pour ce conducteur.</p>
             {% endif %}
+
+            {% if app.user %}
+                {% set hasReviewed = driverReviews|filter(r => r.user == app.user)|length > 0 %}
+
+                {% if not hasReviewed %}
+                    <h3>Ajouter un avis</h3>
+                    {{ form_start(form, {'action': path('covoiturage_details', {'id': ride.id})}) }}
+                        <div class="form-group">
+                            {{ form_row(form.commentaire) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_row(form.note) }}
+                        </div>
+                        <button class="btn btn-primary" type="submit">Ajouter l'avis</button>
+                    {{ form_end(form) }}
+                {% else %}
+                    <p>Vous avez déjà laissé un avis pour ce conducteur.</p>
+                {% endif %}
+            {% else %}
+                <p>Vous devez être connecté pour laisser un avis.</p>
+            {% endif %}
+
+            <p><strong>Préférences du conducteur :</strong> {{ driverPreferences ?: 'Aucune préférence spécifiée.' }}</p>
         </div>
+
         <a href="{{ path('search_route') }}" class="btn btn-primary mt-3">Retour à la liste des covoiturages</a>
-      
 
-<button id="reserveBtn" class="btn btn-success mt-3" 
-{% if app.user %}
-    {% if ride.nbPlace > 0 and app.user.credits >= ride.prixPersonne %}
-        onclick="showConfirmationModal()"  
-    {% else %}
-        disabled 
-    {% endif %}
-{% else %}
-    onclick="redirectToLogin()"  
-{% endif %}>
-Participer
-</button>
+        <button id="reserveBtn" class="btn btn-success mt-3"
+            {% if app.user %}
+                {% if ride.nbPlace > 0 and app.user.credits >= ride.prixPersonne %}
+                    data-action="showConfirmation"
+                {% else %}
+                    disabled 
+                {% endif %}
+            {% else %}
+                data-action="redirectToLogin"
+            {% endif %}>
+            Participer
+        </button>
 
+        {% if app.user and (ride.nbPlace <= 0 or app.user.credits < ride.prixPersonne) %}
+            <p class="mt-3 text-danger">
+                {% if ride.nbPlace <= 0 %}
+                    Plus de places disponibles.
+                {% elseif app.user.credits < ride.prixPersonne %}
+                    Vous n'avez pas assez de crédits.
+                {% endif %}
+            </p>
+        {% endif %}
+    </div>
 
-{% if app.user and (ride.nbPlace <= 0 or app.user.credits < ride.prixPersonne) %}
-<p class="mt-3 text-danger">
-{% if ride.nbPlace <= 0 %}
-    Plus de places disponibles.
-{% elseif app.user.credits < ride.prixPersonne %}
-    Vous n'avez pas assez de crédits.
-{% endif %}
-</p>
-{% endif %}
+    <body data-logged-in="{{ app.user is not null ? 'true' : 'false' }}">
 
+    <div id="confirmationModal" style="display:none;">
+        <div>
+            <p>Êtes-vous sûr de vouloir réserver ? Cela utilisera {{ ride.prixPersonne }} crédits.</p>
+            <button class="btn btn-danger" id="confirmReservationBtn">Confirmer</button>
+            <button class="btn btn-secondary" id="cancelReservationBtn">Annuler</button>
+        </div>
+    </div>
 
-<div id="confirmationModal" style="display:none;">
-<div>
-<p>Êtes-vous sûr de vouloir réserver ? Cela utilisera {{ ride.prixPersonne }} crédits.</p>
-<button class="btn btn-danger" id="confirmReservationBtn">Confirmer</button>
-<button class="btn btn-secondary" id="cancelReservationBtn">Annuler</button>
-</div>
-</div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var isUserLoggedIn = document.body.getAttribute("data-logged-in") === "true";
 
-<script>
+            function redirectToLogin() {
+                window.location.href = "{{ path('app_register') }}";
+            }
 
-function redirectToLogin() {
-window.location.href = "{{ path('app_login') }}";  
-}
+            function showConfirmationModal() {
+                document.getElementById('confirmationModal').style.display = 'block';
+            }
 
+            var reserveBtn = document.getElementById('reserveBtn');
+            if (reserveBtn) {
+                reserveBtn.addEventListener("click", function () {
+                    var action = reserveBtn.getAttribute("data-action");
+                    if (action === "showConfirmation") {
+                        showConfirmationModal();
+                    } else if (action === "redirectToLogin") {
+                        redirectToLogin();
+                    }
+                });
+            }
 
-function showConfirmationModal() {
-document.getElementById('confirmationModal').style.display = 'block';
-}
+            var confirmBtn = document.getElementById('confirmReservationBtn');
+            var cancelBtn = document.getElementById('cancelReservationBtn');
 
+            if (confirmBtn) {
+                confirmBtn.onclick = function () {
+                    alert("Réservation confirmée !");
+                };
+            }
 
-document.getElementById('confirmReservationBtn').onclick = function() {
-
-alert("Réservation confirmée !");
-
-};
-
- 
-document.getElementById('cancelReservationBtn').onclick = function() {
-document.getElementById('confirmationModal').style.display = 'none';
-};
-</script>
-
+            if (cancelBtn) {
+                cancelBtn.onclick = function () {
+                    document.getElementById('confirmationModal').style.display = 'none';
+                };
+            }
+        });
+    </script>
 {% endblock %}
