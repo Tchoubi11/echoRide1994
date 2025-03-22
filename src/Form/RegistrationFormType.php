@@ -1,10 +1,10 @@
 <?php
 
-// src/Form/RegistrationFormType.php
+
 
 namespace App\Form;
 
-use App\Entity\User;
+use App\Entity\Utilisateur;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -35,7 +35,7 @@ class RegistrationFormType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('password', PasswordType::class, [
+            ->add('plainPassword', PasswordType::class, [
                 'label' => 'Mot de passe',
                 'constraints' => [
                     new NotBlank([

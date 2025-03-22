@@ -74,12 +74,15 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "utilisateur", targetEntity: Role::class)]
     private Collection $roles;
 
+    private ?string $plainPassword = null;
+
     public function __construct()
     {
         $this->covoiturages = new ArrayCollection();
         $this->reservations = new ArrayCollection();  
         $this->reviews = new ArrayCollection(); 
         $this->roles = new ArrayCollection();
+        $this->credits = 20;
     }
 
     public function getId(): ?int
@@ -314,6 +317,17 @@ public function eraseCredentials(): void
       }
 
 
+      return $this;
+  }
+
+  public function getPlainPassword(): ?string
+  {
+      return $this->plainPassword;
+  }
+
+  public function setPlainPassword(?string $plainPassword): static
+  {
+      $this->plainPassword = $plainPassword;
       return $this;
   }
 }

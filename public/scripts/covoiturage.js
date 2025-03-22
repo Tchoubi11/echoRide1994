@@ -1,24 +1,33 @@
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form'); 
+
+    if (!form) {
+        console.warn(" Le formulaire n'a pas été trouvé !");
+        return;
+    }
+
     form.addEventListener('submit', function (event) {
         event.preventDefault(); 
 
-        const formData = new FormData(form); 
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData).toString(); 
 
-        
-        fetch('{{ searchRoute }}', { // Remplacer `{{ searchRoute }}` par la route dynamique de recherche
-            method: 'GET', 
-            body: formData 
+        fetch(`{{ searchRoute }}?${params}`, {  
+            method: 'GET'  
         })
         .then(response => response.json()) 
         .then(data => {
-            const resultsContainer = document.querySelector('.covoiturages-list'); // Conteneur des résultats
-            resultsContainer.innerHTML = ''; // Effacer les résultats précédents
+            const resultsContainer = document.querySelector('.covoiturages-list');
+            if (!resultsContainer) {
+                console.warn("⚠️ Conteneur de résultats non trouvé !");
+                return;
+            }
 
-            if (data.rides.length === 0) {
+            resultsContainer.innerHTML = ''; 
+
+            if (!data.rides || data.rides.length === 0) {
                 resultsContainer.innerHTML = '<p>Aucun covoiturage trouvé.</p>'; 
             } else {
-                
                 data.rides.forEach(ride => {
                     const rideElement = document.createElement('div');
                     rideElement.classList.add('covoiturage-item');
@@ -33,7 +42,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
         })
-        .catch(error => console.error('Erreur:', error)); 
+        
     });
 });
-

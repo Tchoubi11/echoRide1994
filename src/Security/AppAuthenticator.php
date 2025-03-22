@@ -23,23 +23,24 @@ class AppAuthenticator extends AbstractAuthenticator
 
     public function supports(Request $request): ?bool
     {
-        // Vérifions ici si l'authentification est supportée pour cette requête
-        return true;
+        return $request->attributes->get('_route') === 'app_login' && $request->isMethod('POST');
     }
 
     public function authenticate(Request $request): Passport
-    {
-        // ici on récupère l'email et le mot de passe de la requête
-        $email = $request->request->get('email');
-        $password = $request->request->get('password');
+{
+    dump('🚀 Authentification en cours...');
+    
+    $email = $request->request->get('email');
+    $password = $request->request->get('password');
 
+    dump(' Email : ', $email);
+    dump(' Password reçu');
 
-        // Identifiant de l'utilisateur et mot de passe pour authentifier l'utilisateur
-        return new Passport(
-            new UserBadge($email), 
-            new PasswordCredentials($password) 
-        );
-    }
+    return new Passport(
+        new UserBadge($email), 
+        new PasswordCredentials($password) 
+    );
+}
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?RedirectResponse
     {

@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\Utilisateur; 
+use App\Entity\Utilisateur;
 use App\Form\RegistrationFormType;
-use App\Security\AppAuthenticator; 
+use App\Security\AppAuthenticator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,45 +39,43 @@ class RegistrationController extends AbstractController
     $form = $this->createForm(RegistrationFormType::class, $user);
     $form->handleRequest($request);
 
-    // Vérifier d'abord si le formulaire a été soumis
+    // Debugging pour voir les données de la requête
+    dump($request->request->all());
+
+    // On vérifie si le formulaire est soumis
+    dump($form->isSubmitted());
+
     if ($form->isSubmitted()) {
-        // Ensuite, vérifier si le formulaire est valide
+        dump($form->isValid());
+
         if ($form->isValid()) {
-            // Vérification du mot de passe avant hachage
-            $plainPassword = $form->get('password')->getData();
+            // Vérification du mot de passe avec le bon champ
+            $plainPassword = $form->get('plainPassword')->getData();
             if (!$plainPassword) {
                 $this->addFlash('error', 'Le mot de passe est requis.');
                 return $this->redirectToRoute('app_register');
             }
 
-            // Hachage du mot de passe
+            // Hachage du mot de passe et ajout de crédits
             $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
             $user->setPassword($hashedPassword);
-
-            // Attribution de 20 crédits par défaut
             $user->setCredits(20);
 
-            // Sauvegarde de l'utilisateur en base de données
+            // Sauvegarde de l'utilisateur
             $this->entityManager->persist($user);
             $this->entityManager->flush();
 
-            // Authentification automatique après l'inscription
-            $this->userAuthenticator->authenticateUser(
-                $user,
-                $this->authenticator, // Utilisation du AppAuthenticator pour l'authentification
-                $request
-            );
+            // Authentification automatique
+            $this->userAuthenticator->authenticateUser($user, $this->authenticator, $request);
 
-            // Message de succès et redirection vers la page de connexion
+            // Message de succès et redirection
             $this->addFlash('success', 'Votre compte a été créé avec succès. Bienvenue !');
-            return $this->redirectToRoute('app_login');
+            return $this->redirectToRoute('app_home');
         } else {
-            // Si le formulaire n'est pas valide, afficher un message d'erreur
             $this->addFlash('error', 'Veuillez corriger les erreurs du formulaire.');
         }
     }
 
-    // Retour du formulaire d'inscription si non soumis ou invalide
     return $this->render('registration/register.html.twig', [
         'registrationForm' => $form->createView(),
     ]);
