@@ -35,14 +35,14 @@ class CovoiturageSearchType extends AbstractType
             ->add('date_depart', DateType::class, [
                 'label' => 'Date',
                 'widget' => 'single_text',
-                'input' => 'datetime',
+                'input' => 'string',  // Utiliser 'string' au lieu de 'datetime'
                 'attr' => [
-                    'min' => (new \DateTime())->format('Ymd'),
+                    'min' => (new \DateTime())->format('Y-m-d'), // Format adapté
                 ],
                 'constraints' => [
                     new Assert\NotBlank(['message' => 'Veuillez saisir une date.']),
                     new Assert\GreaterThanOrEqual([
-                        'value' => new \DateTime(),
+                        'value' => (new \DateTime())->format('Y-m-d'), // Comparer les dates avec le format string 'Y-m-d'
                         'message' => 'La date doit être égale ou supérieure à aujourd\'hui.'
                     ])
                 ]

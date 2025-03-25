@@ -1,84 +1,58 @@
 <?php
 
+// src/Controller/RegistrationController.php
+
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Form\RegistrationFormType;
-use App\Security\AppAuthenticator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
 
 class RegistrationController extends AbstractController
 {
-    private EntityManagerInterface $entityManager;
-    private UserPasswordHasherInterface $passwordHasher;
-    private UserAuthenticatorInterface $userAuthenticator;
-    private AppAuthenticator $authenticator;
-
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher,
-        UserAuthenticatorInterface $userAuthenticator,
-        AppAuthenticator $authenticator
-    ) {
-        $this->entityManager = $entityManager;
-        $this->passwordHasher = $passwordHasher;
-        $this->userAuthenticator = $userAuthenticator;
-        $this->authenticator = $authenticator;
-    }
-
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request): Response
-{
-    $user = new Utilisateur();
-    $form = $this->createForm(RegistrationFormType::class, $user);
-    $form->handleRequest($request);
+    public function register(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $entityManager
+    ): Response {
+        // Créer un nouvel utilisateur
+        $user = new Utilisateur();
+        $form = $this->createForm(RegistrationFormType::class, $user);
 
-    // Debugging pour voir les données de la requête
-    dump($request->request->all());
+        // Manipuler les données du formulaire
+        $form->handleRequest($request);
 
-    // On vérifie si le formulaire est soumis
-    dump($form->isSubmitted());
-
-    if ($form->isSubmitted()) {
-        dump($form->isValid());
-
-        if ($form->isValid()) {
-            // Vérification du mot de passe avec le bon champ
+        // Vérifier si le formulaire est soumis et valide
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Récupérer le mot de passe en clair
             $plainPassword = $form->get('plainPassword')->getData();
-            if (!$plainPassword) {
-                $this->addFlash('error', 'Le mot de passe est requis.');
-                return $this->redirectToRoute('app_register');
-            }
 
-            // Hachage du mot de passe et ajout de crédits
-            $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
+            // Hacher le mot de passe
+            $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
+
+            // Assigner le mot de passe haché à l'utilisateur
             $user->setPassword($hashedPassword);
-            $user->setCredits(20);
 
-            // Sauvegarde de l'utilisateur
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
+            // Sauvegarder l'utilisateur en base de données
+            $entityManager->persist($user);
+            $entityManager->flush();
 
-            // Authentification automatique
-            $this->userAuthenticator->authenticateUser($user, $this->authenticator, $request);
+            // Ajouter un message flash de succès
+            $this->addFlash('success', 'Votre compte a été créé avec succès !');
 
-            // Message de succès et redirection
-            $this->addFlash('success', 'Votre compte a été créé avec succès. Bienvenue !');
+            // Rediriger l'utilisateur vers la page d'accueil ou de connexion
             return $this->redirectToRoute('app_home');
-        } else {
-            $this->addFlash('error', 'Veuillez corriger les erreurs du formulaire.');
         }
+
+        // Rendre la vue avec le formulaire
+        return $this->render('registration/register.html.twig', [
+            'registrationForm' => $form->createView(),
+        ]);
     }
-
-    return $this->render('registration/register.html.twig', [
-        'registrationForm' => $form->createView(),
-    ]);
-}
-
 }

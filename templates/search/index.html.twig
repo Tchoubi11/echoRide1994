@@ -2,86 +2,97 @@
 
 {% block body %}
     <div class="container mt-5">
-        <!-- Afficher l'alerte avec une icône de valise si aucun trajet n'est trouvé -->
-        {% if noResults %}
-            <div id="noResultsAlert" class="alert alert-warning text-center shadow-sm p-4">
-                <div class="mb-3">
-                    <i class="fa fa-suitcase fa-3x" style="color: #f39c12;"></i>
-                </div>
-                <p><strong>Il n'y a pas de trajets disponibles pour la date renseignée, veuillez modifier la date de voyage à la date du premier itinéraire le plus proche.</strong></p>
-                <a href="{{ path('app_home') }}" class="btn btn-primary">Créer une alerte</a>
-            </div>
-        {% else %}
-            <!-- Afficher le formulaire de recherche avec les filtres -->
-            <h4 class="text-center">Ajouter les filtres et rechercher un covoiturage </h4>
+        <h2>Rechercher un covoiturage</h2>
 
-            {{ form_start(form, {'attr': {'id': 'search-form'}}) }}
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    {{ form_row(form.lieu_depart) }}
-                    {{ form_row(form.lieu_arrivee) }}
-                    {{ form_row(form.date_depart) }}
-                </div>
-                <div class="col-md-6 mb-3">
-                    {{ form_row(form.is_eco) }}
-                    {{ form_row(form.max_price) }}
-                    {{ form_row(form.max_duration) }}
-                    {{ form_row(form.min_rating) }}
-                </div>
+        {{ form_start(form, {'attr': {'id': 'search-form'}}) }}
+        <div class="row">
+            <div class="col-md-6">
+                {{ form_row(form.lieu_depart) }}
+                {{ form_row(form.lieu_arrivee) }}
+                {{ form_row(form.date_depart) }}
             </div>
-            <button type="submit" class="btn btn-primary w-100 mt-2">Rechercher</button>
-            {{ form_end(form) }}
-        {% endif %}
+            <div class="col-md-6">
+                {{ form_row(form.is_eco) }}
+                {{ form_row(form.max_price) }}
+                {{ form_row(form.max_duration) }}
+                {{ form_row(form.min_rating) }}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3 w-100">Rechercher</button>
+        {{ form_end(form) }}
+
+        <hr>
 
         {% if rides is not empty %}
-            <h3>Itinéraires disponibles :</h3>
+            <h3 class="mt-4">Covoiturages disponibles</h3>
             <div id="rides-list" class="row">
                 {% for ride in rides %}
-                    <div class="covoiturage-item col-md-6 mb-4">
+                    <div class="col-md-6 mb-4">
                         <div class="card shadow-sm">
                             <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile" style="width: 100px; height: auto;">
                             <div class="card-body">
                                 <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
                                 <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
-                                <p><strong>Places restantes :</strong> {{ ride.getNbPlace() }}</p>
-                                <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
-                                <p><strong>Départ :</strong> {{ ride.getDateDepart()|date('d/m/Y H:i') }}</p>
-                                <p><strong>Arrivée :</strong> {{ ride.getDateArrivee()|date('d/m/Y H:i') }}</p>
-                                <p><strong>Écologique :</strong> {{ ride.getIsEco() ? 'Oui' : 'Non' }}</p>
+                                <p><strong>Places restantes :</strong> {{ ride.nbPlace }}</p>
+                                <p><strong>Prix :</strong> {{ ride.prixPersonne }} €</p>
+                                <p><strong>Départ :</strong> {{ ride.dateDepart|date('d/m/Y H:i') }}</p>
+                                <p><strong>Arrivée :</strong> {{ ride.dateArrivee|date('d/m/Y H:i') }}</p>
+                                <p><strong>Écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
                                 <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             </div>
-        {% else %}
-            <p>Aucun covoiturage trouvé avec les critères sélectionnés.</p>
+        {% elseif searchPerformed %}
+            <div class="alert alert-warning">Aucun trajet trouvé pour les critères sélectionnés.</div>
         {% endif %}
-
-        <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
     </div>
-
+    <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.getElementById("search-form").addEventListener("submit", function (event) {
-                event.preventDefault();  // Empêcher la soumission normale du formulaire
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('#search-form');
+            if (!form) {
+                console.warn("Le formulaire n'a pas été trouvé !");
+                return;
+            }
 
-                let formData = new FormData(this);
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const formData = new FormData(form);
 
-                // Effectuer la requête AJAX pour récupérer la nouvelle liste de trajets
-                fetch(this.action, {
-                    method: "POST",
-                    body: formData
+                fetch("{{ path('search_route') }}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 })
-                .then(response => response.text())
-                .then(html => {
-                    let parser = new DOMParser();
-                    let doc = parser.parseFromString(html, "text/html");
+                .then(response => response.json())
+                .then(data => {
+                    const resultsContainer = document.getElementById('rides-list');
+                    resultsContainer.innerHTML = '';
 
-                    // Mettre à jour la liste des résultats dans la page
-                    document.getElementById("rides-list").innerHTML = doc.getElementById("rides-list").innerHTML;
+                    if (data.noResults || !data.rides || data.rides.length === 0) {
+                        resultsContainer.innerHTML = '<div class="alert alert-warning">Aucun covoiturage trouvé.</div>';
+                    } else {
+                        data.rides.forEach(ride => {
+                            const rideElement = document.createElement('div');
+                            rideElement.classList.add('col-md-6', 'mb-4');
+                            rideElement.innerHTML = `
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <p><strong>Pseudo :</strong> ${ride.driver.pseudo}</p>
+                                        <p><strong>Places restantes :</strong> ${ride.nbPlace}</p>
+                                        <p><strong>Prix :</strong> ${ride.prixPersonne} €</p>
+                                        <p><strong>Date et Heure de départ :</strong> ${ride.dateDepart} à ${ride.heureDepart}</p>
+                                        <a href="/covoiturage/${ride.id}" class="btn btn-secondary">Détail</a>
+                                    </div>
+                                </div>
+                            `;
+                            resultsContainer.appendChild(rideElement);
+                        });
+                    }
                 })
-                .catch(error => console.error("Erreur:", error));
+                .catch(error => console.error('Erreur lors de la requête Fetch:', error));
             });
         });
     </script>

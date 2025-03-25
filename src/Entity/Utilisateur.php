@@ -26,7 +26,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50)]
     private ?string $prenom = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, unique: true)]
     private ?string $email = null;
 
     #[ORM\Column(length: 50)]
@@ -44,7 +44,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "float", nullable: true)]
     private ?float $rating = null; 
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, unique: true)]
     private ?string $pseudo = null;
 
     #[ORM\Column(type: "float", nullable: true)]
@@ -68,7 +68,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $reviews; 
 
     #[ORM\ManyToOne(targetEntity: Voiture::class, inversedBy: "users")]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Voiture $vehicle = null;
 
     #[ORM\OneToMany(mappedBy: "utilisateur", targetEntity: Role::class)]
@@ -83,6 +83,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->reviews = new ArrayCollection(); 
         $this->roles = new ArrayCollection();
         $this->credits = 20;
+
+        if (!$this->photo) {
+            $defaultImage = new Image();
+            $defaultImage->setImagePath('uploads/images/67c88b34e4a07.jpg'); 
+            $this->photo = $defaultImage;
+        }
     }
 
     public function getId(): ?int
@@ -287,8 +293,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 }
 public function getRoles(): array
 {
-    $roles = $this->roles->map(fn($role) => $role->getNom())->toArray();
-    $roles[] = 'ROLE_USER';  
+    $roles = ['ROLE_USER']; // Rôle par défaut
+
+    foreach ($this->roles as $role) {
+        $roles[] = $role->getLibelle();
+    }
+
     return array_unique($roles);
 }
 

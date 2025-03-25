@@ -12,6 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Avis;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class CovoiturageController extends AbstractController
 {
@@ -27,76 +28,64 @@ class CovoiturageController extends AbstractController
     }
     
 
+    
+
     #[Route('/search', name: 'search_route', methods: ['GET', 'POST'])]
-    public function search(Request $request, CovoiturageRepository $covoiturageRepository, SessionInterface $session): Response
-    {
-        // Création du formulaire avec les filtres avancés activés
-        $form = $this->createForm(CovoiturageSearchType::class, null, ['showAdvancedFilters' => true]);
-        $form->handleRequest($request);
-    
-        // Variables pour les résultats
-        $rides = [];
-        $searchPerformed = false;
-        $noResults = false;
-    
-        // Si le formulaire est soumis avec des filtres
-        if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-    
-            // Traitement de la date de départ
-            $dateDepartObj = $data['date_depart'] ?? null;
-            if ($dateDepartObj && !$dateDepartObj instanceof \DateTimeInterface) {
-                $dateDepartObj = \DateTime::createFromFormat('Y-m-d', (string) $dateDepartObj);
-            }
-    
-            if ($dateDepartObj) {
-                $rides = $covoiturageRepository->findAvailableRides(
-                    $data['lieu_depart'],
-                    $data['lieu_arrivee'],
-                    $dateDepartObj
-                );
-    
-                // Sauvegarde des résultats dans la session
-                $session->set('search_results', $rides);
-                $session->set('search_criteria', [
-                    'date_depart' => $dateDepartObj->format('Y-m-d'),
-                    'lieu_depart' => $data['lieu_depart'],
-                    'lieu_arrivee' => $data['lieu_arrivee'],
-                    'is_eco' => $data['is_eco'],
-                    'max_price' => $data['max_price'],
-                    'max_duration' => $data['max_duration'],
-                    'min_rating' => $data['min_rating'],
-                ]);
-    
-                $searchPerformed = true;
-                $noResults = empty($rides);
-            }
-        } else {
-            // Si aucun formulaire n'est soumis, on réinitialise les critères
-            if ($session->get('search_results') === null) {
-                $rides = $covoiturageRepository->findAvailableRides('', '', new \DateTime('now')); // Recherche simple
-                $session->set('search_results', $rides);
-            } else {
-                $rides = $session->get('search_results', []);
-            }
-        }
-    
-        // Si la requête est AJAX,on ne renvoie que la liste des trajets
-        if ($request->isXmlHttpRequest()) {
-            return $this->render('search/_rides_list.html.twig', [
-                'rides' => $rides,
-                'noResults' => $noResults,
-            ]);
-        }
-    
-        return $this->render('search/index.html.twig', [
-            'form' => $form->createView(),
-            'rides' => $rides,
-            'searchPerformed' => $searchPerformed,
-            'noResults' => $noResults,
-        ]);
+public function search(Request $request, CovoiturageRepository $covoiturageRepository, SessionInterface $session): Response
+{
+    $form = $this->createForm(CovoiturageSearchType::class, null, ['showAdvancedFilters' => true]);
+    $form->handleRequest($request);
+
+    $searchPerformed = false;
+    $rides = [];
+
+    // 🔥 Récupérer les critères de recherche sauvegardés si la requête est GET (ex: après retour)
+    if ($request->isMethod('GET') && $session->has('search_criteria')) {
+        $data = $session->get('search_criteria');
+        $dateDepartObj = new \DateTime($data['date_depart']);
+
+        $rides = $covoiturageRepository->findAvailableRides(
+            $data['lieu_depart'],
+            $data['lieu_arrivee'],
+            $dateDepartObj
+        );
+        $searchPerformed = true;
     }
-    
+
+    // 🔥 Si le formulaire est soumis, on effectue la recherche normalement
+    if ($form->isSubmitted() && $form->isValid()) {
+        $data = $form->getData();
+        $dateDepartObj = $data['date_depart'] ?? null;
+
+        if ($dateDepartObj && !$dateDepartObj instanceof \DateTimeInterface) {
+            $dateDepartObj = \DateTime::createFromFormat('Y-m-d', (string) $dateDepartObj);
+        }
+
+        if ($dateDepartObj) {
+            // 🔥 Effectuer la recherche
+            $rides = $covoiturageRepository->findAvailableRides(
+                $data['lieu_depart'],
+                $data['lieu_arrivee'],
+                $dateDepartObj
+            );
+
+            // ✅ Sauvegarder les critères en session
+            $session->set('search_criteria', [
+                'lieu_depart' => $data['lieu_depart'],
+                'lieu_arrivee' => $data['lieu_arrivee'],
+                'date_depart' => $dateDepartObj->format('Y-m-d')
+            ]);
+
+            $searchPerformed = true;
+        }
+    }
+
+    return $this->render('search/index.html.twig', [
+        'form' => $form->createView(),
+        'rides' => $rides,
+        'searchPerformed' => $searchPerformed,
+    ]);
+}
 
 
     #[Route('/covoiturage/{id}', name: 'covoiturage_details')]
