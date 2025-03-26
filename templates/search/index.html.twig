@@ -4,22 +4,34 @@
     <div class="container mt-5">
         <h2>Rechercher un covoiturage</h2>
 
-        {{ form_start(form, {'attr': {'id': 'search-form'}}) }}
-        <div class="row">
-            <div class="col-md-6">
-                {{ form_row(form.lieu_depart) }}
-                {{ form_row(form.lieu_arrivee) }}
-                {{ form_row(form.date_depart) }}
+        {% if rides is empty and searchPerformed %}
+            <!-- Affichons uniquement le message d'erreur si aucune donnée n'est trouvée -->
+            <div id="noResultsAlert" class="alert alert-warning text-center shadow-sm p-4">
+                <div class="mb-3">
+                    <i class="fa fa-suitcase fa-3x" style="color: #f39c12;"></i>
+                </div>
+                <p><strong>Il n'y a pas de trajets disponibles pour la date renseignée, veuillez modifier la date de voyage à la date du premier itinéraire le plus proche</strong></p>
+                <a href="{{ path('app_home') }}" class="btn btn-primary" id="create-alert-button" onclick="createAlert()">Créer une alerte</a>
             </div>
-            <div class="col-md-6">
-                {{ form_row(form.is_eco) }}
-                {{ form_row(form.max_price) }}
-                {{ form_row(form.max_duration) }}
-                {{ form_row(form.min_rating) }}
+        {% else %}
+            <!-- Affichons le formulaire si des résultats existent ou s'il n'y a pas d'erreur -->
+            {{ form_start(form, {'attr': {'id': 'search-form'}}) }}
+            <div class="row">
+                <div class="col-md-6">
+                    {{ form_row(form.lieu_depart) }}
+                    {{ form_row(form.lieu_arrivee) }}
+                    {{ form_row(form.date_depart) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_row(form.is_eco) }}
+                    {{ form_row(form.max_price) }}
+                    {{ form_row(form.max_duration) }}
+                    {{ form_row(form.min_rating) }}
+                </div>
             </div>
-        </div>
-        <button type="submit" class="btn btn-primary mt-3 w-100">Rechercher</button>
-        {{ form_end(form) }}
+            <button type="submit" class="btn btn-primary mt-3">Rechercher</button>
+            {{ form_end(form) }}
+        {% endif %}
 
         <hr>
 
@@ -44,11 +56,11 @@
                     </div>
                 {% endfor %}
             </div>
-        {% elseif searchPerformed %}
-            <div class="alert alert-warning">Aucun trajet trouvé pour les critères sélectionnés.</div>
         {% endif %}
     </div>
+
     <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.querySelector('#search-form');
@@ -69,10 +81,17 @@
                 .then(response => response.json())
                 .then(data => {
                     const resultsContainer = document.getElementById('rides-list');
+                    const noResultsAlert = document.getElementById('noResultsAlert');
+                    const formContainer = document.getElementById('search-form');
+
+                    // Réinitialisons les résultats
                     resultsContainer.innerHTML = '';
+                    noResultsAlert.style.display = 'none';
+                    formContainer.style.display = 'block';
 
                     if (data.noResults || !data.rides || data.rides.length === 0) {
-                        resultsContainer.innerHTML = '<div class="alert alert-warning">Aucun covoiturage trouvé.</div>';
+                        noResultsAlert.style.display = 'block';
+                        formContainer.style.display = 'none';
                     } else {
                         data.rides.forEach(ride => {
                             const rideElement = document.createElement('div');
@@ -95,5 +114,16 @@
                 .catch(error => console.error('Erreur lors de la requête Fetch:', error));
             });
         });
+
+        // 
+        function createAlert() {
+            const alertButton = document.getElementById('create-alert-button');
+            alertButton.textContent = 'Alerte créée';  
+            alertButton.classList.remove('btn-primary'); 
+            alertButton.classList.add('btn-success');   
+            alertButton.disabled = true;  
+
+            
+        }
     </script>
 {% endblock %}
