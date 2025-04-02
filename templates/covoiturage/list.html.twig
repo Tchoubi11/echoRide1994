@@ -17,8 +17,10 @@
                         <th>Destination</th>
                         <th>Date de départ</th>
                         <th>Heure de départ</th>
+                        <th>Date d'arrivée</th>  {# Ajout de la colonne Date d'arrivée #}
+                        <th>Heure d'arrivée</th> {# Ajout de la colonne Heure d'arrivée #}
                         <th>Places disponibles</th>
-                        <th>Prix (€)</th>
+                        <th>Prix (Crédits)</th>
                         <th>Statut</th>
                         <th>Actions</th>
                     </tr>
@@ -31,10 +33,12 @@
                             <td>{{ ride.lieuArrivee }}</td>
                             <td>{{ ride.dateDepart|date('d/m/Y') }}</td>
                             <td>{{ ride.heureDepart|date('H:i') }}</td>
+                            <td>{{ ride.dateArrivee|date('d/m/Y') }}</td>  {# Affichage de la date d'arrivée #}
+                            <td>{{ ride.heureArrivee|date('H:i') }}</td> {# Affichage de l'heure d'arrivée #}
                             <td>{{ ride.nbPlace }}</td>
                             <td>{{ ride.prixPersonne }}</td>
                             <td>
-                                {% if ride.statut == 'disponible' %}
+                                {% if ride.statut|lower == 'disponible' %}
                                     <span class="badge bg-success">Disponible</span>
                                 {% else %}
                                     <span class="badge bg-danger">Indisponible</span>
