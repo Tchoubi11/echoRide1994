@@ -214,11 +214,10 @@ class Covoiturage
     }
 
     public function getPassengers(): Collection
-{
-    return new ArrayCollection(
-        $this->reservations->map(fn ($reservation) => $reservation->getPassenger())->toArray()
-    );
-}
+    {
+        return $this->passengers;
+    }
+    
 
 public function addPassenger(Utilisateur $user): self
     {
