@@ -7,18 +7,10 @@
 <p>Vous vous apprêtez à participer au covoiturage de <strong>{{ ride.lieuDepart }}</strong> à <strong>{{ ride.lieuArrivee }}</strong>.</p>
 <p><strong>Prix par personne :</strong> {{ ride.prixPersonne }} crédits.</p>
 <p><strong>Places restantes :</strong> {{ ride.placesRestantes }}.</p>
+<p><strong>Vos crédits actuels :</strong> <span id="userCredits">{{ user.credits }}</span> crédits.</p>
 
-{% for message in app.flashes('warning') %}
-    <div class="alert alert-warning">
-        {{ message }}
-    </div>
-{% endfor %}
 
-{% for message in app.flashes('success') %}
-    <div class="alert alert-success">
-        {{ message }}
-    </div>
-{% endfor %}
+<div id="flashMessages" style="display: none;"></div>
 
 <!-- Bouton de première confirmation -->
 <button id="confirmButton" class="btn btn-primary">Confirmer ma participation</button>
@@ -26,22 +18,53 @@
 <!-- Formulaire de deuxième confirmation caché -->
 <form id="confirmForm" method="post" style="display: none;">
     <p>Êtes-vous sûr de vouloir utiliser <strong>{{ ride.prixPersonne }} crédits</strong> pour réserver ?</p>
-    <button type="submit" class="btn btn-success">Oui, confirmer</button>
-    <button type="button" id="cancelButton" class="btn btn-danger">Annuler</button>
+    <button type="button" class="btn btn-success" id="finalConfirmButton">Oui, confirmer</button>
+    <button type="button" class="btn btn-danger" id="cancelButton">Annuler</button>
 </form>
 
 <a href="{{ path('covoiturage_list') }}">Retour à la liste des covoiturages</a>
 
-<!-- JavaScript pour gérer l'affichage -->
+<!-- JavaScript pour gérer l'affichage et la validation -->
 <script>
-    document.getElementById('confirmButton').addEventListener('click', function() {
-        document.getElementById('confirmButton').style.display = 'none';  
-        document.getElementById('confirmForm').style.display = 'block';  
-    });
+    document.addEventListener("DOMContentLoaded", function() {
+        const confirmButton = document.getElementById('confirmButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const finalConfirmButton = document.getElementById('finalConfirmButton');
+        const userCreditsElement = document.getElementById('userCredits');
+        const flashMessages = document.getElementById('flashMessages');
+        const confirmForm = document.getElementById('confirmForm');
 
-    document.getElementById('cancelButton').addEventListener('click', function() {
-        document.getElementById('confirmButton').style.display = 'block'; 
-        document.getElementById('confirmForm').style.display = 'none'; 
+        // récupérons ici de façon sécurisée des valeurs Twig en JS
+        let userCredits = parseInt(userCreditsElement.textContent.trim(), 10);
+        let ridePrice = parseInt("{{ ride.prixPersonne|json_encode|raw }}", 10);
+
+        confirmButton.addEventListener('click', function() {
+            confirmButton.style.display = 'none';  
+            confirmForm.style.display = 'block';  
+        });
+
+        cancelButton.addEventListener('click', function() {
+            confirmButton.style.display = 'block'; 
+            confirmForm.style.display = 'none'; 
+        });
+
+        finalConfirmButton.addEventListener('click', function() {
+            flashMessages.style.display = 'block'; 
+
+            if (userCredits >= ridePrice) {
+                // Mettons à jour les crédits et affichons le message de succès
+                userCredits -= ridePrice;
+                userCreditsElement.textContent = userCredits;
+                flashMessages.innerHTML = '<div class="alert alert-success">Votre réservation a été confirmée avec succès !</div>';
+            } else {
+                // Affichons un message d'erreur
+                flashMessages.innerHTML = '<div class="alert alert-danger">Vous n\'avez pas assez de crédits pour participer à ce voyage.</div>';
+            }
+
+            // Cachons le formulaire après le clic
+            confirmForm.style.display = 'none';
+            confirmButton.style.display = 'block';
+        });
     });
 </script>
 
