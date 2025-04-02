@@ -72,6 +72,12 @@ class HomeController extends AbstractController
         ]);
     }
 
+    #[Route('/logout', name: 'app_logout', methods: ['GET'])]
+    public function logout(): void
+    {
+        
+    }
+
     #[Route('/contact', name: 'contact')]
     public function contact(): Response
     {

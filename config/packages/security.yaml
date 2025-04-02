@@ -25,7 +25,7 @@ security:
                 enable_csrf: true
             logout:
                 path: app_logout
-                target: app_login
+                target: app_home
               
             remember_me:
                 secret: '%kernel.secret%'
