@@ -63,9 +63,14 @@ class Covoiturage
     #[ORM\JoinColumn(name: "driver_id", referencedColumnName: "id", nullable: false)]
     private ?Utilisateur $driver = null; 
 
+    #[ORM\ManyToMany(targetEntity: Utilisateur::class)]
+    #[ORM\JoinTable(name: "covoiturage_passagers")]
+    private Collection $passengers;
+
     public function __construct()
     {
         $this->reservations = new ArrayCollection();
+        $this->passengers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -214,6 +219,22 @@ class Covoiturage
         $this->reservations->map(fn ($reservation) => $reservation->getPassenger())->toArray()
     );
 }
+
+public function addPassenger(Utilisateur $user): self
+    {
+        if (!$this->passengers->contains($user)) {
+            $this->passengers[] = $user;
+        }
+        return $this;
+    }
+
+    public function removePassenger(Utilisateur $user): self
+    {
+        if ($this->passengers->contains($user)) {
+            $this->passengers->removeElement($user);
+        }
+        return $this;
+    }
 
 public function getMaxPrice(): ?float
 {

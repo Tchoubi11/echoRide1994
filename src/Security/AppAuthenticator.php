@@ -43,10 +43,14 @@ class AppAuthenticator extends AbstractAuthenticator
 }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?RedirectResponse
-    {
-        // on redirige l'utilisateur après une authentification réussie
-        return new RedirectResponse($this->urlGenerator->generate('app_home')); 
-    }
+{
+    $session = $request->getSession();
+    $targetUrl = $session->get('redirect_after_login', $this->urlGenerator->generate('app_home'));
+    $session->remove('redirect_after_login'); 
+
+    return new RedirectResponse($targetUrl);
+}
+
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?RedirectResponse
     {

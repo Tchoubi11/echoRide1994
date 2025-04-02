@@ -4,59 +4,106 @@ namespace App\Controller;
 
 use App\Entity\Reservation;
 use App\Entity\Covoiturage;
-use App\Entity\Utilisateur;  
+use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Psr\Log\LoggerInterface;
 
 class ReservationController extends AbstractController
 {
-    #[Route('/reservation/covoiturage/{id}/book', name: 'reservation_book', methods: ['POST'])]
-    public function book(Covoiturage $covoiturage, Request $request, EntityManagerInterface $em): Response
-    {
+   
+    #[Route('/participer/{rideId}', name: 'participer_covoiturage', requirements: ['rideId' => '\d+'], methods: ['GET', 'POST'])]
+    public function participate(
+        Request $request,
+        int $rideId,
+        EntityManagerInterface $entityManager,
+        SessionInterface $session,
+        LoggerInterface $logger
+    ): Response {
+        $logger->info("Tentative de participation au covoiturage avec rideId : " . $rideId);
+    
+        /** @var Utilisateur $user */
         $user = $this->getUser();
-        
-        // ici je vérifie si l'utilisateur est connecté et de type Utilisateur
-        if (!$user || !$user instanceof Utilisateur) {
-            return $this->json(['success' => false, 'message' => 'Utilisateur non valide ou non connecté.']);
+        if (!$user) {
+            $session->set('redirect_after_login', $request->getUri());
+            $this->addFlash('error', 'Vous devez être connecté pour participer à un covoiturage.');
+            return $this->redirectToRoute('app_login');
         }
-
-        // je vérifie si l'utilisateur a suffisamment de crédits
-        $creditCost = $request->get('credit_cost');
-        if ($user->getCredits() < $creditCost) {
-            return $this->json(['success' => false, 'message' => 'Crédits insuffisants.']);
+    
+        $ride = $entityManager->getRepository(Covoiturage::class)->find($rideId);
+        if (!$ride) {
+            $this->addFlash('error', 'Covoiturage non trouvé.');
+            return $this->redirectToRoute('covoiturage_list');
         }
-
-        // je vérifie s'il reste des places disponibles
-        if ($covoiturage->getNbPlace() <= 0) {
-            return $this->json(['success' => false, 'message' => 'Plus de places disponibles.']);
+    
+        // je vérifie si l'utilisateur a déjà une réservation
+        $existingReservation = $entityManager->getRepository(Reservation::class)->findOneBy([
+            'passenger' => $user,
+            'covoiturage' => $ride,
+        ]);
+    
+        if ($existingReservation) {
+            $this->addFlash('error', 'Vous avez déjà une réservation pour ce covoiturage.');
+            return $this->redirectToRoute('covoiturage_list');
         }
-
-        // Ici on crée la réservation
-        $reservation = new Reservation();
-        $reservation->setPassenger($user);
-        $reservation->setCovoiturage($covoiturage);
-        $reservation->setPlacesReservees(1);
-        $reservation->setStatut('confirmée');
-
-        // on déduit les crédits
-        $user->setCredits($user->getCredits() - $creditCost);
-
-        // Mettons à jour le nombre de places disponibles
-        $covoiturage->setNbPlace($covoiturage->getNbPlace() - 1);
-
-        // Sauvegardons les modifications en base de données
-        $em->persist($reservation);
-        $em->persist($user);
-        $em->persist($covoiturage);
-        $em->flush();
-
-        return $this->json(['success' => true, 'message' => 'Réservation confirmée avec succès.']);
+    
+        // je vérifie les crédits et les places restantes
+        if ($user->getCredits() < $ride->getPrixPersonne() || $ride->getPlacesRestantes() <= 0) {
+            $this->addFlash('error', 'Vous n\'avez pas assez de crédits pour réserver.');
+            return $this->render('reservation/participate.html.twig', [
+                'ride' => $ride,
+                'user' => $user,
+                'rideId' => $rideId,
+            ]);
+        }
+    
+        // Gestion de la double confirmation
+        if ($request->isMethod('POST')) {
+            if ($session->get('confirm_'.$rideId)) {
+                // Étape finale : on enregistre la réservation
+                $reservation = new Reservation();
+                $reservation->setPassenger($user);
+                $reservation->setCovoiturage($ride);
+                $reservation->setPlacesReservees(1);
+                $reservation->setStatut('confirmée');
+                $reservation->setMontantPaye($ride->getPrixPersonne());
+    
+                // je mets à jour les crédits et les places
+                $user->setCredits($user->getCredits() - $ride->getPrixPersonne());
+                $ride->setNbPlace($ride->getNbPlace() - 1);
+    
+                // j'associe explicitement le passager au trajet
+                $ride->addPassenger($user);
+    
+                $entityManager->persist($reservation);
+                $entityManager->flush();
+    
+                // je supprime la confirmation après l'enregistrement
+                $session->remove('confirm_'.$rideId);
+    
+                $this->addFlash('success', 'Votre réservation a été confirmée avec succès !');
+                return $this->redirectToRoute('covoiturage_list');
+            } else {
+                // Première confirmation : Stocker dans la session
+                $session->set('confirm_'.$rideId, true);
+                $this->addFlash('warning', 'Veuillez confirmer votre réservation en cliquant à nouveau sur "Oui, confirmer".');
+            }
+        }
+    
+        return $this->render('reservation/participate.html.twig', [
+            'ride' => $ride,
+            'user' => $user,
+            'rideId' => $rideId,
+        ]);
     }
+    
 
+    
     #[Route('/reservation/{id}/cancel', name: 'cancel_reservation', methods: ['POST'])]
     public function cancelReservation(int $id, EntityManagerInterface $em): JsonResponse
     {

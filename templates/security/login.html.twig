@@ -3,43 +3,49 @@
 {% block title %}Connexion{% endblock %}
 
 {% block body %}
-    <div class="container mt-5">
-        <h1 class="text-center">Connexion</h1>
+<div class="container mt-5">
+    <h1 class="text-center">Connexion</h1>
 
-        <!-- Affichage des messages de succès -->
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success">
-                {{ message }}
-            </div>
-        {% endfor %}
-
-        <!-- Affichage des messages d'erreur -->
-        {% for message in app.flashes('error') %}
-            <div class="alert alert-danger">
-                {{ message }}
-            </div>
-        {% endfor %}
-
-        <div class="card p-4 shadow-sm">
-            <form method="post" class="mt-4">
-                <div class="mb-3">
-                    <label class="form-label">Email :</label>
-                    <input type="text" name="_username" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Mot de passe :</label>
-                    <input type="password" name="_password" class="form-control" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100">Se connecter</button>
-            </form>
-
-            
+    <!-- Affichage des messages de succès -->
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
         </div>
+    {% endfor %}
 
-        <div class="text-center mt-3">
-            <a href="{{ path('app_home') }}" class="btn btn-outline-primary">⬅ Retour à l'accueil</a>
+    <!-- Affichage des messages d'erreur -->
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">
+            {{ message }}
         </div>
+    {% endfor %}
+
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error.messageKey|trans(error.messageData, 'security') }}
+        </div>
+    {% endif %}
+
+    <div class="card p-4 shadow-sm">
+        <form method="post" class="mt-4">
+            <div class="mb-3">
+                <label class="form-label">Email :</label>
+                <input type="text" name="_username" value="{{ last_username }}" class="form-control" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Mot de passe :</label>
+                <input type="password" name="_password" class="form-control" required>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+        </form>
     </div>
+
+    <div class="text-center mt-3">
+        <a href="{{ path('app_home') }}" class="btn btn-outline-primary">⬅ Retour à l'accueil</a>
+    </div>
+</div>
 {% endblock %}

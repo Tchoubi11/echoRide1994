@@ -144,6 +144,7 @@ public function details(int $id, CovoiturageRepository $covoiturageRepository, R
         'driverReviews' => $driverReviews,
         'driverPreferences' => $driverPreferences,  
         'form' => $form->createView(),
+        'rideId' => $id,
     ]);
 }
 

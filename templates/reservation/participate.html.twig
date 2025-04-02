@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<h1>Confirmer votre participation au covoiturage</h1>
+
+<p>Vous vous apprêtez à participer au covoiturage de <strong>{{ ride.lieuDepart }}</strong> à <strong>{{ ride.lieuArrivee }}</strong>.</p>
+<p><strong>Prix par personne :</strong> {{ ride.prixPersonne }} crédits.</p>
+<p><strong>Places restantes :</strong> {{ ride.placesRestantes }}.</p>
+
+{% for message in app.flashes('warning') %}
+    <div class="alert alert-warning">
+        {{ message }}
+    </div>
+{% endfor %}
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success">
+        {{ message }}
+    </div>
+{% endfor %}
+
+<!-- Bouton de première confirmation -->
+<button id="confirmButton" class="btn btn-primary">Confirmer ma participation</button>
+
+<!-- Formulaire de deuxième confirmation caché -->
+<form id="confirmForm" method="post" style="display: none;">
+    <p>Êtes-vous sûr de vouloir utiliser <strong>{{ ride.prixPersonne }} crédits</strong> pour réserver ?</p>
+    <button type="submit" class="btn btn-success">Oui, confirmer</button>
+    <button type="button" id="cancelButton" class="btn btn-danger">Annuler</button>
+</form>
+
+<a href="{{ path('covoiturage_list') }}">Retour à la liste des covoiturages</a>
+
+<!-- JavaScript pour gérer l'affichage -->
+<script>
+    document.getElementById('confirmButton').addEventListener('click', function() {
+        document.getElementById('confirmButton').style.display = 'none';  
+        document.getElementById('confirmForm').style.display = 'block';  
+    });
+
+    document.getElementById('cancelButton').addEventListener('click', function() {
+        document.getElementById('confirmButton').style.display = 'block'; 
+        document.getElementById('confirmForm').style.display = 'none'; 
+    });
+</script>
+
+{% endblock %}

@@ -5,7 +5,6 @@
         <h2>Détails du covoiturage</h2>
 
         <div class="card p-3 shadow-sm">
-          
             <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" alt="Photo du chauffeur" class="driver-photo-icon" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
             <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.pseudo }}</p>
             <p><strong>{{ ride.driver.pseudo }}</strong> ({{ ride.driver.rating }} ⭐)</p>
@@ -33,7 +32,6 @@
 
             {% if app.user %}
                 {% set hasReviewed = driverReviews|filter(r => r.user == app.user)|length > 0 %}
-
                 {% if not hasReviewed %}
                     <h3>Ajouter un avis</h3>
                     {{ form_start(form, {'action': path('covoiturage_details', {'id': ride.id})}) }}
@@ -57,18 +55,22 @@
 
         <a href="{{ path('search_route') }}" class="btn btn-primary mt-3">Retour à la liste des covoiturages</a>
 
-        <button id="reserveBtn" class="btn btn-success mt-3"
-            {% if app.user %}
-                {% if ride.nbPlace > 0 and app.user.credits >= ride.prixPersonne %}
-                    data-action="showConfirmation"
-                {% else %}
-                    disabled 
-                {% endif %}
-            {% else %}
-                data-action="redirectToLogin"
-            {% endif %}>
-            Participer
-        </button>
+        
+
+
+        {% if rideId is defined and rideId is not null %}
+    <p>Trajet : {{ ride.lieuDepart }} → {{ ride.lieuArrivee }}</p>
+    <p>Prix par personne : {{ ride.prixPersonne }} crédits</p>
+    <p>Places restantes : {{ ride.placesRestantes }}</p>
+
+    <form method="post" action="{{ path('participer_covoiturage', {'rideId': rideId}) }}">
+        <button type="submit" class="btn btn-success mt-3">Participer</button>
+    </form>
+{% else %}
+    <p class="text-danger">Erreur : l'ID du covoiturage est manquant.</p>
+{% endif %}
+
+    
 
         {% if app.user and (ride.nbPlace <= 0 or app.user.credits < ride.prixPersonne) %}
             <p class="mt-3 text-danger">
@@ -93,42 +95,34 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            var isUserLoggedIn = document.body.getAttribute("data-logged-in") === "true";
+    var reserveBtn = document.getElementById('reserveBtn');
+    var confirmBtn = document.getElementById('confirmReservationBtn');
+    var cancelBtn = document.getElementById('cancelReservationBtn');
 
-            function redirectToLogin() {
-                window.location.href = "{{ path('app_register') }}";
-            }
+    if (reserveBtn) {
+        reserveBtn.addEventListener("click", function () {
+            var action = reserveBtn.getAttribute("data-action");
+            var url = reserveBtn.getAttribute("data-url");
 
-            function showConfirmationModal() {
+            if (action === "showConfirmation" && url) {
                 document.getElementById('confirmationModal').style.display = 'block';
-            }
 
-            var reserveBtn = document.getElementById('reserveBtn');
-            if (reserveBtn) {
-                reserveBtn.addEventListener("click", function () {
-                    var action = reserveBtn.getAttribute("data-action");
-                    if (action === "showConfirmation") {
-                        showConfirmationModal();
-                    } else if (action === "redirectToLogin") {
-                        redirectToLogin();
-                    }
-                });
-            }
-
-            var confirmBtn = document.getElementById('confirmReservationBtn');
-            var cancelBtn = document.getElementById('cancelReservationBtn');
-
-            if (confirmBtn) {
                 confirmBtn.onclick = function () {
-                    alert("Réservation confirmée !");
+                    window.location.href = url;
                 };
-            }
-
-            if (cancelBtn) {
-                cancelBtn.onclick = function () {
-                    document.getElementById('confirmationModal').style.display = 'none';
-                };
+            } else if (action === "redirectToLogin") {
+                window.location.href = url;
             }
         });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.onclick = function () {
+            document.getElementById('confirmationModal').style.display = 'none';
+        };
+    }
+});
+
+
     </script>
 {% endblock %}

@@ -21,10 +21,8 @@ class AvisType extends AbstractType
             ->add('note', IntegerType::class, [
                 'label' => 'Note (1 à 5)',
                 'attr' => ['min' => 1, 'max' => 5],
-            ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'Ajouter l\'avis',
             ]);
+            
     }
 
     public function configureOptions(OptionsResolver $resolver)
