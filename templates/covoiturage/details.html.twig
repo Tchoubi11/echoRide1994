@@ -10,7 +10,7 @@
             <p><strong>{{ ride.driver.pseudo }}</strong> ({{ ride.driver.rating }} ⭐)</p>
             <p><strong>Lieu de départ :</strong> {{ ride.lieuDepart }}</p>
             <p><strong>Lieu d'arrivée :</strong> {{ ride.lieuArrivee }}</p>
-            <p><strong>Prix :</strong> {{ ride.prixPersonne }} €</p>
+            <p><strong>Prix :</strong> {{ ride.prixPersonne }} Crédits</p>
             <p><strong>Date et Heure de départ :</strong> {{ ride.dateDepart|date('d/m/Y') }} à {{ ride.heureDepart|date('H:i') }}</p>
             <p><strong>Date et Heure d'arrivée :</strong> {{ ride.dateArrivee|date('d/m/Y') }} à {{ ride.heureArrivee|date('H:i') }}</p>
             <p><strong>Voyage écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
@@ -53,22 +53,18 @@
             <p><strong>Préférences du conducteur :</strong> {{ driverPreferences ?: 'Aucune préférence spécifiée.' }}</p>
         </div>
 
-        <a href="{{ path('search_route') }}" class="btn btn-primary mt-3">Retour à la liste des covoiturages</a>
-
+        <div class="d-flex gap-2 mt-3">
+            <a href="{{ path('search_route') }}" class="btn btn-primary">Retour à la liste des covoiturages</a>
         
-
-
-        {% if rideId is defined and rideId is not null %}
-    <p>Trajet : {{ ride.lieuDepart }} → {{ ride.lieuArrivee }}</p>
-    <p>Prix par personne : {{ ride.prixPersonne }} crédits</p>
-    <p>Places restantes : {{ ride.placesRestantes }}</p>
-
-    <form method="post" action="{{ path('participer_covoiturage', {'rideId': rideId}) }}">
-        <button type="submit" class="btn btn-success mt-3">Participer</button>
-    </form>
-{% else %}
-    <p class="text-danger">Erreur : l'ID du covoiturage est manquant.</p>
-{% endif %}
+            {% if rideId is defined and rideId is not null %}
+                <form method="post" action="{{ path('participer_covoiturage', {'rideId': rideId}) }}">
+                    <button type="submit" class="btn btn-success">Participer</button>
+                </form>
+            {% else %}
+                <p class="text-danger">Erreur : l'ID du covoiturage est manquant.</p>
+            {% endif %}
+        </div>
+        
 
     
 
@@ -76,8 +72,8 @@
             <p class="mt-3 text-danger">
                 {% if ride.nbPlace <= 0 %}
                     Plus de places disponibles.
-                {% elseif app.user.credits < ride.prixPersonne %}
-                    Vous n'avez pas assez de crédits.
+                {% elseif app.user.credits < ride.prixPersonne %}  
+                 <strong>Attention !!! Il ne vous reste plus assez de crédits.</strong>  
                 {% endif %}
             </p>
         {% endif %}
