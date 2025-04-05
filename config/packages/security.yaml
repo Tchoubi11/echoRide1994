@@ -21,6 +21,7 @@ security:
             form_login:
                 login_path: app_login
                 check_path: app_login
+                failure_handler: App\Security\LoginFailureHandler
                 default_target_path: participer_covoiturage 
                 enable_csrf: true
             logout:
