@@ -2,18 +2,24 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Response;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Utilisateur;
 use App\Entity\Image;
+use App\Entity\Voiture;
+use App\Form\VoitureType;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use App\Form\UtilisateurType;
+use App\Entity\Reservation;
+use App\Entity\Covoiturage;
+
 
 class UtilisateurController extends AbstractController
 {
-    private $entityManager;
+    private EntityManagerInterface $entityManager;
 
-    // Injection de l'EntityManagerInterface via le constructeur
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
@@ -24,25 +30,81 @@ class UtilisateurController extends AbstractController
     {
         $utilisateur = $this->getUser();
 
-        // Vérifie que l'utilisateur est connecté et est bien une instance de Utilisateur
         if (!$utilisateur instanceof Utilisateur) {
-            return $this->redirectToRoute('app_login'); 
+            return $this->redirectToRoute('app_login');
         }
 
-        // Vérifie si l'utilisateur a une photo
         if (!$utilisateur->getPhoto()) {
-            // Assigne une photo par défaut si nécessaire
             $defaultPhoto = new Image();
             $defaultPhoto->setImagePath('default-avatar.png');
             $utilisateur->setPhoto($defaultPhoto);
 
-            // Sauvegarde de l'utilisateur après mise à jour de la photo
             $this->entityManager->persist($utilisateur);
             $this->entityManager->flush();
         }
 
         return $this->render('utilisateur/profile.html.twig', [
-            'utilisateur' => $utilisateur, 
+            'utilisateur' => $utilisateur,
+            
         ]);
     }
+
+    #[Route('/espace-utilisateur', name: 'espace_utilisateur')]
+public function espaceUtilisateur(Request $request): Response
+{
+    $user = $this->getUser();
+
+    if (!$user instanceof Utilisateur) {
+        return $this->redirectToRoute('app_login');
+    }
+
+    $formTypeUtilisateur = $this->createForm(UtilisateurType::class, $user);
+    $formTypeUtilisateur->handleRequest($request);
+
+    if ($formTypeUtilisateur->isSubmitted() && $formTypeUtilisateur->isValid()) {
+        $this->entityManager->flush();
+        $this->addFlash('success', 'Type d’utilisateur mis à jour.');
+        return $this->redirectToRoute('espace_utilisateur');
+    }
+
+    $formVehicule = null;
+    $accepteFumeur = false;
+
+    if (strtolower($user->getTypeUtilisateur()) === 'chauffeur' || strtolower($user->getTypeUtilisateur()) === 'les_deux') {
+        $vehicule = new Voiture();
+        $vehicule->setUtilisateur($user);
+        $formVehicule = $this->createForm(VoitureType::class, $vehicule);
+        $formVehicule->handleRequest($request);
+
+        if ($formVehicule->isSubmitted() && $formVehicule->isValid()) {
+            $this->entityManager->persist($vehicule);
+            $this->entityManager->flush();
+        }
+
+        $preference = $vehicule->getPreference();
+        if ($preference && $preference->isFumeur()) {
+            $accepteFumeur = true;
+        }
+    }
+
+    $reservations = $this->entityManager->getRepository(Reservation::class)->findBy([
+        'passenger' => $user,
+    ]);
+
+    $covoituragesProposes = $this->entityManager->getRepository(Covoiturage::class)->findBy([
+        'driver' => $user,
+    ]);
+    
+
+    return $this->render('utilisateur/espace_utilisateur.html.twig', [
+        'utilisateur' => $user,
+        'formType' => $formTypeUtilisateur->createView(),
+        'form' => $formVehicule ? $formVehicule->createView() : null,
+        'accepteFumeur' => $accepteFumeur,
+        'reservations' => $reservations,
+        'covoituragesProposes' => $covoituragesProposes,
+    ]);
+}
+
+
 }

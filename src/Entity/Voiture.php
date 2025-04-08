@@ -3,10 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\VoitureRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: VoitureRepository::class)]
 class Voiture
@@ -25,24 +22,28 @@ class Voiture
     #[ORM\Column(length: 50)]
     private ?string $energie = null;
 
+    #[ORM\Column(type: 'integer')]
+    private ?int $placesDisponibles = null;
+
     #[ORM\Column(length: 50)]
     private ?string $couleur = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $date_premiere_immatriculation = null;
 
     #[ORM\ManyToOne(targetEntity: Marque::class, inversedBy: 'voitures')]
     #[ORM\JoinColumn(name: 'marque_id', referencedColumnName: 'marque_id')]
     private ?Marque $marque = null;
 
-     #[ORM\OneToMany(mappedBy: "vehicle", targetEntity: Utilisateur::class)]
-     private Collection $users;
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'voitures')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Utilisateur $utilisateur = null;
 
-     public function __construct()
-     {
-         $this->users = new ArrayCollection();
-     }
+    #[ORM\ManyToOne(targetEntity: Preference::class)]
+#[ORM\JoinColumn(name: 'preference_id', referencedColumnName: 'id')]
+private ?Preference $preference = null;
 
+    // Getters and Setters
     public function getId(): ?int
     {
         return $this->id;
@@ -56,7 +57,6 @@ class Voiture
     public function setModele(string $modele): static
     {
         $this->modele = $modele;
-
         return $this;
     }
 
@@ -68,7 +68,6 @@ class Voiture
     public function setImmatriculation(string $immatriculation): static
     {
         $this->immatriculation = $immatriculation;
-
         return $this;
     }
 
@@ -80,7 +79,6 @@ class Voiture
     public function setEnergie(string $energie): static
     {
         $this->energie = $energie;
-
         return $this;
     }
 
@@ -92,7 +90,6 @@ class Voiture
     public function setCouleur(string $couleur): static
     {
         $this->couleur = $couleur;
-
         return $this;
     }
 
@@ -101,16 +98,10 @@ class Voiture
         return $this->date_premiere_immatriculation;
     }
 
-    public function setDatePremiereImmatriculation(\DateTimeInterface $date_premiere_immatriculation): static
+    public function setDatePremiereImmatriculation(\DateTimeInterface $date): static
     {
-        $this->date_premiere_immatriculation = $date_premiere_immatriculation;
-
+        $this->date_premiere_immatriculation = $date;
         return $this;
-    }
-
-    public function getUsers(): Collection
-    {
-        return $this->users;
     }
 
     public function getMarque(): ?Marque
@@ -123,4 +114,37 @@ class Voiture
         $this->marque = $marque;
         return $this;
     }
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): static
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
+    }
+
+    public function getPlacesDisponibles(): ?int
+    {
+        return $this->placesDisponibles;
+    }
+
+    public function setPlacesDisponibles(int $placesDisponibles): static
+    {
+        $this->placesDisponibles = $placesDisponibles;
+        return $this;
+    }
+
+    public function getPreference(): ?Preference
+{
+    return $this->preference;
+}
+
+public function setPreference(?Preference $preference): static
+{
+    $this->preference = $preference;
+    return $this;
+}
 }

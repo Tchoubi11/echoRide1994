@@ -17,8 +17,12 @@
 
             <!-- Véhicule -->
             <p><strong>Véhicule :</strong></p>
-            <p><strong>Marque et Modèle :</strong> {{ ride.driver.vehicle.marque.libelle }} - {{ ride.driver.vehicle.modele }}</p>
-            <p><strong>Énergie utilisée :</strong> {{ ride.driver.vehicle.energie }}</p>
+            {% if driverCar %}
+                <p><strong>Marque et Modèle :</strong> {{ driverCar.marque.libelle }} - {{ driverCar.modele }}</p>
+                <p><strong>Énergie utilisée :</strong> {{ driverCar.energie }}</p>
+            {% else %}
+                <p>Aucune voiture associée à ce conducteur.</p>
+            {% endif %}
 
             <h3>Commentaires</h3>
             <ul>
@@ -50,7 +54,61 @@
                 <p>Vous devez être connecté pour laisser un avis.</p>
             {% endif %}
 
-            <p><strong>Préférences du conducteur :</strong> {{ driverPreferences ?: 'Aucune préférence spécifiée.' }}</p>
+            <p><strong>Préférences du conducteur :</strong></p>
+
+{% if driverPreferences %}
+    <ul>
+        <li><strong>Fumeur :</strong> {{ driverPreferences.fumeur ? 'Oui' : 'Non' }}</li>
+        <li><strong>Animaux :</strong> {{ driverPreferences.animaux ? 'Oui' : 'Non' }}</li>
+        <li><strong>Autres :</strong> 
+            {% if driverPreferences.autres is not empty %}
+                {{ driverPreferences.autres|join(', ') }}
+            {% else %}
+                Aucune
+            {% endif %}
+        </li>
+    </ul>
+{% else %}
+    <p>Aucune préférence spécifiée.</p>
+{% endif %}
+
+
+            <h3>Vos préférences :</h3>
+            
+            {{ form_start(preferenceForm) }}
+                <div class="mb-3">
+                    {{ form_label(preferenceForm.fumeur) }}
+                    {{ form_widget(preferenceForm.fumeur) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(preferenceForm.animaux) }}
+                    {{ form_widget(preferenceForm.animaux) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(preferenceForm.autres) }}
+                    {{ form_widget(preferenceForm.autres) }}
+                </div>
+            
+                <button class="btn btn-primary">
+                    {{ userPreferences.id ? 'Mettre à jour mes préférences' : 'Enregistrer mes préférences' }}
+                </button>
+            {{ form_end(preferenceForm) }}
+            
+            {% if userPreferences.id %}
+                <h4 class="mt-4">Préférences enregistrées :</h4>
+                <ul>
+                    <li><strong>Fumeur :</strong> {{ userPreferences.fumeur ? 'Oui' : 'Non' }}</li>
+                    <li><strong>Animaux :</strong> {{ userPreferences.animaux ? 'Oui' : 'Non' }}</li>
+                    <li><strong>Autres :</strong> 
+                        {% if userPreferences.autres is not empty %}
+                            {{ userPreferences.autres|join(', ') }}
+                        {% else %}
+                            Aucune
+                        {% endif %}
+                    </li>
+                </ul>
+            {% endif %}
+            
         </div>
 
         <div class="d-flex gap-2 mt-3">
@@ -64,61 +122,15 @@
                 <p class="text-danger">Erreur : l'ID du covoiturage est manquant.</p>
             {% endif %}
         </div>
-        
-
-    
 
         {% if app.user and (ride.nbPlace <= 0 or app.user.credits < ride.prixPersonne) %}
             <p class="mt-3 text-danger">
                 {% if ride.nbPlace <= 0 %}
                     Plus de places disponibles.
                 {% elseif app.user.credits < ride.prixPersonne %}  
-                 <strong>Attention !!! Il ne vous reste plus assez de crédits.</strong>  
+                    <strong>Attention !!! Il ne vous reste plus assez de crédits.</strong>  
                 {% endif %}
             </p>
         {% endif %}
     </div>
-
-    <body data-logged-in="{{ app.user is not null ? 'true' : 'false' }}">
-
-    <div id="confirmationModal" style="display:none;">
-        <div>
-            <p>Êtes-vous sûr de vouloir réserver ? Cela utilisera {{ ride.prixPersonne }} crédits.</p>
-            <button class="btn btn-danger" id="confirmReservationBtn">Confirmer</button>
-            <button class="btn btn-secondary" id="cancelReservationBtn">Annuler</button>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-    var reserveBtn = document.getElementById('reserveBtn');
-    var confirmBtn = document.getElementById('confirmReservationBtn');
-    var cancelBtn = document.getElementById('cancelReservationBtn');
-
-    if (reserveBtn) {
-        reserveBtn.addEventListener("click", function () {
-            var action = reserveBtn.getAttribute("data-action");
-            var url = reserveBtn.getAttribute("data-url");
-
-            if (action === "showConfirmation" && url) {
-                document.getElementById('confirmationModal').style.display = 'block';
-
-                confirmBtn.onclick = function () {
-                    window.location.href = url;
-                };
-            } else if (action === "redirectToLogin") {
-                window.location.href = url;
-            }
-        });
-    }
-
-    if (cancelBtn) {
-        cancelBtn.onclick = function () {
-            document.getElementById('confirmationModal').style.display = 'none';
-        };
-    }
-});
-
-
-    </script>
 {% endblock %}

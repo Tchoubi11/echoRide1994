@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Bonjour {{ utilisateur.pseudo }}</h2>
+
+    <h3>Je suis :</h3>
+    {{ form_start(formType) }}
+        {{ form_row(formType.type_utilisateur) }}
+        <button class="btn btn-success">Mettre à jour</button>
+    {{ form_end(formType) }}
+
+    {% if utilisateur.typeUtilisateur %}
+        <p class="mt-2">Actuellement sélectionné : <strong>{{ utilisateur.typeUtilisateur|capitalize }}</strong></p>
+    {% endif %}
+
+    {% if utilisateur.typeUtilisateur in ['chauffeur', 'les_deux'] and utilisateur.voitures is empty %}
+        <div class="alert alert-warning">
+            🚗 Vous êtes chauffeur, mais vous n'avez enregistré aucun véhicule.
+            <br>
+            Veuillez ajouter un véhicule pour proposer des trajets.
+            <br><br>
+            <a href="#ajouter-vehicule" class="btn btn-sm btn-primary mt-2">Ajouter un véhicule</a>
+        </div>
+    {% endif %}
+
+    {% if utilisateur.typeUtilisateur in ['chauffeur', 'les_deux'] %}
+        <h3 id="ajouter-vehicule">Mes véhicules</h3>
+        {% if form is not null %}
+            {{ form_start(form) }}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.immatriculation) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.datePremiereImmatriculation) }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ form_row(form.modele) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_row(form.couleur) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_row(form.marque) }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.placesDisponibles) }}
+                    </div>
+                </div>
+
+                <h4 class="mt-4">Préférences :</h4>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ form_row(form.preference.fumeur) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_row(form.preference.animaux) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_row(form.preference.autres) }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
+            {{ form_end(form) }}
+        {% endif %}
+    {% endif %}
+
+    {% if utilisateur.typeUtilisateur == 'passager' %}
+        <p class="alert alert-info mt-3">
+            👤 En tant que passager, aucune information supplémentaire n'est requise.
+        </p>
+    {% endif %}
+
+    {% if utilisateur.typeUtilisateur in ['passager', 'les_deux'] %}
+        <h3 class="mt-4">🧾 Mes réservations en tant que passager</h3>
+
+        {% if reservations is not empty %}
+            <ul class="list-group">
+                {% for reservation in reservations %}
+                    <li class="list-group-item">
+                        <span class="badge bg-success">🛣️ Réservation</span>
+                        <strong>{{ reservation.covoiturage.lieuDepart }}</strong> → <strong>{{ reservation.covoiturage.lieuArrivee }}</strong><br>
+                        📅 Date : {{ reservation.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
+                        💺 Places réservées : {{ reservation.placesReservees }}<br>
+                        💰 Payé : {{ reservation.montantPaye }} crédits<br>
+                        ✅ Statut : {{ reservation.statut }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">Vous n'avez pas encore de réservations.</p>
+        {% endif %}
+    {% endif %}
+
+    {% if utilisateur.typeUtilisateur in ['chauffeur', 'les_deux'] %}
+        <h3 class="mt-4">🚗 Mes trajets proposés en tant que chauffeur</h3>
+
+        {% if covoituragesProposes is not empty %}
+            <ul class="list-group">
+                {% for trajet in covoituragesProposes %}
+                    <li class="list-group-item">
+                        <span class="badge bg-primary">🚗 Trajet</span>
+                        <strong>{{ trajet.lieuDepart }}</strong> → <strong>{{ trajet.lieuArrivee }}</strong><br>
+                        📅 Date : {{ trajet.dateDepart|date('d/m/Y H:i') }}<br>
+                        💺 Places : {{ trajet.nbPlace }} | 💰 {{ trajet.prixPersonne }} crédits
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">Vous n'avez proposé aucun trajet.</p>
+        {% endif %}
+    {% endif %}
+
+    <a href="{{ path('user_profile') }}" class="btn btn-secondary mt-4">
+        👤 Voir mon profil
+    </a>
+</div>
+{% endblock %}
