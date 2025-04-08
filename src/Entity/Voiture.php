@@ -4,6 +4,9 @@ namespace App\Entity;
 
 use App\Repository\VoitureRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\Covoiturage;
 
 #[ORM\Entity(repositoryClass: VoitureRepository::class)]
 class Voiture
@@ -40,8 +43,16 @@ class Voiture
     private ?Utilisateur $utilisateur = null;
 
     #[ORM\ManyToOne(targetEntity: Preference::class)]
-#[ORM\JoinColumn(name: 'preference_id', referencedColumnName: 'id')]
-private ?Preference $preference = null;
+    #[ORM\JoinColumn(name: 'preference_id', referencedColumnName: 'id')]
+    private ?Preference $preference = null;
+
+    #[ORM\OneToMany(mappedBy: 'voiture', targetEntity: Covoiturage::class)]
+    private Collection $covoiturages;
+
+    public function __construct()
+  {
+    $this->covoiturages = new ArrayCollection();
+  }
 
     // Getters and Setters
     public function getId(): ?int
@@ -145,6 +156,30 @@ private ?Preference $preference = null;
 public function setPreference(?Preference $preference): static
 {
     $this->preference = $preference;
+    return $this;
+}
+
+public function getCovoiturages(): Collection
+{
+    return $this->covoiturages;
+}
+
+public function addCovoiturage(Covoiturage $covoiturage): static
+{
+    if (!$this->covoiturages->contains($covoiturage)) {
+        $this->covoiturages[] = $covoiturage;
+        $covoiturage->setVoiture($this);
+    }
+    return $this;
+}
+
+public function removeCovoiturage(Covoiturage $covoiturage): static
+{
+    if ($this->covoiturages->removeElement($covoiturage)) {
+        if ($covoiturage->getVoiture() === $this) {
+            $covoiturage->setVoiture(null);
+        }
+    }
     return $this;
 }
 }

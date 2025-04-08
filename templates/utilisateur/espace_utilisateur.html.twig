@@ -117,6 +117,19 @@
         {% endif %}
     {% endif %}
 
+    {% if formCovoiturage is defined and formCovoiturage is not null %}
+    <h3 class="mt-5">➕ Proposer un trajet</h3>
+    {{ form_start(formCovoiturage) }}
+        {{ form_row(formCovoiturage.lieuDepart) }}
+        {{ form_row(formCovoiturage.lieuArrivee) }}
+        {{ form_row(formCovoiturage.dateDepart) }}
+        {{ form_row(formCovoiturage.prixPersonne) }}
+        {{ form_row(formCovoiturage.voiture) }}
+        <button class="btn btn-success mt-3">Proposer</button>
+    {{ form_end(formCovoiturage) }}
+{% endif %}
+
+
     <a href="{{ path('user_profile') }}" class="btn btn-secondary mt-4">
         👤 Voir mon profil
     </a>

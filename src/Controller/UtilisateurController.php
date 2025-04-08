@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Form\UtilisateurType;
 use App\Entity\Reservation;
 use App\Entity\Covoiturage;
-
+use App\Form\CovoiturageType;
 
 class UtilisateurController extends AbstractController
 {
@@ -45,66 +45,82 @@ class UtilisateurController extends AbstractController
 
         return $this->render('utilisateur/profile.html.twig', [
             'utilisateur' => $utilisateur,
-            
         ]);
     }
 
     #[Route('/espace-utilisateur', name: 'espace_utilisateur')]
-public function espaceUtilisateur(Request $request): Response
-{
-    $user = $this->getUser();
+    public function espaceUtilisateur(Request $request): Response
+    {
+        $user = $this->getUser();
 
-    if (!$user instanceof Utilisateur) {
-        return $this->redirectToRoute('app_login');
-    }
+        if (!$user instanceof Utilisateur) {
+            return $this->redirectToRoute('app_login');
+        }
 
-    $formTypeUtilisateur = $this->createForm(UtilisateurType::class, $user);
-    $formTypeUtilisateur->handleRequest($request);
+        $formTypeUtilisateur = $this->createForm(UtilisateurType::class, $user);
+        $formTypeUtilisateur->handleRequest($request);
 
-    if ($formTypeUtilisateur->isSubmitted() && $formTypeUtilisateur->isValid()) {
-        $this->entityManager->flush();
-        $this->addFlash('success', 'Type d’utilisateur mis à jour.');
-        return $this->redirectToRoute('espace_utilisateur');
-    }
-
-    $formVehicule = null;
-    $accepteFumeur = false;
-
-    if (strtolower($user->getTypeUtilisateur()) === 'chauffeur' || strtolower($user->getTypeUtilisateur()) === 'les_deux') {
-        $vehicule = new Voiture();
-        $vehicule->setUtilisateur($user);
-        $formVehicule = $this->createForm(VoitureType::class, $vehicule);
-        $formVehicule->handleRequest($request);
-
-        if ($formVehicule->isSubmitted() && $formVehicule->isValid()) {
-            $this->entityManager->persist($vehicule);
+        if ($formTypeUtilisateur->isSubmitted() && $formTypeUtilisateur->isValid()) {
             $this->entityManager->flush();
+            $this->addFlash('success', 'Type d’utilisateur mis à jour.');
+            return $this->redirectToRoute('espace_utilisateur');
         }
 
-        $preference = $vehicule->getPreference();
-        if ($preference && $preference->isFumeur()) {
-            $accepteFumeur = true;
+        $formVehicule = null;
+        $accepteFumeur = false;
+
+        if (in_array(strtolower($user->getTypeUtilisateur()), ['chauffeur', 'les_deux'])) {
+            $vehicule = new Voiture();
+            $vehicule->setUtilisateur($user);
+            $formVehicule = $this->createForm(VoitureType::class, $vehicule);
+            $formVehicule->handleRequest($request);
+
+            if ($formVehicule->isSubmitted() && $formVehicule->isValid()) {
+                $this->entityManager->persist($vehicule);
+                $this->entityManager->flush();
+            }
+
+            $preference = $vehicule->getPreference();
+            if ($preference && $preference->isFumeur()) {
+                $accepteFumeur = true;
+            }
         }
+
+        $reservations = $this->entityManager->getRepository(Reservation::class)->findBy([
+            'passenger' => $user,
+        ]);
+
+        $covoituragesProposes = $this->entityManager->getRepository(Covoiturage::class)->findBy([
+            'driver' => $user,
+        ]);
+
+        $formCovoiturage = null;
+
+        if (in_array(strtolower($user->getTypeUtilisateur()), ['chauffeur', 'les_deux'])) {
+            $covoiturage = new Covoiturage();
+            $covoiturage->setDriver($user);
+            $formCovoiturage = $this->createForm(CovoiturageType::class, $covoiturage, [
+                'user' => $user,
+            ]);
+            $formCovoiturage->handleRequest($request);
+
+            if ($formCovoiturage->isSubmitted() && $formCovoiturage->isValid()) {
+                $this->entityManager->persist($covoiturage);
+                $this->entityManager->flush();
+
+                $this->addFlash('success', 'Trajet enregistré avec succès.');
+                return $this->redirectToRoute('espace_utilisateur');
+            }
+        }
+
+        return $this->render('utilisateur/espace_utilisateur.html.twig', [
+            'utilisateur' => $user,
+            'formType' => $formTypeUtilisateur->createView(),
+            'form' => $formVehicule ? $formVehicule->createView() : null,
+            'formCovoiturage' => $formCovoiturage ? $formCovoiturage->createView() : null, 
+            'accepteFumeur' => $accepteFumeur,
+            'reservations' => $reservations,
+            'covoituragesProposes' => $covoituragesProposes,
+        ]);
     }
-
-    $reservations = $this->entityManager->getRepository(Reservation::class)->findBy([
-        'passenger' => $user,
-    ]);
-
-    $covoituragesProposes = $this->entityManager->getRepository(Covoiturage::class)->findBy([
-        'driver' => $user,
-    ]);
-    
-
-    return $this->render('utilisateur/espace_utilisateur.html.twig', [
-        'utilisateur' => $user,
-        'formType' => $formTypeUtilisateur->createView(),
-        'form' => $formVehicule ? $formVehicule->createView() : null,
-        'accepteFumeur' => $accepteFumeur,
-        'reservations' => $reservations,
-        'covoituragesProposes' => $covoituragesProposes,
-    ]);
-}
-
-
 }
