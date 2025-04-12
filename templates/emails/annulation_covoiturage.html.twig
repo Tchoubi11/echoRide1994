@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Annulation de covoiturage{% endblock %}
+
+{% block body %}
+    <p>Bonjour {{ prenom }},</p>
+
+    <p>Le conducteur a annulé le covoiturage prévu :</p>
+    <ul>
+        <li><strong>Départ :</strong> {{ depart }}</li>
+        <li><strong>Arrivée :</strong> {{ arrivee }}</li>
+        <li><strong>Date :</strong> {{ date }}</li>
+    </ul>
+
+    <p>Votre réservation a été annulée et vous avez été remboursé(e) en crédits.</p>
+
+    <p>Merci de votre compréhension.<br>
+    L'équipe de CovoitApp</p>
+{% endblock %}

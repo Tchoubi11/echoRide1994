@@ -38,8 +38,9 @@ class Covoiturage
     #[ORM\Column(length: 50)]
     private ?string $statut = null;
 
-    #[ORM\Column]
-    private ?int $nb_place = null;
+    #[ORM\Column(name: "nb_place")]
+    private ?int $nbPlace = null;
+
 
     #[ORM\Column(type: "float", nullable: true)]
     private ?float $max_price = null;
@@ -122,7 +123,7 @@ class Covoiturage
         return $this->date_arrivee;
     }
 
-    public function setDateArrivee(\DateTimeInterface $date_arrivee): static
+    public function setDateArrivee(?\DateTimeInterface $date_arrivee): self
     {
         $this->date_arrivee = $date_arrivee;
         return $this;
@@ -162,15 +163,16 @@ class Covoiturage
     }
 
     public function getNbPlace(): ?int
-    {
-        return $this->nb_place;
-    }
+{
+    return $this->nbPlace;
+}
 
-    public function setNbPlace(int $nb_place): static
-    {
-        $this->nb_place = $nb_place;
-        return $this;
-    }
+public function setNbPlace(int $nbPlace): static
+{
+    $this->nbPlace = $nbPlace;
+    return $this;
+}
+
 
     public function getPrixPersonne(): ?float
     {
@@ -216,7 +218,8 @@ class Covoiturage
             return $total + $reservation->getPlacesReservees();
         }, 0);
 
-        return $this->nb_place - $placesReservees;
+        return $this->nbPlace - $placesReservees;
+
     }
 
     public function getPassengers(): Collection

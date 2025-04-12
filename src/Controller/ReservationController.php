@@ -103,7 +103,7 @@ class ReservationController extends AbstractController
     }
     
 
-    
+    //Annulation d’une réservation par un passager 
     #[Route('/reservation/{id}/cancel', name: 'cancel_reservation', methods: ['POST'])]
     public function cancelReservation(int $id, EntityManagerInterface $em): JsonResponse
     {
