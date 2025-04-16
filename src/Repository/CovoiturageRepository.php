@@ -42,17 +42,20 @@ class CovoiturageRepository extends ServiceEntityRepository
     }
 
     public function findWithReservations(int $id): ?Covoiturage
-{
-    return $this->createQueryBuilder('c')
-        ->leftJoin('c.reservations', 'r')
-        ->addSelect('r')
-        ->leftJoin('r.passenger', 'p') 
-        ->addSelect('p')
-        ->where('c.id = :id')
-        ->setParameter('id', $id)
-        ->getQuery()
-        ->getOneOrNullResult();
-}
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.reservations', 'r')
+            ->addSelect('r')
+            ->leftJoin('r.passenger', 'p')
+            ->addSelect('p')
+            ->innerJoin('c.driver', 'd') 
+            ->addSelect('d')
+            ->where('c.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+    
 
 
     

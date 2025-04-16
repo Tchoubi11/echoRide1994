@@ -260,23 +260,6 @@ public function annuler(
 }
 
 
-
-#[Route('/test-mail-annulation', name: 'test_mail')]
-public function testMail(MailerInterface $mailer): Response
-{
-    $email = (new Email())
-        ->from('noreply@tonsite.com')
-        ->to('tonemail@cheztoi.fr')
-        ->subject('Test annulation')
-        ->text('Ceci est un test manuel.');
-
-    $mailer->send($email);
-
-    return new Response('Mail envoyé');
-}
-
-
-
     #[Route('/covoiturage/creer', name: 'covoiturage_create')]
     public function create(Request $request, EntityManagerInterface $em): Response
     {
