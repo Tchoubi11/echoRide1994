@@ -45,61 +45,64 @@ class CovoiturageController extends AbstractController
     
 
     #[Route('/search', name: 'search_route', methods: ['GET', 'POST'])]
-public function search(Request $request, CovoiturageRepository $covoiturageRepository, SessionInterface $session): Response
-{
-    $form = $this->createForm(CovoiturageSearchType::class, null, ['showAdvancedFilters' => true]);
-    $form->handleRequest($request);
-
-    $searchPerformed = false;
-    $rides = [];
-
-    // je récupère les critères de recherche sauvegardés si la requête est GET 
-    if ($request->isMethod('GET') && $session->has('search_criteria')) {
-        $data = $session->get('search_criteria');
-        $dateDepartObj = new \DateTime($data['date_depart']);
-
-        $rides = $covoiturageRepository->findAvailableRides(
-            $data['lieu_depart'],
-            $data['lieu_arrivee'],
-            $dateDepartObj
-        );
-        $searchPerformed = true;
-    }
-
-    // Si le formulaire est soumis, j' effectue la recherche normalement
-    if ($form->isSubmitted() && $form->isValid()) {
-        $data = $form->getData();
-        $dateDepartObj = $data['date_depart'] ?? null;
-
-        if ($dateDepartObj && !$dateDepartObj instanceof \DateTimeInterface) {
-            $dateDepartObj = \DateTime::createFromFormat('Y-m-d', (string) $dateDepartObj);
-        }
-
-        if ($dateDepartObj) {
-            // j'effectuer la recherche
+    public function search(Request $request, CovoiturageRepository $covoiturageRepository, SessionInterface $session): Response
+    {
+        $form = $this->createForm(CovoiturageSearchType::class, null, ['showAdvancedFilters' => true]);
+        $form->handleRequest($request);
+    
+        $searchPerformed = false;
+        $rides = [];
+        $now = new \DateTime(); // La date actuelle
+    
+        // Je récupère les critères de recherche sauvegardés si la requête est GET 
+        if ($request->isMethod('GET') && $session->has('search_criteria')) {
+            $data = $session->get('search_criteria');
+            $dateDepartObj = new \DateTime($data['date_depart']);
+    
+            // Appliquer la recherche en fonction de la date fournie
             $rides = $covoiturageRepository->findAvailableRides(
                 $data['lieu_depart'],
                 $data['lieu_arrivee'],
                 $dateDepartObj
             );
-
-            // je Sauvegarde les critères en session
-            $session->set('search_criteria', [
-                'lieu_depart' => $data['lieu_depart'],
-                'lieu_arrivee' => $data['lieu_arrivee'],
-                'date_depart' => $dateDepartObj->format('Y-m-d')
-            ]);
-
             $searchPerformed = true;
         }
+    
+        // Si le formulaire est soumis, je traite la recherche normalement
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $dateDepartObj = $data['date_depart'] ?? $now; // Si aucune date n'est spécifiée, prendre la date actuelle
+    
+            if (!$dateDepartObj instanceof \DateTimeInterface) {
+                $dateDepartObj = \DateTime::createFromFormat('Y-m-d', (string) $dateDepartObj);
+            }
+    
+            if ($dateDepartObj) {
+                // Effectuer la recherche en utilisant la date de départ fournie ou la date actuelle
+                $rides = $covoiturageRepository->findAvailableRides(
+                    $data['lieu_depart'],
+                    $data['lieu_arrivee'],
+                    $dateDepartObj
+                );
+    
+                // Sauvegarder les critères en session
+                $session->set('search_criteria', [
+                    'lieu_depart' => $data['lieu_depart'],
+                    'lieu_arrivee' => $data['lieu_arrivee'],
+                    'date_depart' => $dateDepartObj->format('Y-m-d')
+                ]);
+    
+                $searchPerformed = true;
+            }
+        }
+    
+        return $this->render('search/index.html.twig', [
+            'form' => $form->createView(),
+            'rides' => $rides,
+            'searchPerformed' => $searchPerformed,
+        ]);
     }
-
-    return $this->render('search/index.html.twig', [
-        'form' => $form->createView(),
-        'rides' => $rides,
-        'searchPerformed' => $searchPerformed,
-    ]);
-}
+    
 
 
     #[Route('/covoiturage/{id}', name: 'covoiturage_details')]
@@ -216,48 +219,60 @@ public function annuler(
     Request $request
 ): Response {
     /** @var Utilisateur $user */
-    $user = $this->getUser();  
-    $covoiturage = $em->getRepository(Covoiturage::class)->findWithReservations($id);
-
-    if (!$covoiturage) {
-        throw $this->createNotFoundException('Covoiturage non trouvé.');
+    $user = $this->getUser();
+    if (!$user) {
+        throw $this->createAccessDeniedException('Utilisateur non connecté.');
     }
 
-    //  Annulation par le conducteur
-    if ($covoiturage->getDriver()->getId() === $user->getId()) {
-        $notifier->notifyPassengersOfCancellation($covoiturage); 
-        $covoiturage->setIsCancelled(true); 
+    $covoiturage = $em->getRepository(Covoiturage::class)->find($id);
+    if (!$covoiturage) {
+        throw $this->createNotFoundException('Covoiturage introuvable.');
+    }
+
+    $isDriver = $covoiturage->getDriver()->getId() === $user->getId();
+
+    if ($isDriver) {
+        // Annulation par le conducteur
+        $covoiturage->setIsCancelled(true);
+
+        // Notifier les passagers si tu as un système pour ça
+        $notifier->notifyPassengersOfCancellation($covoiturage);
+
         $em->flush();
+        $this->addFlash('success', 'Covoiturage annulé avec succès.');
 
-        $this->addFlash('success', 'Covoiturage annulé. Les passagers ont été notifiés.');
+    } else {
+        // Annulation par un passager
+        $reservation = $em->getRepository(Reservation::class)->findOneBy([
+            'covoiturage' => $covoiturage,
+            'passenger' => $user
+        ]);
 
-    //  Annulation par un passager
-    } elseif ($reservation = $em->getRepository(Reservation::class)->findOneBy([
-        'covoiturage' => $covoiturage,
-        'passenger' => $user
-    ])) {
-        $user->setCredits($user->getCredits() + $reservation->getPlacesReservees());
-        $covoiturage->setNbPlace($covoiturage->getNbPlace() + $reservation->getPlacesReservees());
+        if (!$reservation) {
+            throw $this->createAccessDeniedException('Vous n’avez pas de réservation sur ce covoiturage.');
+        }
 
-        $notifier->notifyPassengerOfCancellation($user, $covoiturage);
+        // Remboursement simple (1 crédit par place réservée)
+        $places = $reservation->getPlacesReservees();
+        $user->setCredits($user->getCredits() + $places);
+        $covoiturage->setNbPlace($covoiturage->getNbPlace() + $places);
 
         $em->remove($reservation);
-        $em->flush();
 
-        $this->addFlash('success', 'Votre réservation a été annulée et un email de confirmation vous a été envoyé.');
-    } else {
-        throw $this->createAccessDeniedException('Vous ne pouvez pas annuler ce covoiturage.');
+        // Notif passager
+        $notifier->notifyPassengerOfCancellation($user, $covoiturage);
+
+        $em->flush();
+        $this->addFlash('success', 'Réservation annulée avec succès.');
     }
 
     if ($request->isXmlHttpRequest()) {
-        return new JsonResponse([
-            'success' => true,
-            'message' => 'Réservation annulée avec succès.'
-        ]);
+        return new JsonResponse(['success' => true]);
     }
 
     return $this->redirectToRoute('historique_covoiturages');
 }
+
 
 
     #[Route('/covoiturage/creer', name: 'covoiturage_create')]

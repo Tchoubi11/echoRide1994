@@ -13,12 +13,33 @@ class CovoiturageRepository extends ServiceEntityRepository
         parent::__construct($registry, Covoiturage::class);
     }
 
-    public function findAvailableRides(string $departure, string $destination, \DateTime $date)
+    public function findAvailableRides(string $depart, string $arrivee, \DateTimeInterface $date): array
+    {
+        $mutableDate = \DateTime::createFromInterface($date);
+    
+        $startOfDay = (clone $mutableDate)->setTime(0, 0);
+        $endOfDay = (clone $mutableDate)->setTime(23, 59, 59);
+    
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.lieu_depart = :depart')
+            ->andWhere('c.lieu_arrivee = :arrivee')
+            ->andWhere('c.heure_depart >= :start') // On modifie cette ligne pour ne récupérer que les covoiturages à partir d'aujourd'hui
+            ->andWhere('c.isCancelled = false')
+            ->setParameter('depart', $depart)
+            ->setParameter('arrivee', $arrivee)
+            ->setParameter('start', $startOfDay) // Utilise la date actuelle ou la date fournie
+            ->getQuery()
+            ->getResult();
+    }
+    
+
+
+public function findNextAvailableRide(string $departure, string $destination, \DateTime $date)
 {
     return $this->createQueryBuilder('c')
         ->andWhere('c.lieu_depart = :departure')
         ->andWhere('c.lieu_arrivee = :destination')
-        ->andWhere('c.date_depart >= :date')
+        ->andWhere('c.heure_depart > :date') // corrigé ici
         ->andWhere('c.nbPlace > 0')
         ->setParameter('departure', $departure)
         ->setParameter('destination', $destination)
@@ -27,34 +48,18 @@ class CovoiturageRepository extends ServiceEntityRepository
         ->getResult();
 }
 
-    public function findNextAvailableRide(string $departure, string $destination, \DateTime $date)
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.lieu_depart = :departure')
-            ->andWhere('c.lieu_arrivee = :destination')
-            ->andWhere('c.date_depart > :date')
-            ->andWhere('c.nbPlace > 0')
-            ->setParameter('departure', $departure)
-            ->setParameter('destination', $destination)
-            ->setParameter('date', $date)
-            ->getQuery()
-            ->getResult();
-    }
-
     public function findWithReservations(int $id): ?Covoiturage
     {
         return $this->createQueryBuilder('c')
-            ->leftJoin('c.reservations', 'r')
-            ->addSelect('r')
-            ->leftJoin('r.passenger', 'p')
-            ->addSelect('p')
-            ->innerJoin('c.driver', 'd') 
-            ->addSelect('d')
+            ->leftJoin('c.reservations', 'r')->addSelect('r')
+            ->leftJoin('r.passenger', 'p')->addSelect('p')
+            ->leftJoin('c.driver', 'd')->addSelect('d')
             ->where('c.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
     }
+    
     
 
 
@@ -76,10 +81,11 @@ public function findFilteredRides(
         ->setParameter('departure', $departure)
         ->setParameter('destination', $destination);
 
-    if ($dateDepart) {
-        $queryBuilder->andWhere('c.date_depart >= :date')
-            ->setParameter('date', $dateDepart);
-    }
+        if ($dateDepart) {
+            $queryBuilder
+                ->andWhere('c.heure_depart >= :date')
+                ->setParameter('date', $dateDepart);
+        }
 
     if ($lieuDepart) {
         $queryBuilder->andWhere('c.lieu_depart LIKE :lieuDepart')

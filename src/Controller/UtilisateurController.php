@@ -99,7 +99,8 @@ class UtilisateurController extends AbstractController
         if (in_array(strtolower($user->getTypeUtilisateur()), ['chauffeur', 'les_deux'])) {
             $covoiturage = new Covoiturage();
             $covoiturage->setDriver($user);
-            $covoiturage->setStatut('en_attente');
+            $covoiturage->setStatut('disponible');
+
     
             $formCovoiturage = $this->createForm(CovoiturageType::class, $covoiturage, [
                 'user' => $user,
