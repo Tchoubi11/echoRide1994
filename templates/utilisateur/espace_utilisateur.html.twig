@@ -25,51 +25,44 @@
     {% endif %}
 
     {% if utilisateur.typeUtilisateur in ['chauffeur', 'les_deux'] %}
-        <h3 id="ajouter-vehicule">Mes véhicules</h3>
-        {% if form is not null %}
-            {{ form_start(form) }}
-                <div class="row">
-                    <div class="col-md-6">
-                        {{ form_row(form.immatriculation) }}
-                    </div>
-                    <div class="col-md-6">
-                        {{ form_row(form.datePremiereImmatriculation) }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        {{ form_row(form.modele) }}
-                    </div>
-                    <div class="col-md-4">
-                        {{ form_row(form.couleur) }}
-                    </div>
-                    <div class="col-md-4">
-                        {{ form_row(form.marque) }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        {{ form_row(form.placesDisponibles) }}
-                    </div>
-                </div>
+     <h3 id="ajouter-vehicule">Mes véhicules</h3>
+     {% if form is not null %}
+         {{ form_start(form) }}
+             <div class="row">
+                 <div class="col-md-6">
+                     {{ form_row(form.immatriculation) }}
+                 </div>
+                 <div class="col-md-6">
+                     {{ form_row(form.datePremiereImmatriculation) }}
+                 </div>
+             </div>
+             <div class="row">
+                 <div class="col-md-4">
+                     {{ form_row(form.modele) }}
+                 </div>
+                 <div class="col-md-4">
+                     {{ form_row(form.couleur) }}
+                 </div>
+                 <div class="col-md-4">
+                     {{ form_row(form.marque) }}
+                 </div>
+             </div>
+             <div class="row">
+                 <div class="col-md-6">
+                     {{ form_row(form.placesDisponibles) }}
+                 </div>
+             </div>
+             
+             <div class="row">
+                 <div class="col-md-6">
+                     {{ form_row(form.energie) }}  
+                 </div>
+             </div>
+             <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
+         {{ form_end(form) }}
+     {% endif %}
+ {% endif %}
 
-                <h4 class="mt-4">Préférences :</h4>
-                <div class="row">
-                    <div class="col-md-4">
-                        {{ form_row(form.preference.fumeur) }}
-                    </div>
-                    <div class="col-md-4">
-                        {{ form_row(form.preference.animaux) }}
-                    </div>
-                    <div class="col-md-4">
-                        {{ form_row(form.preference.autres) }}
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
-            {{ form_end(form) }}
-        {% endif %}
-    {% endif %}
 
     {% if utilisateur.typeUtilisateur == 'passager' %}
         <p class="alert alert-info mt-3">
@@ -81,21 +74,23 @@
         <h3 class="mt-4">🧾 Mes réservations en tant que passager</h3>
 
         {% if reservations is not empty %}
-            <ul class="list-group">
-                {% for reservation in reservations %}
-                    <li class="list-group-item">
-                        <span class="badge bg-success">🛣️ Réservation</span>
-                        <strong>{{ reservation.covoiturage.lieuDepart }}</strong> → <strong>{{ reservation.covoiturage.lieuArrivee }}</strong><br>
-                        📅 Date : {{ reservation.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
-                        💺 Places réservées : {{ reservation.placesReservees }}<br>
-                        💰 Payé : {{ reservation.montantPaye }} crédits<br>
-                        ✅ Statut : {{ reservation.statut }}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="text-muted">Vous n'avez pas encore de réservations.</p>
-        {% endif %}
+        {% for res in reservations %}
+            <div class="card p-3 mb-2">
+                <span class="badge bg-success mb-1">🛣️ Réservation</span><br>
+                <strong>{{ res.covoiturage.lieuDepart }}</strong> → <strong>{{ res.covoiturage.lieuArrivee }}</strong><br>
+                📅 Date : {{ res.covoiturage.dateDepart|date('d/m/Y') }} {{ res.covoiturage.heureDepart|date('H:i') }}<br>
+                💺 Places réservées : {{ res.placesReservees }}<br>
+                💰 Payé : {{ res.montantPaye }} crédits<br>
+                ✅ Statut : {{ res.statut }}<br>
+    
+                <form method="post" action="{{ path('cancel_reservation', { id: res.id }) }}" onsubmit="return confirm('Annuler votre participation ?');">
+                    <button type="submit" class="btn btn-warning btn-sm mt-2">Annuler ma participation</button>
+                </form>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Aucun covoiturage réservé.</p>
+    {% endif %}
     {% endif %}
 
     {% if utilisateur.typeUtilisateur in ['chauffeur', 'les_deux'] %}

@@ -19,7 +19,7 @@ class CovoiturageRepository extends ServiceEntityRepository
         ->andWhere('c.lieu_depart = :departure')
         ->andWhere('c.lieu_arrivee = :destination')
         ->andWhere('c.date_depart >= :date')
-        ->andWhere('c.nb_place > 0')
+        ->andWhere('c.nbPlace > 0')
         ->setParameter('departure', $departure)
         ->setParameter('destination', $destination)
         ->setParameter('date', $date)
@@ -33,13 +33,27 @@ class CovoiturageRepository extends ServiceEntityRepository
             ->andWhere('c.lieu_depart = :departure')
             ->andWhere('c.lieu_arrivee = :destination')
             ->andWhere('c.date_depart > :date')
-            ->andWhere('c.nb_place > 0')
+            ->andWhere('c.nbPlace > 0')
             ->setParameter('departure', $departure)
             ->setParameter('destination', $destination)
             ->setParameter('date', $date)
             ->getQuery()
             ->getResult();
     }
+
+    public function findWithReservations(int $id): ?Covoiturage
+{
+    return $this->createQueryBuilder('c')
+        ->leftJoin('c.reservations', 'r')
+        ->addSelect('r')
+        ->leftJoin('r.passenger', 'p') 
+        ->addSelect('p')
+        ->where('c.id = :id')
+        ->setParameter('id', $id)
+        ->getQuery()
+        ->getOneOrNullResult();
+}
+
 
     
 public function findFilteredRides(

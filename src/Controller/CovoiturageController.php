@@ -21,6 +21,10 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use App\Entity\Utilisateur;
 use App\Form\CovoiturageType;
+use App\Service\NotificationService;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+
 
 
 
@@ -204,78 +208,73 @@ public function edit(Request $request, EntityManagerInterface $em): Response
     ]);
 }
 
-//Annulation d’un covoiturage entier par le conducteur
-
 #[Route('/covoiturage/{id}/annuler', name: 'annuler_covoiturage')]
-    public function annuler(int $id, EntityManagerInterface $em, MailerInterface $mailer): Response
-    {
-        /** @var Utilisateur $user */
-        $user = $this->getUser();  // Cette ligne utilise la classe Utilisateur
-        $covoiturage = $em->getRepository(Covoiturage::class)->find($id);
+public function annuler(
+    int $id,
+    EntityManagerInterface $em,
+    NotificationService $notifier,
+    Request $request
+): Response {
+    /** @var Utilisateur $user */
+    $user = $this->getUser();  
+    $covoiturage = $em->getRepository(Covoiturage::class)->findWithReservations($id);
 
-        if (!$covoiturage) {
-            throw $this->createNotFoundException('Covoiturage non trouvé.');
-        }
+    if (!$covoiturage) {
+        throw $this->createNotFoundException('Covoiturage non trouvé.');
+    }
 
-        if ($covoiturage->getDriver() === $user) {
-            // Annulation par chauffeur
-            $reservations = $covoiturage->getReservations();
-
-            foreach ($reservations as $reservation) {
-                $passenger = $reservation->getPassenger();
-                
-                // Ajouter les crédits
-                $passenger->setCredits($passenger->getCredits() + $reservation->getPlacesReservees());
-
-                // Supprimer la réservation
-                $em->remove($reservation);
-
-                // Réajuster les places disponibles dans le covoiturage
-                $covoiturage->setNbPlace($covoiturage->getNbPlace() + $reservation->getPlacesReservees());
-
-                // Envoyer un email avec Symfony Mailer en utilisant Twig
-                $email = (new Email())
-                    ->from('noreply@tonsite.com')
-                    ->to($passenger->getEmail())
-                    ->subject('Annulation de covoiturage')
-                    ->html($this->renderView(
-                        'emails/annulation_covoiturage.html.twig', // Le template Twig
-                        [
-                            'prenom' => $passenger->getPrenom(),
-                            'depart' => $covoiturage->getLieuDepart(),
-                            'arrivee' => $covoiturage->getLieuArrivee(),
-                            'date' => $covoiturage->getDateDepart()->format('d/m/Y H:i'),
-                        ]
-                    ));
-
-                $mailer->send($email);
-            }
-
-            $em->remove($covoiturage);
-            $this->addFlash('success', 'Covoiturage annulé, les passagers ont été notifiés.');
-
-        } elseif ($reservation = $em->getRepository(Reservation::class)->findOneBy([
-            'covoiturage' => $covoiturage,
-            'passenger' => $user
-        ])) {
-            // Annulation par passager
-            $user->setCredits($user->getCredits() + $reservation->getPlacesReservees());
-            
-            // Réajuster les places disponibles dans le covoiturage
-            $covoiturage->setNbPlace($covoiturage->getNbPlace() + $reservation->getPlacesReservees());
-
-            // Supprimer la réservation
-            $em->remove($reservation);
-            $this->addFlash('success', 'Votre réservation a été annulée.');
-
-        } else {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas annuler ce covoiturage.');
-        }
-
+    //  Annulation par le conducteur
+    if ($covoiturage->getDriver()->getId() === $user->getId()) {
+        $notifier->notifyPassengersOfCancellation($covoiturage); 
+        $covoiturage->setIsCancelled(true); 
         $em->flush();
 
-        return $this->redirectToRoute('historique_covoiturages');
+        $this->addFlash('success', 'Covoiturage annulé. Les passagers ont été notifiés.');
+
+    //  Annulation par un passager
+    } elseif ($reservation = $em->getRepository(Reservation::class)->findOneBy([
+        'covoiturage' => $covoiturage,
+        'passenger' => $user
+    ])) {
+        $user->setCredits($user->getCredits() + $reservation->getPlacesReservees());
+        $covoiturage->setNbPlace($covoiturage->getNbPlace() + $reservation->getPlacesReservees());
+
+        $notifier->notifyPassengerOfCancellation($user, $covoiturage);
+
+        $em->remove($reservation);
+        $em->flush();
+
+        $this->addFlash('success', 'Votre réservation a été annulée et un email de confirmation vous a été envoyé.');
+    } else {
+        throw $this->createAccessDeniedException('Vous ne pouvez pas annuler ce covoiturage.');
     }
+
+    if ($request->isXmlHttpRequest()) {
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Réservation annulée avec succès.'
+        ]);
+    }
+
+    return $this->redirectToRoute('historique_covoiturages');
+}
+
+
+
+#[Route('/test-mail-annulation', name: 'test_mail')]
+public function testMail(MailerInterface $mailer): Response
+{
+    $email = (new Email())
+        ->from('noreply@tonsite.com')
+        ->to('tonemail@cheztoi.fr')
+        ->subject('Test annulation')
+        ->text('Ceci est un test manuel.');
+
+    $mailer->send($email);
+
+    return new Response('Mail envoyé');
+}
+
 
 
     #[Route('/covoiturage/creer', name: 'covoiturage_create')]
@@ -289,45 +288,45 @@ public function edit(Request $request, EntityManagerInterface $em): Response
             return $this->redirectToRoute('app_login');
         }
     
-        // Créer un nouvel objet Covoiturage
+        // on crée un nouvel objet Covoiturage
         $covoiturage = new Covoiturage();
         
-        // Définir le conducteur (l'utilisateur connecté)
+        // Définissons le conducteur (l'utilisateur connecté)
         $covoiturage->setDriver($user);
     
-        // Créer le formulaire de création de covoiturage
+        // Création du formulaire de création de covoiturage
         $form = $this->createForm(CovoiturageType::class, $covoiturage, [
-            'user' => $user, // Passer l'utilisateur comme option
+            'user' => $user, 
         ]);
     
-        // Traiter la requête du formulaire
+        // Traitons la requête du formulaire
         $form->handleRequest($request);
     
-        // Vérifier si le formulaire est soumis et valide
+        // Vérifions si le formulaire est soumis et valide
         if ($form->isSubmitted() && $form->isValid()) {
-            // Si la dateArrivee n'est pas définie, la calculer à partir de dateDepart
+            // Si la dateArrivee n'est pas définie,on la calcule à partir de dateDepart
             if (!$covoiturage->getDateArrivee()) {
                 $dateDepart = $covoiturage->getDateDepart();
                 if ($dateDepart instanceof \DateTime) {
-                    // Ajouter 2 heures à la date de départ pour définir la date d'arrivée
-                    $dateArrivee = clone $dateDepart;  // Cloner pour ne pas modifier $dateDepart
+                    // Ajoutons 2 heures à la date de départ pour définir la date d'arrivée
+                    $dateArrivee = clone $dateDepart;  
                     $dateArrivee->modify('+2 hours');
                     $covoiturage->setDateArrivee($dateArrivee);
                 }
             }
     
-            // Sauvegarder le covoiturage dans la base de données
+            // Sauvegardons le covoiturage dans la base de données
             $em->persist($covoiturage);
             $em->flush();
     
-            // Ajouter un message flash pour informer l'utilisateur du succès
+            // Ajoutons un message flash pour informer l'utilisateur du succès
             $this->addFlash('success', 'Votre covoiturage a été créé avec succès !');
     
-            // Rediriger vers la page de détails du covoiturage créé
+            // Redirigeons vers la page de détails du covoiturage créé
             return $this->redirectToRoute('covoiturage_details', ['id' => $covoiturage->getId()]);
         }
     
-        // Afficher le formulaire de création de covoiturage
+        // Affichons le formulaire de création de covoiturage
         return $this->render('covoiturage/create.html.twig', [
             'formCovoiturage' => $form->createView(),
         ]);

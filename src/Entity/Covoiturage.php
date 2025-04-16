@@ -23,6 +23,10 @@ class Covoiturage
     #[ORM\Column(type: Types::DATETIME_MUTABLE)] 
     private ?\DateTimeInterface $heure_depart = null;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isCancelled = false;
+
+
     #[ORM\Column(length: 50)]
     private ?string $lieu_depart = null;
 
@@ -285,6 +289,17 @@ public function getVoiture(): ?Voiture
 public function setVoiture(?Voiture $voiture): self
 {
     $this->voiture = $voiture;
+    return $this;
+}
+
+public function isCancelled(): bool
+{
+    return $this->isCancelled;
+}
+
+public function setIsCancelled(bool $isCancelled): self
+{
+    $this->isCancelled = $isCancelled;
     return $this;
 }
 }

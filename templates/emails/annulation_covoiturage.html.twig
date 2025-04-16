@@ -1,19 +1,59 @@
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Annulation de covoiturage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        h2 {
+            color: #2c3e50;
+        }
+        .details {
+            margin: 20px 0;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 6px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Bonjour {{ prenom }} 👋</h2>
+        <p>Nous sommes désolés de vous informer que votre covoiturage a été annulé par le conducteur.</p>
 
-{% block title %}Annulation de covoiturage{% endblock %}
+        <div class="details">
+            <p><strong>Départ :</strong> {{ depart }}</p>
+            <p><strong>Arrivée :</strong> {{ arrivee }}</p>
+            <p><strong>Date :</strong> {{ date }}</p>
+        </div>
+        {{ dump() }}
 
-{% block body %}
-    <p>Bonjour {{ prenom }},</p>
+        <p>Mais pas d'inquiétude 😊 ! Vos crédits vous ont été remboursés automatiquement.</p>
+        <p>Vous pouvez dès maintenant rechercher un autre trajet sur notre plateforme.</p>
 
-    <p>Le conducteur a annulé le covoiturage prévu :</p>
-    <ul>
-        <li><strong>Départ :</strong> {{ depart }}</li>
-        <li><strong>Arrivée :</strong> {{ arrivee }}</li>
-        <li><strong>Date :</strong> {{ date }}</li>
-    </ul>
+        <p>Merci de votre compréhension,<br>L'équipe EchoRide 🚗</p>
 
-    <p>Votre réservation a été annulée et vous avez été remboursé(e) en crédits.</p>
-
-    <p>Merci de votre compréhension.<br>
-    L'équipe de CovoitApp</p>
-{% endblock %}
+        <div class="footer">
+            Cet email a été généré automatiquement, merci de ne pas y répondre.
+        </div>
+    </div>
+</body>
+</html>

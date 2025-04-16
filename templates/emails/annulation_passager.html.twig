@@ -1,0 +1,14 @@
+<h2> Annulation de votre réservation</h2>
+
+<p>Bonjour {{ passenger.prenom }},</p>
+
+<p>Vous avez bien annulé votre participation au covoiturage suivant :</p>
+
+<ul>
+    <li><strong>Départ</strong> : {{ covoiturage.lieuDepart }}</li>
+    <li><strong>Arrivée</strong> : {{ covoiturage.lieuArrivee }}</li>
+    <li><strong>Date</strong> : {{ covoiturage.dateDepart|date('d/m/Y H:i') }}</li>
+</ul>
+
+<p>Vos crédits ont été remboursés.</p>
+<p>Merci et à bientôt !</p>

@@ -7,6 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Covoiturage;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: VoitureRepository::class)]
 class Voiture
@@ -22,8 +24,10 @@ class Voiture
     #[ORM\Column(length: 50)]
     private ?string $immatriculation = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $energie = null;
+    #[Assert\NotBlank(message: "L'énergie est obligatoire.")]
+    #[ORM\Column(type: 'string')]
+    private $energie;
+
 
     #[ORM\Column(type: 'integer')]
     private ?int $placesDisponibles = null;
@@ -42,9 +46,12 @@ class Voiture
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
-    #[ORM\ManyToOne(targetEntity: Preference::class)]
-    #[ORM\JoinColumn(name: 'preference_id', referencedColumnName: 'id')]
-    private ?Preference $preference = null;
+    // src/Entity/Voiture.php
+
+#[ORM\ManyToOne(targetEntity: Preference::class, cascade: ["persist"])]  // Ajout de cascade={"persist"}
+#[ORM\JoinColumn(name: 'preference_id', referencedColumnName: 'id')]
+private ?Preference $preference = null;
+
 
     #[ORM\OneToMany(mappedBy: 'voiture', targetEntity: Covoiturage::class)]
     private Collection $covoiturages;
