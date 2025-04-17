@@ -83,9 +83,6 @@
                 💰 Payé : {{ res.montantPaye }} crédits<br>
                 ✅ Statut : {{ res.statut }}<br>
     
-                <form method="post" action="{{ path('cancel_reservation', { id: res.id }) }}" onsubmit="return confirm('Annuler votre participation ?');">
-                    <button type="submit" class="btn btn-warning btn-sm mt-2">Annuler ma participation</button>
-                </form>
             </div>
         {% endfor %}
     {% else %}

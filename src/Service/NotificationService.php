@@ -32,7 +32,7 @@ class NotificationService
             $this->em->remove($reservation);
 
             // Email
-            $html = $this->twig->render('emails/annulation_conducteur.html.twig', [
+            $html = $this->twig->render('emails/annulation_covoiturage.html.twig', [
                 'passenger' => $passenger,
                 'driver' => $covoiturage->getDriver(),
                 'covoiturage' => $covoiturage,

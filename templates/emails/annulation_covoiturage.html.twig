@@ -36,15 +36,15 @@
 </head>
 <body>
     <div class="container">
-        <h2>Bonjour {{ prenom }} 👋</h2>
+        <h2>Bonjour {{ passenger.prenom }} 👋</h2>
         <p>Nous sommes désolés de vous informer que votre covoiturage a été annulé par le conducteur.</p>
 
         <div class="details">
-            <p><strong>Départ :</strong> {{ depart }}</p>
-            <p><strong>Arrivée :</strong> {{ arrivee }}</p>
-            <p><strong>Date :</strong> {{ date }}</p>
-        </div>
-        {{ dump() }}
+            <p><strong>Départ :</strong> {{ covoiturage.lieuDepart }}</p>
+            <p><strong>Arrivée :</strong> {{ covoiturage.lieuArrivee }}</p>
+            <p><strong>Date départ :</strong> {{ covoiturage.heureDepart|date('d/m/Y H:i') }}</p>
+        </div>        
+        
 
         <p>Mais pas d'inquiétude 😊 ! Vos crédits vous ont été remboursés automatiquement.</p>
         <p>Vous pouvez dès maintenant rechercher un autre trajet sur notre plateforme.</p>
