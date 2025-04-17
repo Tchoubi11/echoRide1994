@@ -14,8 +14,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Psr\Log\LoggerInterface;
 use App\Repository\ReservationRepository;
-use Symfony\Bundle\SecurityBundle\Security;  // Importation de la bonne classe
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Bundle\SecurityBundle\Security;  
 use App\Form\UtilisateurType;
 use App\Entity\Voiture;
 use App\Form\VoitureType;
@@ -111,34 +110,34 @@ class ReservationController extends AbstractController
     
 
     //Annulation d’une réservation par un passager 
-    #[Route('/reservation/{id}/cancel', name: 'cancel_reservation', methods: ['POST'])]
-    public function cancelReservation(int $id, EntityManagerInterface $em): JsonResponse
-    {
+     //#[Route('/reservation/{id}/cancel', name: 'cancel_reservation', methods: ['POST'])]
+    // public function cancelReservation(int $id, EntityManagerInterface $em): JsonResponse
+     //{
         // ici on récupére la réservation par son ID
-        $reservation = $em->getRepository(Reservation::class)->find($id);
+      //   $reservation = $em->getRepository(Reservation::class)->find($id);
 
-        if (!$reservation) {
-            return new JsonResponse(['success' => false, 'message' => 'Réservation introuvable.'], 404);
-        }
+      //   if (!$reservation) {
+        //     return new JsonResponse(['success' => false, 'message' => 'Réservation introuvable.'], 404);
+        // }
 
         // on vérifie si l'utilisateur connecté est bien celui qui a effectué la réservation
-        $user = $this->getUser();
-        if ($reservation->getPassenger() !== $user) {
-            return new JsonResponse(['success' => false, 'message' => 'Vous ne pouvez annuler que vos propres réservations.'], 403);
-        }
+        // $user = $this->getUser();
+        // if ($reservation->getPassenger() !== $user) {
+        //     return new JsonResponse(['success' => false, 'message' => 'Vous ne pouvez annuler que vos propres réservations.'], 403);
+        // }
 
         // on récupére le covoiturage associé à la réservation
-        $covoiturage = $reservation->getCovoiturage();
+        // $covoiturage = $reservation->getCovoiturage();
 
         // on reemett à jour le nombre de places disponibles
-        $covoiturage->setNbPlace($covoiturage->getNbPlace() + $reservation->getPlacesReservees());
+        // $covoiturage->setNbPlace($covoiturage->getNbPlace() + $reservation->getPlacesReservees());
 
         // Supprimons la réservation
-        $em->remove($reservation);
-        $em->flush();
+       //  $em->remove($reservation);
+        // $em->flush();
 
-        return new JsonResponse(['success' => true, 'message' => 'Réservation annulée avec succès.']);
-    }
+        // return new JsonResponse(['success' => true, 'message' => 'Réservation annulée avec succès.']);
+    // }
 
 
     #[Route('/mes-reservations', name: 'mes_reservations')]
@@ -156,9 +155,9 @@ class ReservationController extends AbstractController
     
         $formTypeUtilisateur = null;
         $formVehicule = null;
-        $covoituragesProposes = []; // ✅ initialisation ici
+        $covoituragesProposes = []; 
     
-        // === Formulaire de rôle utilisateur ===
+       
         $formTypeUtilisateur = $this->createForm(UtilisateurType::class, $user);
         $formTypeUtilisateur->handleRequest($request);
     
@@ -168,7 +167,7 @@ class ReservationController extends AbstractController
             return $this->redirectToRoute('mes_reservations');
         }
     
-        // === Formulaire d'ajout de véhicule ===
+       
         if (in_array(strtolower($user->getTypeUtilisateur()), ['chauffeur', 'les_deux'])) {
             $voiture = new Voiture();
             $voiture->setUtilisateur($user);
@@ -184,13 +183,13 @@ class ReservationController extends AbstractController
                 return $this->redirectToRoute('mes_reservations');
             }
     
-            // ✅ On récupère ici les covoiturages proposés (si utilisateur est chauffeur ou les deux)
+            // On récupère ici les covoiturages proposés (si utilisateur est chauffeur ou les deux)
             $covoituragesProposes = $em->getRepository(\App\Entity\Covoiturage::class)->findBy([
                 'driver' => $user,
             ]);
         }
     
-        // === Récupération des réservations ===
+       
         $reservations = $reservationRepository->findBy(['passenger' => $user]);
     
         return $this->render('utilisateur/espace_utilisateur.html.twig', [

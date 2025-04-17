@@ -17,8 +17,6 @@ use App\Entity\Preference;
 use App\Form\UtilisateurType;
 use App\Entity\Covoiturage;
 use App\Entity\Reservation;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 use App\Entity\Utilisateur;
 use App\Form\CovoiturageType;
 use App\Service\NotificationService;
@@ -52,14 +50,14 @@ class CovoiturageController extends AbstractController
     
         $searchPerformed = false;
         $rides = [];
-        $now = new \DateTime(); // La date actuelle
+        $now = new \DateTime(); 
     
         // Je récupère les critères de recherche sauvegardés si la requête est GET 
         if ($request->isMethod('GET') && $session->has('search_criteria')) {
             $data = $session->get('search_criteria');
             $dateDepartObj = new \DateTime($data['date_depart']);
     
-            // Appliquer la recherche en fonction de la date fournie
+            // J'applique la recherche en fonction de la date fournie
             $rides = $covoiturageRepository->findAvailableRides(
                 $data['lieu_depart'],
                 $data['lieu_arrivee'],
@@ -71,21 +69,21 @@ class CovoiturageController extends AbstractController
         // Si le formulaire est soumis, je traite la recherche normalement
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $dateDepartObj = $data['date_depart'] ?? $now; // Si aucune date n'est spécifiée, prendre la date actuelle
+            $dateDepartObj = $data['date_depart'] ?? $now; // Si aucune date n'est spécifiée, je prends la date actuelle
     
             if (!$dateDepartObj instanceof \DateTimeInterface) {
                 $dateDepartObj = \DateTime::createFromFormat('Y-m-d', (string) $dateDepartObj);
             }
     
             if ($dateDepartObj) {
-                // Effectuer la recherche en utilisant la date de départ fournie ou la date actuelle
+                // J'effectue la recherche en utilisant la date de départ fournie ou la date actuelle
                 $rides = $covoiturageRepository->findAvailableRides(
                     $data['lieu_depart'],
                     $data['lieu_arrivee'],
                     $dateDepartObj
                 );
     
-                // Sauvegarder les critères en session
+                // Je sauvegarde les critères en session
                 $session->set('search_criteria', [
                     'lieu_depart' => $data['lieu_depart'],
                     'lieu_arrivee' => $data['lieu_arrivee'],
@@ -211,7 +209,7 @@ public function edit(Request $request, EntityManagerInterface $em): Response
     ]);
 }
 
-#[Route('/covoiturage/{id}/annuler', name: 'annuler_covoiturage')]
+#[Route('/covoiturage/{id}/annuler', name: 'annuler_covoiturage', methods: ['POST'])]
 public function annuler(
     int $id,
     EntityManagerInterface $em,
@@ -235,7 +233,17 @@ public function annuler(
         // Annulation par le conducteur
         $covoiturage->setIsCancelled(true);
 
-        // Notifier les passagers si tu as un système pour ça
+        // Supprimer toutes les réservations et rembourser les passagers
+        foreach ($covoiturage->getReservations() as $reservation) {
+            $passenger = $reservation->getPassenger();
+
+            // Remboursement
+            $passenger->setCredits($passenger->getCredits() + $reservation->getPlacesReservees());
+
+            $em->remove($reservation);
+        }
+
+        // Notifier les passagers par mail
         $notifier->notifyPassengersOfCancellation($covoiturage);
 
         $em->flush();
@@ -252,14 +260,14 @@ public function annuler(
             throw $this->createAccessDeniedException('Vous n’avez pas de réservation sur ce covoiturage.');
         }
 
-        // Remboursement simple (1 crédit par place réservée)
+        // Remboursement
         $places = $reservation->getPlacesReservees();
         $user->setCredits($user->getCredits() + $places);
         $covoiturage->setNbPlace($covoiturage->getNbPlace() + $places);
 
         $em->remove($reservation);
 
-        // Notif passager
+        // Notification au passager
         $notifier->notifyPassengerOfCancellation($user, $covoiturage);
 
         $em->flush();
@@ -272,7 +280,6 @@ public function annuler(
 
     return $this->redirectToRoute('historique_covoiturages');
 }
-
 
 
     #[Route('/covoiturage/creer', name: 'covoiturage_create')]

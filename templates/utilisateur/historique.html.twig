@@ -8,10 +8,10 @@
         <div class="card p-3 mb-2">
             <strong>{{ covoiturage.lieuDepart }} → {{ covoiturage.lieuArrivee }}</strong><br>
             Départ : {{ covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
-            <a href="{{ path('annuler_covoiturage', { id: covoiturage.id }) }}" class="btn btn-danger btn-sm mt-2"
-               onclick="return confirm('Êtes-vous sûr(e) de vouloir annuler ce covoiturage ?');">
-                Annuler
-            </a>
+            <form method="post" action="{{ path('annuler_covoiturage', { id: covoiturage.id }) }}" onsubmit="return confirm('Êtes-vous sûr(e) de vouloir annuler ce covoiturage ?');">
+                <button class="btn btn-danger btn-sm mt-2" type="submit">Annuler le trajet</button>
+            </form>
+            
         </div>
     {% endfor %}
 {% else %}
@@ -26,10 +26,11 @@
         <div class="card p-3 mb-2">
             <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
             Départ : {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
-            <a href="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}" class="btn btn-warning btn-sm mt-2"
-               onclick="return confirm('Annuler votre participation ?');">
-                Annuler ma participation
-            </a>
+            <form method="post" action="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}"
+      onsubmit="return confirm('Annuler votre participation ?');" style="display: inline;">
+    <button type="submit" class="btn btn-warning btn-sm mt-2">Annuler ma participation</button>
+</form>
+
         </div>
     {% endfor %}
 {% else %}

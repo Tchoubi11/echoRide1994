@@ -17,38 +17,45 @@ class NotificationService
         private Environment $twig
     ) {}
 
-    //  Quand le conducteur annule :je notifie tous les passagers
+    
     public function notifyPassengersOfCancellation(Covoiturage $covoiturage): void
     {
         $reservations = $covoiturage->getReservations();
-
+    
         foreach ($reservations as $reservation) {
             $passenger = $reservation->getPassenger();
-
-            // Remboursement
+    
+            // 🔒 Ignorer le conducteur s'il est aussi passager (réservation à son propre covoiturage)
+            if ($passenger->getId() === $covoiturage->getDriver()->getId()) {
+                continue;
+            }
+    
+            // ✅ Remboursement des crédits
             $passenger->setCredits($passenger->getCredits() + $reservation->getPlacesReservees());
-
-            // Suppression de la réservation
+    
+            // ✅ Suppression de la réservation
             $this->em->remove($reservation);
-
-            // Email
+    
+            // ✅ Envoi de l'email de notification
             $html = $this->twig->render('emails/annulation_covoiturage.html.twig', [
                 'passenger' => $passenger,
                 'driver' => $covoiturage->getDriver(),
                 'covoiturage' => $covoiturage,
             ]);
-
+    
             $email = (new Email())
                 ->from('noreply@tonsite.com')
                 ->to($passenger->getEmail() ?? 'dev@localhost')
                 ->subject('🚗 Covoiturage annulé')
                 ->html($html);
-
+    
             $this->mailer->send($email);
         }
-
+    
+        // ✅ Sauvegarde des changements
         $this->em->flush();
     }
+    
 
     // ✅ Quand un passager annule, il reçoit un email
     public function notifyPassengerOfCancellation(Utilisateur $passenger, Covoiturage $covoiturage): void
