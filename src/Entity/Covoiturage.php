@@ -23,8 +23,9 @@ class Covoiturage
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $heure_arrivee = null;
 
-    #[ORM\Column(type: 'boolean')]
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isCancelled = false;
+    
 
     #[ORM\Column(length: 50)]
     private ?string $lieu_depart = null;
@@ -79,7 +80,7 @@ class Covoiturage
         return $this->id;
     }
 
-    // ✅ Aliases utilisés par le formulaire Symfony
+    
     public function getDateDepart(): ?\DateTimeInterface
     {
         return $this->heure_depart;

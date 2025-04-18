@@ -230,27 +230,17 @@ public function annuler(
     $isDriver = $covoiturage->getDriver()->getId() === $user->getId();
 
     if ($isDriver) {
-        // Annulation par le conducteur
+        // ✅ Marquer le covoiturage comme annulé
         $covoiturage->setIsCancelled(true);
 
-        // Supprimer toutes les réservations et rembourser les passagers
-        foreach ($covoiturage->getReservations() as $reservation) {
-            $passenger = $reservation->getPassenger();
+        $em->flush(); // ✅ Important : flush AVANT la notification
 
-            // Remboursement
-            $passenger->setCredits($passenger->getCredits() + $reservation->getPlacesReservees());
-
-            $em->remove($reservation);
-        }
-
-        // Notifier les passagers par mail
+        // ✅ Notifier tous les passagers + suppression
         $notifier->notifyPassengersOfCancellation($covoiturage);
 
-        $em->flush();
         $this->addFlash('success', 'Covoiturage annulé avec succès.');
-
     } else {
-        // Annulation par un passager
+        // ✅ Annulation par un passager
         $reservation = $em->getRepository(Reservation::class)->findOneBy([
             'covoiturage' => $covoiturage,
             'passenger' => $user
@@ -260,17 +250,16 @@ public function annuler(
             throw $this->createAccessDeniedException('Vous n’avez pas de réservation sur ce covoiturage.');
         }
 
-        // Remboursement
         $places = $reservation->getPlacesReservees();
         $user->setCredits($user->getCredits() + $places);
         $covoiturage->setNbPlace($covoiturage->getNbPlace() + $places);
 
         $em->remove($reservation);
+        $em->flush(); // ✅ Important ici aussi
 
-        // Notification au passager
+        // ✅ Notifier uniquement ce passager
         $notifier->notifyPassengerOfCancellation($user, $covoiturage);
 
-        $em->flush();
         $this->addFlash('success', 'Réservation annulée avec succès.');
     }
 

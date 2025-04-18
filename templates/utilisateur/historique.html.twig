@@ -3,15 +3,21 @@
 {% block body %}
 
 <h2>Mes covoiturages en tant que conducteur</h2>
+
 {% if covoiturages is not empty %}
     {% for covoiturage in covoiturages %}
         <div class="card p-3 mb-2">
             <strong>{{ covoiturage.lieuDepart }} → {{ covoiturage.lieuArrivee }}</strong><br>
             Départ : {{ covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
-            <form method="post" action="{{ path('annuler_covoiturage', { id: covoiturage.id }) }}" onsubmit="return confirm('Êtes-vous sûr(e) de vouloir annuler ce covoiturage ?');">
-                <button class="btn btn-danger btn-sm mt-2" type="submit">Annuler le trajet</button>
-            </form>
-            
+
+            {% if covoiturage.isCancelled %}
+                <span class="badge bg-danger mt-2">Ce covoiturage a été annulé</span>
+            {% else %}
+                <form method="post" action="{{ path('annuler_covoiturage', { id: covoiturage.id }) }}" 
+                      onsubmit="return confirm('Êtes-vous sûr(e) de vouloir annuler ce covoiturage ?');">
+                    <button class="btn btn-danger btn-sm mt-2" type="submit">Annuler le trajet</button>
+                </form>
+            {% endif %}
         </div>
     {% endfor %}
 {% else %}
@@ -26,25 +32,25 @@
         <div class="card p-3 mb-2">
             <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
             Départ : {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
-            <form method="post" action="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}"
-      onsubmit="return confirm('Annuler votre participation ?');" style="display: inline;">
-    <button type="submit" class="btn btn-warning btn-sm mt-2">Annuler ma participation</button>
-</form>
+
+            {% if res.covoiturage.isCancelled == false %}
+                <form method="post" action="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}"
+                      onsubmit="return confirm('Annuler votre participation ?');" style="display: inline;">
+                    <button type="submit" class="btn btn-warning btn-sm mt-2">Annuler ma participation</button>
+                </form>
+            {% else %}
+                <span class="badge bg-danger mt-2">Trajet annulé</span>
+            {% endif %}
 
         </div>
     {% endfor %}
 {% else %}
     <p>Aucun covoiturage réservé.</p>
 {% endif %}
+
 <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
-    <a href="{{ path('user_profile') }}" class="btn btn-secondary">
-        👤 Retour sur mon profil
-    </a>
-
-    <a href="{{ path('app_home') }}" class="btn btn-primary">
-        ⬅ Retour à l'accueil
-    </a>
+    <a href="{{ path('user_profile') }}" class="btn btn-secondary">👤 Retour sur mon profil</a>
+    <a href="{{ path('app_home') }}" class="btn btn-primary">⬅ Retour à l'accueil</a>
 </div>
-
 
 {% endblock %}
