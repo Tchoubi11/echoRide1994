@@ -13,6 +13,12 @@
             <p><strong>Prix :</strong> {{ ride.prixPersonne }} Crédits</p>
             <p><strong>Date et Heure de départ :</strong> {{ ride.dateDepart|date('d/m/Y') }} à {{ ride.heureDepart|date('H:i') }}</p>
             <p><strong>Date et Heure d'arrivée :</strong> {{ ride.dateArrivee|date('d/m/Y') }} à {{ ride.heureArrivee|date('H:i') }}</p>
+            
+          {% if ride.isStarted %}
+          <p><strong>Statut :</strong> Ce covoiturage a commencé à {{ ride.startAt ? ride.startAt|date('d/m/Y H:i') : 'N/A' }}</p>
+          {% else %}
+          <p><strong>Statut :</strong> Le covoiturage n'a pas encore commencé.</p>
+          {% endif %}
             <p><strong>Voyage écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
 
             <!-- Véhicule -->
@@ -114,14 +120,19 @@
         <div class="d-flex gap-2 mt-3">
             <a href="{{ path('search_route') }}" class="btn btn-primary">Retour à la liste des covoiturages</a>
         
-            {% if rideId is defined and rideId is not null %}
-                <form method="post" action="{{ path('participer_covoiturage', {'rideId': rideId}) }}">
+            {% if ride.isStarted %}
+                <!-- Le covoiturage a démarré, on n'affiche pas le bouton "Participer" -->
+                <p class="text-muted mt-2">🚗 Le covoiturage a déjà démarré. Vous ne pouvez plus participer à ce trajet.</p>
+            {% elseif rideId is defined and rideId is not null %}
+                <!-- Le covoiturage n'a pas démarré, on affiche le bouton "Participer" -->
+                <form method="post" action="{{ path('participer_covoiturage', {'rideId': ride.id}) }}">
                     <button type="submit" class="btn btn-success">Participer</button>
                 </form>
             {% else %}
                 <p class="text-danger">Erreur : l'ID du covoiturage est manquant.</p>
             {% endif %}
         </div>
+        
 
         {% if app.user and (ride.nbPlace <= 0 or app.user.credits < ride.prixPersonne) %}
             <p class="mt-3 text-danger">

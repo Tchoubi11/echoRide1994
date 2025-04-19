@@ -25,6 +25,13 @@ class Covoiturage
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isCancelled = false;
+
+    #[ORM\Column(type: 'boolean')]
+   private bool $isStarted = false;
+
+  #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+   private ?\DateTimeImmutable $startAt = null;
+
     
 
     #[ORM\Column(length: 50)]
@@ -291,4 +298,26 @@ class Covoiturage
         $this->isCancelled = $isCancelled;
         return $this;
     }
+
+    public function isStarted(): bool
+{
+    return $this->isStarted;
+}
+
+public function setIsStarted(bool $isStarted): self
+{
+    $this->isStarted = $isStarted;
+    return $this;
+}
+
+public function getStartAt(): ?\DateTimeImmutable
+{
+    return $this->startAt;
+}
+
+public function setStartAt(?\DateTimeImmutable $startAt): self
+{
+    $this->startAt = $startAt;
+    return $this;
+}
 }

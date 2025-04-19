@@ -328,5 +328,23 @@ public function annuler(
         ]);
     }
     
-
+    #[Route('/covoiturage/{id}/demarrer', name: 'demarrer_covoiturage')]
+    public function demarrer(int $id, EntityManagerInterface $em): Response
+    {
+        $ride = $em->getRepository(Covoiturage::class)->find($id);
+    
+        if (!$ride) {
+            throw $this->createNotFoundException('Covoiturage non trouvé.');
+        }
+    
+        $ride->setIsStarted(true);
+        $ride->setStartAt(new \DateTimeImmutable());
+    
+        $em->flush();
+    
+        $this->addFlash('success', 'Covoiturage démarré avec succès.');
+    
+        return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
+    }
+    
 }

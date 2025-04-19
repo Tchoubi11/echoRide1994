@@ -17,6 +17,16 @@
                       onsubmit="return confirm('Êtes-vous sûr(e) de vouloir annuler ce covoiturage ?');">
                     <button class="btn btn-danger btn-sm mt-2" type="submit">Annuler le trajet</button>
                 </form>
+
+                {% if not covoiturage.isStarted %}
+                    <form method="post" action="{{ path('demarrer_covoiturage', {id: covoiturage.id}) }}">
+                        <button class="btn btn-primary btn-sm mt-2">🚀 Démarrer</button>
+                    </form>
+                {% else %}
+                    <span class="badge bg-success mt-2">
+                        Trajet démarré à {{ covoiturage.startAt ? covoiturage.startAt|date('d/m/Y H:i') : 'Heure inconnue' }}
+                    </span>
+                {% endif %}
             {% endif %}
         </div>
     {% endfor %}
@@ -41,7 +51,6 @@
             {% else %}
                 <span class="badge bg-danger mt-2">Trajet annulé</span>
             {% endif %}
-
         </div>
     {% endfor %}
 {% else %}
