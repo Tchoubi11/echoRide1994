@@ -19,14 +19,18 @@
                 </form>
 
                 {% if not covoiturage.isStarted %}
-                    <form method="post" action="{{ path('demarrer_covoiturage', {id: covoiturage.id}) }}">
-                        <button class="btn btn-primary btn-sm mt-2">🚀 Démarrer</button>
-                    </form>
-                {% else %}
-                    <span class="badge bg-success mt-2">
-                        Trajet démarré à {{ covoiturage.startAt ? covoiturage.startAt|date('d/m/Y H:i') : 'Heure inconnue' }}
-                    </span>
-                {% endif %}
+    <form method="post" action="{{ path('demarrer_covoiturage', {id: covoiturage.id}) }}">
+        <button class="btn btn-primary btn-sm mt-2">🚀 Démarrer</button>
+    </form>
+{% elseif covoiturage.isStarted and not covoiturage.isCompleted %}
+    <form method="post" action="{{ path('arriver_covoiturage', {id: covoiturage.id}) }}">
+        <button class="btn btn-success btn-sm mt-2">🏁 Arrivée à destination</button>
+    </form>
+    <p class="text-muted mt-1">Démarré à {{ covoiturage.startAt|date('d/m/Y H:i') }}</p>
+{% else %}
+    <span class="badge bg-secondary mt-2">Trajet terminé à {{ covoiturage.endAt ? covoiturage.endAt|date('d/m/Y H:i') : 'Heure inconnue' }}</span>
+{% endif %}
+
             {% endif %}
         </div>
     {% endfor %}

@@ -1,147 +1,148 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="container mt-5">
-        <h2>Détails du covoiturage</h2>
+<div class="container mt-5">
+    <h2>Détails du covoiturage</h2>
 
-        <div class="card p-3 shadow-sm">
-            <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" alt="Photo du chauffeur" class="driver-photo-icon" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
-            <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.pseudo }}</p>
-            <p><strong>{{ ride.driver.pseudo }}</strong> ({{ ride.driver.rating }} ⭐)</p>
-            <p><strong>Lieu de départ :</strong> {{ ride.lieuDepart }}</p>
-            <p><strong>Lieu d'arrivée :</strong> {{ ride.lieuArrivee }}</p>
-            <p><strong>Prix :</strong> {{ ride.prixPersonne }} Crédits</p>
-            <p><strong>Date et Heure de départ :</strong> {{ ride.dateDepart|date('d/m/Y') }} à {{ ride.heureDepart|date('H:i') }}</p>
-            <p><strong>Date et Heure d'arrivée :</strong> {{ ride.dateArrivee|date('d/m/Y') }} à {{ ride.heureArrivee|date('H:i') }}</p>
-            
-          {% if ride.isStarted %}
-          <p><strong>Statut :</strong> Ce covoiturage a commencé à {{ ride.startAt ? ride.startAt|date('d/m/Y H:i') : 'N/A' }}</p>
-          {% else %}
-          <p><strong>Statut :</strong> Le covoiturage n'a pas encore commencé.</p>
-          {% endif %}
-            <p><strong>Voyage écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
+    <div class="card p-3 shadow-sm">
+        <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" alt="Photo du chauffeur" class="driver-photo-icon" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+        <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.pseudo }}</p>
+        <p><strong>{{ ride.driver.pseudo }}</strong> ({{ ride.driver.rating }} ⭐)</p>
+        <p><strong>Lieu de départ :</strong> {{ ride.lieuDepart }}</p>
+        <p><strong>Lieu d'arrivée :</strong> {{ ride.lieuArrivee }}</p>
+        <p><strong>Prix :</strong> {{ ride.prixPersonne }} Crédits</p>
 
-            <!-- Véhicule -->
-            <p><strong>Véhicule :</strong></p>
-            {% if driverCar %}
-                <p><strong>Marque et Modèle :</strong> {{ driverCar.marque.libelle }} - {{ driverCar.modele }}</p>
-                <p><strong>Énergie utilisée :</strong> {{ driverCar.energie }}</p>
-            {% else %}
-                <p>Aucune voiture associée à ce conducteur.</p>
+        <hr>
+        <h5>📅 Horaires planifiés :</h5>
+        <p><strong>Départ prévu :</strong> {{ ride.dateDepart|date('d/m/Y') }} à {{ ride.heureDepart|date('H:i') }}</p>
+        <p><strong>Arrivée prévue :</strong> {{ ride.dateArrivee|date('d/m/Y') }} à {{ ride.heureArrivee|date('H:i') }}</p>
+
+        {% if ride.isStarted %}
+            <hr>
+            <h5>🕒 Informations en temps réel :</h5>
+            <p><strong>Départ réel :</strong> {{ ride.startAt ? ride.startAt|date('d/m/Y H:i') : 'N/A' }}</p>
+            {% if ride.isCompleted %}
+                <p><strong>Arrivée réelle :</strong> {{ ride.endAt ? ride.endAt|date('d/m/Y H:i') : 'N/A' }}</p>
             {% endif %}
+        {% else %}
+            <p><strong>Statut :</strong> Le covoiturage n'a pas encore commencé.</p>
+        {% endif %}
 
-            <h3>Commentaires</h3>
+        <p><strong>Voyage écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
+
+        <!-- Véhicule -->
+        <p><strong>Véhicule :</strong></p>
+        {% if driverCar %}
+            <p><strong>Marque et Modèle :</strong> {{ driverCar.marque.libelle }} - {{ driverCar.modele }}</p>
+            <p><strong>Énergie utilisée :</strong> {{ driverCar.energie }}</p>
+        {% else %}
+            <p>Aucune voiture associée à ce conducteur.</p>
+        {% endif %}
+
+        <h3>Commentaires</h3>
+        <ul>
+            {% for avis in driverReviews %}
+                <li><strong>{{ avis.user.pseudo }}</strong>: {{ avis.commentaire }} - {{ avis.note }}⭐</li>
+            {% endfor %}
+        </ul>
+        {% if driverReviews is empty %}
+            <p>Aucun avis pour ce conducteur.</p>
+        {% endif %}
+
+        {% if app.user %}
+            {% set hasReviewed = driverReviews|filter(r => r.user == app.user)|length > 0 %}
+            {% if not hasReviewed %}
+                <h3>Ajouter un avis</h3>
+                {{ form_start(form, {'action': path('covoiturage_details', {'id': ride.id})}) }}
+                    <div class="form-group">
+                        {{ form_row(form.commentaire) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form_row(form.note) }}
+                    </div>
+                    <button class="btn btn-primary" type="submit">Ajouter l'avis</button>
+                {{ form_end(form) }}
+            {% else %}
+                <p>Vous avez déjà laissé un avis pour ce conducteur.</p>
+            {% endif %}
+        {% else %}
+            <p>Vous devez être connecté pour laisser un avis.</p>
+        {% endif %}
+
+        <p><strong>Préférences du conducteur :</strong></p>
+        {% if driverPreferences %}
             <ul>
-                {% for avis in driverReviews %}
-                    <li><strong>{{ avis.user.pseudo }}</strong>: {{ avis.commentaire }} - {{ avis.note }}⭐</li>
-                {% endfor %}
+                <li><strong>Fumeur :</strong> {{ driverPreferences.fumeur ? 'Oui' : 'Non' }}</li>
+                <li><strong>Animaux :</strong> {{ driverPreferences.animaux ? 'Oui' : 'Non' }}</li>
+                <li><strong>Autres :</strong> 
+                    {% if driverPreferences.autres is not empty %}
+                        {{ driverPreferences.autres|join(', ') }}
+                    {% else %}
+                        Aucune
+                    {% endif %}
+                </li>
             </ul>
-            {% if driverReviews is empty %}
-                <p>Aucun avis pour ce conducteur.</p>
-            {% endif %}
+        {% else %}
+            <p>Aucune préférence spécifiée.</p>
+        {% endif %}
 
-            {% if app.user %}
-                {% set hasReviewed = driverReviews|filter(r => r.user == app.user)|length > 0 %}
-                {% if not hasReviewed %}
-                    <h3>Ajouter un avis</h3>
-                    {{ form_start(form, {'action': path('covoiturage_details', {'id': ride.id})}) }}
-                        <div class="form-group">
-                            {{ form_row(form.commentaire) }}
-                        </div>
-                        <div class="form-group">
-                            {{ form_row(form.note) }}
-                        </div>
-                        <button class="btn btn-primary" type="submit">Ajouter l'avis</button>
-                    {{ form_end(form) }}
-                {% else %}
-                    <p>Vous avez déjà laissé un avis pour ce conducteur.</p>
-                {% endif %}
-            {% else %}
-                <p>Vous devez être connecté pour laisser un avis.</p>
-            {% endif %}
+        <h3>Vos préférences :</h3>
+        {{ form_start(preferenceForm) }}
+            <div class="mb-3">
+                {{ form_label(preferenceForm.fumeur) }}
+                {{ form_widget(preferenceForm.fumeur) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(preferenceForm.animaux) }}
+                {{ form_widget(preferenceForm.animaux) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(preferenceForm.autres) }}
+                {{ form_widget(preferenceForm.autres) }}
+            </div>
+            <button class="btn btn-primary">
+                {{ userPreferences.id ? 'Mettre à jour mes préférences' : 'Enregistrer mes préférences' }}
+            </button>
+        {{ form_end(preferenceForm) }}
 
-            <p><strong>Préférences du conducteur :</strong></p>
-
-{% if driverPreferences %}
-    <ul>
-        <li><strong>Fumeur :</strong> {{ driverPreferences.fumeur ? 'Oui' : 'Non' }}</li>
-        <li><strong>Animaux :</strong> {{ driverPreferences.animaux ? 'Oui' : 'Non' }}</li>
-        <li><strong>Autres :</strong> 
-            {% if driverPreferences.autres is not empty %}
-                {{ driverPreferences.autres|join(', ') }}
-            {% else %}
-                Aucune
-            {% endif %}
-        </li>
-    </ul>
-{% else %}
-    <p>Aucune préférence spécifiée.</p>
-{% endif %}
-
-
-            <h3>Vos préférences :</h3>
-            
-            {{ form_start(preferenceForm) }}
-                <div class="mb-3">
-                    {{ form_label(preferenceForm.fumeur) }}
-                    {{ form_widget(preferenceForm.fumeur) }}
-                </div>
-                <div class="mb-3">
-                    {{ form_label(preferenceForm.animaux) }}
-                    {{ form_widget(preferenceForm.animaux) }}
-                </div>
-                <div class="mb-3">
-                    {{ form_label(preferenceForm.autres) }}
-                    {{ form_widget(preferenceForm.autres) }}
-                </div>
-            
-                <button class="btn btn-primary">
-                    {{ userPreferences.id ? 'Mettre à jour mes préférences' : 'Enregistrer mes préférences' }}
-                </button>
-            {{ form_end(preferenceForm) }}
-            
-            {% if userPreferences.id %}
-                <h4 class="mt-4">Préférences enregistrées :</h4>
-                <ul>
-                    <li><strong>Fumeur :</strong> {{ userPreferences.fumeur ? 'Oui' : 'Non' }}</li>
-                    <li><strong>Animaux :</strong> {{ userPreferences.animaux ? 'Oui' : 'Non' }}</li>
-                    <li><strong>Autres :</strong> 
-                        {% if userPreferences.autres is not empty %}
-                            {{ userPreferences.autres|join(', ') }}
-                        {% else %}
-                            Aucune
-                        {% endif %}
-                    </li>
-                </ul>
-            {% endif %}
-            
-        </div>
-
-        <div class="d-flex gap-2 mt-3">
-            <a href="{{ path('search_route') }}" class="btn btn-primary">Retour à la liste des covoiturages</a>
-        
-            {% if ride.isStarted %}
-                <!-- Le covoiturage a démarré, on n'affiche pas le bouton "Participer" -->
-                <p class="text-muted mt-2">🚗 Le covoiturage a déjà démarré. Vous ne pouvez plus participer à ce trajet.</p>
-            {% elseif rideId is defined and rideId is not null %}
-                <!-- Le covoiturage n'a pas démarré, on affiche le bouton "Participer" -->
-                <form method="post" action="{{ path('participer_covoiturage', {'rideId': ride.id}) }}">
-                    <button type="submit" class="btn btn-success">Participer</button>
-                </form>
-            {% else %}
-                <p class="text-danger">Erreur : l'ID du covoiturage est manquant.</p>
-            {% endif %}
-        </div>
-        
-
-        {% if app.user and (ride.nbPlace <= 0 or app.user.credits < ride.prixPersonne) %}
-            <p class="mt-3 text-danger">
-                {% if ride.nbPlace <= 0 %}
-                    Plus de places disponibles.
-                {% elseif app.user.credits < ride.prixPersonne %}  
-                    <strong>Attention !!! Il ne vous reste plus assez de crédits.</strong>  
-                {% endif %}
-            </p>
+        {% if userPreferences.id %}
+            <h4 class="mt-4">Préférences enregistrées :</h4>
+            <ul>
+                <li><strong>Fumeur :</strong> {{ userPreferences.fumeur ? 'Oui' : 'Non' }}</li>
+                <li><strong>Animaux :</strong> {{ userPreferences.animaux ? 'Oui' : 'Non' }}</li>
+                <li><strong>Autres :</strong> 
+                    {% if userPreferences.autres is not empty %}
+                        {{ userPreferences.autres|join(', ') }}
+                    {% else %}
+                        Aucune
+                    {% endif %}
+                </li>
+            </ul>
         {% endif %}
     </div>
+
+    <div class="d-flex gap-2 mt-3">
+        <a href="{{ path('search_route') }}" class="btn btn-primary">Retour à la liste des covoiturages</a>
+
+        {% if ride.isStarted %}
+            <p class="text-muted mt-2">🚗 Le covoiturage a déjà démarré. Vous ne pouvez plus participer à ce trajet.</p>
+        {% elseif rideId is defined and rideId is not null %}
+            <form method="post" action="{{ path('participer_covoiturage', {'rideId': ride.id}) }}">
+                <button type="submit" class="btn btn-success">Participer</button>
+            </form>
+        {% else %}
+            <p class="text-danger">Erreur : l'ID du covoiturage est manquant.</p>
+        {% endif %}
+    </div>
+
+    {% if app.user and (ride.nbPlace <= 0 or app.user.credits < ride.prixPersonne) %}
+        <p class="mt-3 text-danger">
+            {% if ride.nbPlace <= 0 %}
+                Plus de places disponibles.
+            {% elseif app.user.credits < ride.prixPersonne %}
+                <strong>Attention !!! Il ne vous reste plus assez de crédits.</strong>
+            {% endif %}
+        </p>
+    {% endif %}
+</div>
 {% endblock %}

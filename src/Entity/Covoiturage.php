@@ -32,7 +32,12 @@ class Covoiturage
   #[ORM\Column(type: 'datetime_immutable', nullable: true)]
    private ?\DateTimeImmutable $startAt = null;
 
-    
+   #[ORM\Column(type: 'boolean')]
+   private bool $isCompleted = false;
+   
+   #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+   private ?\DateTimeImmutable $endAt = null;
+   
 
     #[ORM\Column(length: 50)]
     private ?string $lieu_depart = null;
@@ -320,4 +325,27 @@ public function setStartAt(?\DateTimeImmutable $startAt): self
     $this->startAt = $startAt;
     return $this;
 }
+
+public function isCompleted(): bool
+{
+    return $this->isCompleted;
+}
+
+public function setIsCompleted(bool $isCompleted): self
+{
+    $this->isCompleted = $isCompleted;
+    return $this;
+}
+
+public function getEndAt(): ?\DateTimeImmutable
+{
+    return $this->endAt;
+}
+
+public function setEndAt(?\DateTimeImmutable $endAt): self
+{
+    $this->endAt = $endAt;
+    return $this;
+}
+
 }

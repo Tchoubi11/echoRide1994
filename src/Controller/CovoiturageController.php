@@ -347,4 +347,28 @@ public function annuler(
         return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
     }
     
+    #[Route('/covoiturage/{id}/arriver', name: 'arriver_covoiturage')]
+public function arriver(int $id, EntityManagerInterface $em): Response
+{
+    $ride = $em->getRepository(Covoiturage::class)->find($id);
+
+    if (!$ride) {
+        throw $this->createNotFoundException('Covoiturage non trouvé.');
+    }
+
+    if (!$ride->isStarted()) {
+        $this->addFlash('warning', 'Vous ne pouvez terminer un trajet qui n’a pas commencé.');
+        return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
+    }
+
+    $ride->setIsCompleted(true);
+    $ride->setEndAt(new \DateTimeImmutable());
+
+    $em->flush();
+
+    $this->addFlash('success', 'Trajet marqué comme terminé avec succès.');
+
+    return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
+}
+
 }
