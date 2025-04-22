@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes trajets à valider{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Validation post-trajet</h2>
+
+        {% for participation in participations %}
+            <div class="card p-4 mb-4 shadow-sm">
+                <p><strong>Trajet :</strong> {{ participation.covoiturage.lieuDepart }} → {{ participation.covoiturage.lieuArrivee }}</p>
+                <p><strong>Date :</strong> {{ participation.covoiturage.dateDepart|date('d/m/Y H:i') }}</p>
+
+                {{ form_start(participationForms[participation.id]) }}
+
+                    <div class="form-check mb-2">
+                        {{ form_row(participationForms[participation.id].isValidatedByPassenger) }}
+                    </div>
+
+                    <div class="form-group mb-2">
+                        {{ form_label(participationForms[participation.id].passengerFeedback) }}
+                        {{ form_widget(participationForms[participation.id].passengerFeedback) }}
+                    </div>
+
+                    <div class="form-group mb-2">
+                        {{ form_label(participationForms[participation.id].passengerNote) }}
+                        {{ form_widget(participationForms[participation.id].passengerNote) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-2">Envoyer</button>
+                {{ form_end(participationForms[participation.id]) }}
+            </div>
+        {% else %}
+            <p>Aucun trajet à valider pour le moment.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

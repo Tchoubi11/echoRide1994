@@ -15,6 +15,10 @@ use App\Form\UtilisateurType;
 use App\Entity\Reservation;
 use App\Entity\Covoiturage;
 use App\Form\CovoiturageType;
+use App\Service\NotificationService;
+use Symfony\Bundle\SecurityBundle\Security; 
+use App\Form\ReservationValidationType;
+
 
 class UtilisateurController extends AbstractController
 {
@@ -62,7 +66,7 @@ class UtilisateurController extends AbstractController
     
         if ($formTypeUtilisateur->isSubmitted() && $formTypeUtilisateur->isValid()) {
             $this->entityManager->flush();
-            $this->addFlash('success', 'Type d’utilisateur mis à jour.');
+            $this->addFlash('success', 'Type d\'utilisateur mis à jour.');
             return $this->redirectToRoute('espace_utilisateur');
         }
     
@@ -107,13 +111,13 @@ class UtilisateurController extends AbstractController
             ]);
             $formCovoiturage->handleRequest($request);
     
-            // 🔁 Correction ici : calcul de la date d’arrivée après handleRequest
+            // Correction ici : calcul de la date d’arrivée après handleRequest
             if ($formCovoiturage->isSubmitted()) {
                 dump($covoiturage->getNbPlace());
                 if ($covoiturage->getDateDepart() && !$covoiturage->getDateArrivee()) {
                     $dateDepart = $covoiturage->getDateDepart();
                     $dateArrivee = new \DateTime($dateDepart->format('Y-m-d H:i:s'));
-                    $dateArrivee->modify('+2 hours'); // Ajout d'une durée de 2 heures
+                    $dateArrivee->modify('+2 hours'); 
     
                     $covoiturage->setDateArrivee($dateArrivee);
                 }
@@ -158,4 +162,56 @@ class UtilisateurController extends AbstractController
             'covoiturages' => $enTantQueConducteur,
         ]);
     }
+
+    
+    #[Route('/mon-espace/covoiturages-a-valider', name: 'reservations_to_validate')]
+    public function validateReservations(
+        Request $request,
+        EntityManagerInterface $em,
+        NotificationService $notificationService,
+        Security $security
+    ): Response {
+        $user = $security->getUser();
+
+        $reservations = $em->getRepository(Reservation::class)->findBy([
+            'passenger' => $user,
+            'isValidatedByPassenger' => null, // uniquement celles pas encore validées
+        ]);
+
+        $forms = [];
+
+        foreach ($reservations as $reservation) {
+            $form = $this->createForm(ReservationValidationType::class, $reservation);
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $data = $form->getData();
+
+                if ($reservation->getIsValidatedByPassenger()) {
+                    $chauffeur = $reservation->getCovoiturage()->getDriver();
+                    $chauffeur->setCredits(
+                        $chauffeur->getCredits() + $reservation->getCovoiturage()->getPrixPersonne()
+                    );
+
+                    //  envoi d'un mail au chauffeur
+                    
+                } else {
+                    $reservation->setIssueReported(true);
+                    $notificationService->notifyAdminOfIssue($reservation); 
+                }
+
+                $em->flush();
+
+                return $this->redirectToRoute('reservations_to_validate'); 
+            }
+
+            $forms[$reservation->getId()] = $form->createView();
+        }
+
+        return $this->render('utilisateur/reservations_to_validate.html.twig', [
+            'participations' => $reservations,
+            'participationForms' => $forms,
+        ]);
+    }
+    
 }

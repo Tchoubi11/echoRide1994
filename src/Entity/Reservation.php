@@ -30,6 +30,25 @@ class Reservation
     #[ORM\Column(nullable: true)]
     private ?float $montantPaye = null;
 
+    
+
+#[ORM\Column(type: 'boolean', nullable: true)]
+private ?bool $isValidatedByPassenger = null;
+
+#[ORM\Column(type: 'text', nullable: true)]
+private ?string $passengerFeedback = null;
+
+#[ORM\Column(type: 'integer', nullable: true)]
+private ?int $passengerNote = null;
+
+#[ORM\Column(type: 'boolean', nullable: true)]
+private ?bool $issueReported = null;
+
+#[ORM\Column(type: 'boolean', nullable: true)]
+private ?bool $isFeedbackModerated = false;
+
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -93,4 +112,62 @@ class Reservation
         return $this;
     }
 
+
+    public function getIsValidatedByPassenger(): ?bool
+    {
+        return $this->isValidatedByPassenger;
+    }
+    
+    public function setIsValidatedByPassenger(?bool $value): self
+    {
+        $this->isValidatedByPassenger = $value;
+        return $this;
+    }
+    
+    public function getPassengerFeedback(): ?string
+    {
+        return $this->passengerFeedback;
+    }
+    
+    public function setPassengerFeedback(?string $feedback): self
+    {
+        $this->passengerFeedback = $feedback;
+        return $this;
+    }
+    
+    public function getPassengerNote(): ?int
+    {
+        return $this->passengerNote;
+    }
+    
+    public function setPassengerNote(?int $note): self
+    {
+        $this->passengerNote = $note;
+        return $this;
+    }
+    
+    public function isIssueReported(): ?bool
+    {
+        return $this->issueReported;
+    }
+    
+    public function setIssueReported(?bool $reported): self
+    {
+        $this->issueReported = $reported;
+        return $this;
+    }
+
+    public function isFeedbackModerated(): ?bool
+{
+    return $this->isFeedbackModerated;
+}
+
+public function setIsFeedbackModerated(?bool $val): self
+{
+    $this->isFeedbackModerated = $val;
+    return $this;
+}
+
+
+    
 }
