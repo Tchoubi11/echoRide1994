@@ -1,69 +1,58 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Historique de mes trajets{% endblock %}
+
 {% block body %}
+<div class="container mt-5">
+    <h2>📚 Historique de mes covoiturages</h2>
 
-<h2>Mes covoiturages en tant que conducteur</h2>
+    <h3 class="mt-4">🚗 En tant que conducteur</h3>
+    {% if covoiturages is not empty %}
+        {% for covoiturage in covoiturages %}
+            <div class="card p-3 mb-3 shadow-sm">
+                <strong>{{ covoiturage.lieuDepart }} → {{ covoiturage.lieuArrivee }}</strong><br>
+                Départ : {{ covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
 
-{% if covoiturages is not empty %}
-    {% for covoiturage in covoiturages %}
-        <div class="card p-3 mb-2">
-            <strong>{{ covoiturage.lieuDepart }} → {{ covoiturage.lieuArrivee }}</strong><br>
-            Départ : {{ covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
+                {% if covoiturage.isCancelled %}
+                    <span class="badge bg-danger mt-2">🚫 Annulé</span>
+                {% elseif covoiturage.isCompleted %}
+                    <span class="badge bg-success mt-2">✅ Terminé</span>
+                    <p class="text-muted mb-0">Arrivé à {{ covoiturage.endAt|date('d/m/Y H:i') }}</p>
+                {% else %}
+                    <span class="badge bg-warning mt-2">🕒 Non terminé</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">Aucun trajet en tant que conducteur.</p>
+    {% endif %}
 
-            {% if covoiturage.isCancelled %}
-                <span class="badge bg-danger mt-2">Ce covoiturage a été annulé</span>
-            {% else %}
-                <form method="post" action="{{ path('annuler_covoiturage', { id: covoiturage.id }) }}" 
-                      onsubmit="return confirm('Êtes-vous sûr(e) de vouloir annuler ce covoiturage ?');">
-                    <button class="btn btn-danger btn-sm mt-2" type="submit">Annuler le trajet</button>
-                </form>
+    <h3 class="mt-4">🧍 En tant que passager</h3>
+    {% if reservations is not empty %}
+        {% for res in reservations %}
+            <div class="card p-3 mb-3 shadow-sm">
+                <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
+                Départ : {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
 
-                {% if not covoiturage.isStarted %}
-    <form method="post" action="{{ path('demarrer_covoiturage', {id: covoiturage.id}) }}">
-        <button class="btn btn-primary btn-sm mt-2">🚀 Démarrer</button>
-    </form>
-{% elseif covoiturage.isStarted and not covoiturage.isCompleted %}
-    <form method="post" action="{{ path('arriver_covoiturage', {id: covoiturage.id}) }}">
-        <button class="btn btn-success btn-sm mt-2">🏁 Arrivée à destination</button>
-    </form>
-    <p class="text-muted mt-1">Démarré à {{ covoiturage.startAt|date('d/m/Y H:i') }}</p>
-{% else %}
-    <span class="badge bg-secondary mt-2">Trajet terminé à {{ covoiturage.endAt ? covoiturage.endAt|date('d/m/Y H:i') : 'Heure inconnue' }}</span>
-{% endif %}
+                {% if res.covoiturage.isCancelled %}
+                    <span class="badge bg-danger mt-2">❌ Trajet annulé</span>
+                {% elseif res.covoiturage.isCompleted %}
+                    <span class="badge bg-success mt-2">✅ Terminé</span>
+                    <p class="text-muted mb-0">Arrivé à {{ res.covoiturage.endAt|date('d/m/Y H:i') }}</p>
+                {% else %}
+                    <span class="badge bg-warning mt-2">🕒 À venir ou en cours</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">Aucune réservation en tant que passager.</p>
+    {% endif %}
 
-            {% endif %}
-        </div>
-    {% endfor %}
-{% else %}
-    <p>Aucun covoiturage en tant que conducteur.</p>
-{% endif %}
-
-<hr>
-
-<h2>Mes covoiturages en tant que passager</h2>
-{% if reservations is not empty %}
-    {% for res in reservations %}
-        <div class="card p-3 mb-2">
-            <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
-            Départ : {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
-
-            {% if res.covoiturage.isCancelled == false %}
-                <form method="post" action="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}"
-                      onsubmit="return confirm('Annuler votre participation ?');" style="display: inline;">
-                    <button type="submit" class="btn btn-warning btn-sm mt-2">Annuler ma participation</button>
-                </form>
-            {% else %}
-                <span class="badge bg-danger mt-2">Trajet annulé</span>
-            {% endif %}
-        </div>
-    {% endfor %}
-{% else %}
-    <p>Aucun covoiturage réservé.</p>
-{% endif %}
-
-<div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
-    <a href="{{ path('user_profile') }}" class="btn btn-secondary">👤 Retour sur mon profil</a>
-    <a href="{{ path('app_home') }}" class="btn btn-primary">⬅ Retour à l'accueil</a>
+    <div class="mt-4 d-flex flex-wrap justify-content-start gap-3">
+        <a href="{{ path('user_profile') }}" class="btn btn-secondary">👤 Retour au profil</a>
+        <a href="{{ path('app_home') }}" class="btn btn-primary">🏠 Accueil</a>
+        <a href="{{ path('espace_utilisateur') }}" class="btn btn-secondary">⚙️ Retour sur mon espace utilisateur</a>
+    </div>
+    
 </div>
-
 {% endblock %}

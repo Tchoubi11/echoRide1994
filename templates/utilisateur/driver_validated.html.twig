@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h2>Bonjour {{ driver.prenom }} {{ driver.nom }},</h2>
+
+    <p>Un passager vient de valider le covoiturage que vous avez effectué.</p>
+
+    <p>Détails de la réservation :</p>
+    <ul>
+        <li>Trajet : {{ reservation.covoiturage.depart }} → {{ reservation.covoiturage.destination }}</li>
+        <li>Date : {{ reservation.covoiturage.date|date('d/m/Y') }}</li>
+        <li>Heure : {{ reservation.covoiturage.heure }}</li>
+        <li>Passager : {{ reservation.passenger.prenom }} {{ reservation.passenger.nom }}</li>
+    </ul>
+
+    <p>Vous venez de recevoir {{ reservation.covoiturage.prixPersonne }} crédits.</p>
+
+    <p>Merci pour votre confiance !</p>
+{% endblock %}

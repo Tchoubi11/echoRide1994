@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h2>Bonjour {{ reservation.passenger.prenom }} {{ reservation.passenger.nom }},</h2>
+
+    <p>Votre trajet de {{ reservation.covoiturage.lieuDepart }} à {{ reservation.covoiturage.lieuArrivee }} est terminé.</p>
+
+    <p>Merci de vous rendre sur votre espace personnel pour valider que tout s'est bien passé :</p>
+
+    <p><a href="{{ path('reservations_to_validate') }}">Valider mon trajet</a></p>
+
+    <p>À bientôt ! 🚗</p>
+{% endblock %}

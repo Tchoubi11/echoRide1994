@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 
 class CovoiturageType extends AbstractType
 {
@@ -61,6 +62,10 @@ class CovoiturageType extends AbstractType
                         ' (' . $voiture->getImmatriculation() . ')';
                 },
                 'placeholder' => 'Choisir un véhicule',
+            ])
+            ->add('is_eco', CheckboxType::class, [
+                'label' => 'Eco-friendly',
+                'required' => false,  // facultatif, selon si vous voulez le rendre obligatoire
             ]);
     }
     

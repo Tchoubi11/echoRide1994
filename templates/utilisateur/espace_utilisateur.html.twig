@@ -18,115 +18,87 @@
         <div class="alert alert-warning">
             🚗 Vous êtes chauffeur, mais vous n'avez enregistré aucun véhicule.
             <br>
-            Veuillez ajouter un véhicule pour proposer des trajets.
-            <br><br>
             <a href="#ajouter-vehicule" class="btn btn-sm btn-primary mt-2">Ajouter un véhicule</a>
         </div>
     {% endif %}
 
     {% if utilisateur.typeUtilisateur in ['chauffeur', 'les_deux'] %}
-     <h3 id="ajouter-vehicule">Mes véhicules</h3>
-     {% if form is not null %}
-         {{ form_start(form) }}
-             <div class="row">
-                 <div class="col-md-6">
-                     {{ form_row(form.immatriculation) }}
-                 </div>
-                 <div class="col-md-6">
-                     {{ form_row(form.datePremiereImmatriculation) }}
-                 </div>
-             </div>
-             <div class="row">
-                 <div class="col-md-4">
-                     {{ form_row(form.modele) }}
-                 </div>
-                 <div class="col-md-4">
-                     {{ form_row(form.couleur) }}
-                 </div>
-                 <div class="col-md-4">
-                     {{ form_row(form.marque) }}
-                 </div>
-             </div>
-             <div class="row">
-                 <div class="col-md-6">
-                     {{ form_row(form.placesDisponibles) }}
-                 </div>
-             </div>
-             
-             <div class="row">
-                 <div class="col-md-6">
-                     {{ form_row(form.energie) }}  
-                 </div>
-             </div>
-             <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
-         {{ form_end(form) }}
-     {% endif %}
- {% endif %}
-
-
-    {% if utilisateur.typeUtilisateur == 'passager' %}
-        <p class="alert alert-info mt-3">
-            👤 En tant que passager, aucune information supplémentaire n'est requise.
-        </p>
+        <h3 id="ajouter-vehicule">Mes véhicules</h3>
+        {% if form is not null %}
+            {{ form_start(form) }}
+                {{ form_row(form.immatriculation) }}
+                {{ form_row(form.datePremiereImmatriculation) }}
+                {{ form_row(form.modele) }}
+                {{ form_row(form.couleur) }}
+                {{ form_row(form.marque) }}
+                {{ form_row(form.placesDisponibles) }}
+                {{ form_row(form.energie) }}
+                <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
+            {{ form_end(form) }}
+        {% endif %}
     {% endif %}
 
     {% if utilisateur.typeUtilisateur in ['passager', 'les_deux'] %}
         <h3 class="mt-4">🧾 Mes réservations en tant que passager</h3>
+        <a href="{{ path('reservations_to_validate') }}" class="btn btn-outline-primary mb-3">📝 Valider mes trajets</a>
 
-        {% if reservations is not empty %}
         {% for res in reservations %}
-            <div class="card p-3 mb-2">
-                <span class="badge bg-success mb-1">🛣️ Réservation</span><br>
-                <strong>{{ res.covoiturage.lieuDepart }}</strong> → <strong>{{ res.covoiturage.lieuArrivee }}</strong><br>
-                📅 Date : {{ res.covoiturage.dateDepart|date('d/m/Y') }} {{ res.covoiturage.heureDepart|date('H:i') }}<br>
-                💺 Places réservées : {{ res.placesReservees }}<br>
-                💰 Payé : {{ res.montantPaye }} crédits<br>
-                ✅ Statut : {{ res.statut }}<br>
-    
-            </div>
+            {% if res.covoiturage.isCompleted == false and res.covoiturage.isCancelled == false %}
+                <div class="card p-3 mb-2">
+                    <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
+                    📅 {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
+                    💺 Places réservées : {{ res.placesReservees }}<br>
+                    💰 Payé : {{ res.montantPaye }} crédits
+
+                    <form method="post" action="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}"
+                          onsubmit="return confirm('Annuler votre participation ?');">
+                        <button type="submit" class="btn btn-warning btn-sm mt-3">Annuler ma participation</button>
+                    </form>
+                </div>
+            {% endif %}
         {% endfor %}
-    {% else %}
-        <p>Aucun covoiturage réservé.</p>
-    {% endif %}
     {% endif %}
 
     {% if utilisateur.typeUtilisateur in ['chauffeur', 'les_deux'] %}
-        <h3 class="mt-4">🚗 Mes trajets proposés en tant que chauffeur</h3>
+        <h3 class="mt-4">🚗 Mes trajets à gérer en tant que chauffeur</h3>
+        {% for trajet in covoituragesProposes %}
+            {% if not trajet.isCompleted and not trajet.isCancelled %}
+                <div class="card p-3 mb-3">
+                    <strong>{{ trajet.lieuDepart }} → {{ trajet.lieuArrivee }}</strong><br>
+                    📅 {{ trajet.dateDepart|date('d/m/Y H:i') }}<br>
+                    💺 Places : {{ trajet.nbPlace }} | 💰 {{ trajet.prixPersonne }} crédits<br>
 
-        {% if covoituragesProposes is not empty %}
-            <ul class="list-group">
-                {% for trajet in covoituragesProposes %}
-                    <li class="list-group-item">
-                        <span class="badge bg-primary">🚗 Trajet</span>
-                        <strong>{{ trajet.lieuDepart }}</strong> → <strong>{{ trajet.lieuArrivee }}</strong><br>
-                        📅 Date : {{ trajet.dateDepart|date('d/m/Y H:i') }}<br>
-                        💺 Places : {{ trajet.nbPlace }} | 💰 {{ trajet.prixPersonne }} crédits
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="text-muted">Vous n'avez proposé aucun trajet.</p>
-        {% endif %}
+                    {% if not trajet.isStarted %}
+                        <span class="badge bg-warning mt-2">🕒 À venir</span><br>
+                        <form method="post" action="{{ path('demarrer_covoiturage', {'id': trajet.id}) }}">
+                            <button class="btn btn-primary btn-sm mt-2">🚀 Démarrer</button>
+                        </form>
+                    {% else %}
+                        <span class="badge bg-info mt-2">🚗 En cours</span><br>
+                        <form method="post" action="{{ path('arriver_covoiturage', {'id': trajet.id}) }}">
+                            <button class="btn btn-success btn-sm mt-2">🏁 Terminer</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
     {% endif %}
 
     {% if formCovoiturage is defined and formCovoiturage is not null %}
-    <h3 class="mt-5">➕ Proposer un trajet</h3>
-    {{ form_start(formCovoiturage) }}
-        {{ form_row(formCovoiturage.lieuDepart) }}
-        {{ form_row(formCovoiturage.lieuArrivee) }}
-        {{ form_row(formCovoiturage.dateDepart) }}
-        {{ form_row(formCovoiturage.dateArrivee) }}
-        {{ form_row(formCovoiturage.prixPersonne) }}
-        {{ form_row(formCovoiturage.nbPlace) }}
+        <h3 class="mt-5">➕ Proposer un trajet</h3>
+        {{ form_start(formCovoiturage) }}
+            {{ form_row(formCovoiturage.lieuDepart) }}
+            {{ form_row(formCovoiturage.lieuArrivee) }}
+            {{ form_row(formCovoiturage.dateDepart) }}
+            {{ form_row(formCovoiturage.dateArrivee) }}
+            {{ form_row(formCovoiturage.prixPersonne) }}
+            {{ form_row(formCovoiturage.nbPlace) }}
+            {{ form_row(formCovoiturage.voiture) }}
+            {{ form_row(formCovoiturage.is_eco) }}
+            <button class="btn btn-success mt-3">Proposer</button>
+        {{ form_end(formCovoiturage) }}
+    {% endif %}
 
-        {{ form_row(formCovoiturage.voiture) }}
-        <button class="btn btn-success mt-3">Proposer</button>
-    {{ form_end(formCovoiturage) }}
-{% endif %}
-
-
-    <a href="{{ path('user_profile') }}" class="btn btn-secondary mt-4">
-        👤 Voir mon profil
-    </a>
+    <a href="{{ path('user_profile') }}" class="btn btn-secondary mt-4">👤 Voir mon profil</a>
 </div>
 {% endblock %}

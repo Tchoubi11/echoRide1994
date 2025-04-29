@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Signaler un problème{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2>Signaler un problème pour le trajet</h2>
+
+    <div class="card p-4 mb-4 shadow-sm">
+        <p><strong>Trajet :</strong> {{ reservation.covoiturage.lieuDepart }} → {{ reservation.covoiturage.lieuArrivee }}</p>
+        <p><strong>Date :</strong> {{ reservation.covoiturage.dateDepart|date('d/m/Y H:i') }}</p>
+
+        <h3>Formulaire de signalement</h3>
+        
+        {{ form_start(form) }}
+        
+        <div class="form-group mb-2">
+            {{ form_label(form.passengerFeedback) }}
+            {{ form_widget(form.passengerFeedback) }}
+        </div>
+
+        <div class="form-group mb-2">
+            {{ form_label(form.passengerNote) }}
+            {{ form_widget(form.passengerNote) }}
+        </div>
+
+        <button type="submit" class="btn btn-danger mt-2">Signaler un problème</button>
+
+        {{ form_end(form) }}
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+        <a href="{{ path('reservations_to_validate') }}" class="btn btn-secondary">Retour à mes réservations à valider</a>
+    </div>
+</div>
+{% endblock %}

@@ -18,7 +18,7 @@ use App\Form\CovoiturageType;
 use App\Service\NotificationService;
 use Symfony\Bundle\SecurityBundle\Security; 
 use App\Form\ReservationValidationType;
-
+use App\Entity\Avis; 
 
 class UtilisateurController extends AbstractController
 {
@@ -165,53 +165,145 @@ class UtilisateurController extends AbstractController
 
     
     #[Route('/mon-espace/covoiturages-a-valider', name: 'reservations_to_validate')]
-    public function validateReservations(
-        Request $request,
-        EntityManagerInterface $em,
-        NotificationService $notificationService,
-        Security $security
-    ): Response {
-        $user = $security->getUser();
+public function validateReservations(
+    Request $request,
+    EntityManagerInterface $em,
+    NotificationService $notificationService,
+    Security $security
+): Response {
+    $user = $security->getUser();
 
-        $reservations = $em->getRepository(Reservation::class)->findBy([
-            'passenger' => $user,
-            'isValidatedByPassenger' => null, // uniquement celles pas encore validées
-        ]);
+    // On récupère uniquement les réservations qui ne sont pas encore validées
+    $reservations = $em->getRepository(Reservation::class)->findBy([
+        'passenger' => $user,
+        'isValidatedByPassenger' => null,
+    ]);
 
-        $forms = [];
+    $forms = [];
 
-        foreach ($reservations as $reservation) {
-            $form = $this->createForm(ReservationValidationType::class, $reservation);
-            $form->handleRequest($request);
+    foreach ($reservations as $reservation) {
+        $form = $this->createForm(ReservationValidationType::class, $reservation);
+        $form->handleRequest($request);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $data = $form->getData();
-
-                if ($reservation->getIsValidatedByPassenger()) {
-                    $chauffeur = $reservation->getCovoiturage()->getDriver();
-                    $chauffeur->setCredits(
-                        $chauffeur->getCredits() + $reservation->getCovoiturage()->getPrixPersonne()
-                    );
-
-                    //  envoi d'un mail au chauffeur
-                    
-                } else {
-                    $reservation->setIssueReported(true);
-                    $notificationService->notifyAdminOfIssue($reservation); 
-                }
-
-                $em->flush();
-
-                return $this->redirectToRoute('reservations_to_validate'); 
+        if ($form->isSubmitted() && $form->isValid()) {
+            $reservation->setIsValidatedByPassenger(true); // Validation du passager
+        
+            // Mettre à jour les feedback et notes du passager
+            $reservation->setPassengerFeedback($form->get('passengerFeedback')->getData());
+            $reservation->setPassengerNote($form->get('passengerNote')->getData());
+        
+            // Gestion des crédits pour le conducteur
+            $driver = $reservation->getCovoiturage()->getDriver();
+            $driver->setCredits($driver->getCredits() + $reservation->getCovoiturage()->getPrixPersonne());
+        
+            // Notification au conducteur que le passager a validé
+            $notificationService->notifyDriverOfValidation($driver, $reservation);
+        
+            // Enregistrement des avis
+            if ($reservation->getPassengerNote() || $reservation->getPassengerFeedback()) {
+                $avis = new Avis();
+                $avis->setUser($user);
+                $avis->setNote($reservation->getPassengerNote());
+                $avis->setCommentaire($reservation->getPassengerFeedback());
+                $avis->setStatut('en attente');
+                $em->persist($avis);
             }
-
-            $forms[$reservation->getId()] = $form->createView();
+        
+            // Ajouter ici la mise à jour du champ `isCompleted`
+            $reservation->setIsCompleted(true); // Marquer le trajet comme terminé pour le conducteur
+        
+            // Sauvegarde en base de données
+            $em->flush();
+        
+            // Redirection ou message de confirmation
+            return $this->redirectToRoute('reservations_to_validate');
         }
+        
 
-        return $this->render('utilisateur/reservations_to_validate.html.twig', [
-            'participations' => $reservations,
-            'participationForms' => $forms,
-        ]);
+        $forms[$reservation->getId()] = $form->createView();
     }
-    
+
+    return $this->render('utilisateur/reservations_to_validate.html.twig', [
+        'participations' => $reservations,
+        'participationForms' => $forms,
+    ]);
+}
+
+
+#[Route('/reservation/{id}/signaler-probleme', name: 'reservation_signaler_probleme', methods: ['POST'])]
+public function signalerProbleme(int $id, Request $request, EntityManagerInterface $em, NotificationService $notificationService): Response
+{
+    // Récupérer la réservation
+    $reservation = $em->getRepository(Reservation::class)->find($id);
+
+    if (!$reservation) {
+        throw $this->createNotFoundException('Réservation introuvable.');
+    }
+
+    // Créer le formulaire de signalement de problème
+    $form = $this->createForm(ReservationValidationType::class, $reservation);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        // 🚨 Mettre à jour les champs de feedback et de note
+        $reservation->setPassengerFeedback($form->get('passengerFeedback')->getData());
+        $reservation->setPassengerNote((int) $form->get('passengerNote')->getData()); // Forcer la conversion en entier
+
+        // Signaler que le problème est rapporté
+        $reservation->setIssueReported(true);
+
+        // Sauvegarde en base de données
+        $em->flush();
+
+        // Optionnel : Ajouter une notification au conducteur (si nécessaire)
+        // $notificationService->notifyDriverOfProblem($driver, $reservation);
+
+        // Message flash pour l'utilisateur
+        $this->addFlash('success', 'Problème signalé avec succès.');
+
+        // Redirection pour recharger la liste sans la réservation signalée
+        return $this->redirectToRoute('reservations_to_validate');
+    }
+
+    // Si le formulaire n'est pas soumis ou invalide, on l'ajoute dans la vue
+    return $this->render('utilisateur/signaler_probleme.html.twig', [
+        'reservation' => $reservation,
+        'form' => $form->createView(),
+    ]);
+}
+
+#[Route('/mon-espace/covoiturage/{id}/terminer', name: 'driver_terminate_trip')]
+public function terminateTrip(
+    int $id,
+    EntityManagerInterface $em,
+    NotificationService $notificationService
+): Response {
+    // On récupère le covoiturage
+    $covoiturage = $em->getRepository(Covoiturage::class)->find($id);
+
+    if (!$covoiturage) {
+        throw $this->createNotFoundException('Covoiturage introuvable.');
+    }
+
+    // Pour chaque réservation associée au covoiturage
+    foreach ($covoiturage->getReservations() as $reservation) {
+        // Marquer que le conducteur a terminé le trajet
+        $reservation->setIsCompleted(true); // ou setIsDriverCompleted(true) si tu veux différencier
+
+        // Envoyer notification au passager
+        $notificationService->notifyPassengerToValidate($reservation);
+    }
+
+    // Optionnel : marquer aussi le covoiturage comme terminé
+    $covoiturage->setIsCompleted(true);
+
+    $em->flush();
+
+    $this->addFlash('success', 'Trajet terminé, les passagers sont informés.');
+
+    return $this->redirectToRoute('espace_utilisateur');
+}
+
+
+   
 }

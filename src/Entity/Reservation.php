@@ -30,7 +30,12 @@ class Reservation
     #[ORM\Column(nullable: true)]
     private ?float $montantPaye = null;
 
-    
+   
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private $isCompleted;
+
+
+
 
 #[ORM\Column(type: 'boolean', nullable: true)]
 private ?bool $isValidatedByPassenger = null;
@@ -168,6 +173,16 @@ public function setIsFeedbackModerated(?bool $val): self
     return $this;
 }
 
+public function getIsCompleted(): ?bool
+{
+    return $this->isCompleted;
+}
+
+public function setIsCompleted(?bool $isCompleted): self
+{
+    $this->isCompleted = $isCompleted;
+    return $this;
+}
 
     
 }

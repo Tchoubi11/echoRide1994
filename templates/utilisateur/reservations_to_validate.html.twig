@@ -3,35 +3,73 @@
 {% block title %}Mes trajets à valider{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h2 class="mb-4">Validation post-trajet</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Validation post-trajet</h2>
 
-        {% for participation in participations %}
-            <div class="card p-4 mb-4 shadow-sm">
-                <p><strong>Trajet :</strong> {{ participation.covoiturage.lieuDepart }} → {{ participation.covoiturage.lieuArrivee }}</p>
-                <p><strong>Date :</strong> {{ participation.covoiturage.dateDepart|date('d/m/Y H:i') }}</p>
+    {% for participation in participations %}
+        <div class="card p-4 mb-4 shadow-sm participation-form">
+            <p><strong>Trajet :</strong> {{ participation.covoiturage.lieuDepart }} → {{ participation.covoiturage.lieuArrivee }}</p>
+            <p><strong>Date :</strong> {{ participation.covoiturage.dateDepart|date('d/m/Y H:i') }}</p>
+            <p><strong>Statut du trajet :</strong> 
+            
+            <!-- Formulaire de validation du trajet -->
+            {{ form_start(participationForms[participation.id]) }}
 
-                {{ form_start(participationForms[participation.id]) }}
-
-                    <div class="form-check mb-2">
-                        {{ form_row(participationForms[participation.id].isValidatedByPassenger) }}
-                    </div>
-
-                    <div class="form-group mb-2">
-                        {{ form_label(participationForms[participation.id].passengerFeedback) }}
-                        {{ form_widget(participationForms[participation.id].passengerFeedback) }}
-                    </div>
-
-                    <div class="form-group mb-2">
-                        {{ form_label(participationForms[participation.id].passengerNote) }}
-                        {{ form_widget(participationForms[participation.id].passengerNote) }}
-                    </div>
-
-                    <button type="submit" class="btn btn-primary mt-2">Envoyer</button>
-                {{ form_end(participationForms[participation.id]) }}
+            <div class="form-group mb-2">
+                {{ form_label(participationForms[participation.id].passengerFeedback) }}
+                {{ form_widget(participationForms[participation.id].passengerFeedback) }}
             </div>
-        {% else %}
-            <p>Aucun trajet à valider pour le moment.</p>
-        {% endfor %}
+
+            <div class="form-group mb-2">
+                {{ form_label(participationForms[participation.id].passengerNote) }}
+                {{ form_widget(participationForms[participation.id].passengerNote) }}
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-2 validate-btn">✅ Valider le trajet</button>
+            
+            {{ form_end(participationForms[participation.id]) }}
+
+            <!-- Formulaire de signalement de problème -->
+            <form method="post" action="{{ path('reservation_signaler_probleme', { id: participation.id }) }}" class="report-problem-form">
+                <!-- On ajoute les champs hidden avec les données de feedback et note -->
+                <input type="hidden" name="passengerFeedback" value="{{ participation.passengerFeedback }}">
+                <input type="hidden" name="passengerNote" value="{{ participation.passengerNote }}">
+
+                <button type="submit" class="btn btn-danger mt-2">❌ Signaler un problème</button>
+            </form>
+        </div>
+    {% else %}
+        <p>Aucun trajet à valider pour le moment.</p>
+    {% endfor %}
+
+    <div class="d-flex gap-2 mt-3">
+        <a href="{{ path('user_profile') }}" class="btn btn-secondary">👤 Retour à mon profil</a>
+        <a href="{{ path('espace_utilisateur') }}" class="btn btn-secondary">⚙️ Retour sur mon espace utilisateur</a>
     </div>
+    
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const forms = document.querySelectorAll('.participation-form');
+
+    forms.forEach(function (formWrapper) {
+        const validateButton = formWrapper.querySelector('.validate-btn');
+        const reportProblemForm = formWrapper.querySelector('.report-problem-form');
+        const reportProblemButton = reportProblemForm.querySelector('button');
+
+        validateButton.addEventListener('click', function () {
+            // Quand l'utilisateur clique sur Valider, on désactive le bouton "Signaler un problème"
+            reportProblemButton.disabled = true;
+        });
+
+        reportProblemButton.addEventListener('click', function () {
+            // Quand l'utilisateur clique sur Signaler un problème, on désactive "Valider"
+            validateButton.disabled = true;
+        });
+    });
+});
+</script>
 {% endblock %}

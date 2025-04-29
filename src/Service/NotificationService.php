@@ -103,22 +103,45 @@ class NotificationService
     }
 
     public function notifyPassengerToValidate(Reservation $reservation): void
-{
-    try {
-        $html = $this->twig->render('emails/validation_request.html.twig', [
-            'reservation' => $reservation,
-        ]);
-
-        $email = (new Email())
-            ->from('noreply@tonsite.com')
-            ->to($reservation->getPassenger()->getEmail())
-            ->subject('🚗 Merci de valider votre trajet')
-            ->html($html);
-
-        $this->mailer->send($email);
-    } catch (\Throwable $e) {
-        // log erreur
+    {
+        try {
+            dump('MAIL ENVOYÉ À : '.$reservation->getPassenger()->getEmail());
+    
+            $html = $this->twig->render('emails/validation_request.html.twig', [
+                'reservation' => $reservation,
+            ]);
+    
+            $email = (new Email())
+                ->from('noreply@tonsite.com')
+                ->to($reservation->getPassenger()->getEmail())
+                ->subject('🚗 Merci de valider votre trajet')
+                ->html($html);
+    
+            $this->mailer->send($email);
+        } catch (\Throwable $e) {
+            dump('Erreur mail : '.$e->getMessage());
+        }
     }
+    
+    public function notifyDriverOfValidation(Utilisateur $driver, Reservation $reservation)
+    {
+        try {
+            $html = $this->twig->render('emails/driver_validated.html.twig', [
+                'reservation' => $reservation,
+                'driver' => $driver,
+            ]);
+    
+            $email = (new Email())
+                ->from('noreply@tonsite.com')
+                ->to($driver->getEmail())
+                ->subject('🚗 Un passager a validé le trajet')
+                ->html($html);
+    
+            $this->mailer->send($email);
+        } catch (\Throwable $e) {
+            error_log('[NotificationService] Erreur mail chauffeur : ' . $e->getMessage());
+        }
+    }
+    
 }
 
-}
