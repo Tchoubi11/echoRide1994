@@ -63,9 +63,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "passenger", targetEntity: Reservation::class, cascade: ["remove"])]
     private Collection $reservations;
 
-    #[ORM\OneToMany(mappedBy: "user", targetEntity: Avis::class)]
-    private Collection $reviews;
-
     #[ORM\OneToMany(mappedBy: "utilisateur", targetEntity: Role::class)]
     private Collection $roles;
 
@@ -78,7 +75,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->covoiturages = new ArrayCollection();
         $this->reservations = new ArrayCollection();
-        $this->reviews = new ArrayCollection();
         $this->roles = new ArrayCollection();
         $this->voitures = new ArrayCollection();
         $this->credits = 20;
@@ -173,17 +169,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->reservations->removeElement($reservation) && $reservation->getPassenger() === $this) {
             $reservation->setPassenger(null);
-        }
-        return $this;
-    }
-
-    public function getReviews(): Collection { return $this->reviews; }
-
-    public function addReview(Avis $review): static
-    {
-        if (!$this->reviews->contains($review)) {
-            $this->reviews[] = $review;
-            $review->setUser($this);
         }
         return $this;
     }

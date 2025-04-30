@@ -30,44 +30,28 @@ class Reservation
     #[ORM\Column(nullable: true)]
     private ?float $montantPaye = null;
 
-   
     #[ORM\Column(type: 'boolean', nullable: true)]
-    private $isCompleted;
+    private ?bool $isValidatedByPassenger = null;
 
+    #[ORM\Column(type: 'boolean')]
+   private bool $problemeSignale = false;
 
-
-
-#[ORM\Column(type: 'boolean', nullable: true)]
-private ?bool $isValidatedByPassenger = null;
-
-#[ORM\Column(type: 'text', nullable: true)]
-private ?string $passengerFeedback = null;
-
-#[ORM\Column(type: 'integer', nullable: true)]
-private ?int $passengerNote = null;
-
-#[ORM\Column(type: 'boolean', nullable: true)]
-private ?bool $issueReported = null;
-
-#[ORM\Column(type: 'boolean', nullable: true)]
-private ?bool $isFeedbackModerated = false;
-
-
+   #[ORM\Column(type: 'text', nullable: true)]
+   private ?string $detailsProbleme = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getPlacesReservees(): ?int
+    public function getPassenger(): ?Utilisateur
     {
-        return $this->placesReservees;
+        return $this->passenger;
     }
 
-    public function setPlacesReservees(int $placesReservees): static
+    public function setPassenger(?Utilisateur $passenger): static
     {
-        $this->placesReservees = $placesReservees;
-
+        $this->passenger = $passenger;
         return $this;
     }
 
@@ -82,6 +66,17 @@ private ?bool $isFeedbackModerated = false;
         return $this;
     }
 
+    public function getPlacesReservees(): ?int
+    {
+        return $this->placesReservees;
+    }
+
+    public function setPlacesReservees(int $placesReservees): static
+    {
+        $this->placesReservees = $placesReservees;
+        return $this;
+    }
+
     public function getStatut(): ?string
     {
         return $this->statut;
@@ -90,7 +85,6 @@ private ?bool $isFeedbackModerated = false;
     public function setStatut(string $statut): static
     {
         $this->statut = $statut;
-
         return $this;
     }
 
@@ -102,87 +96,39 @@ private ?bool $isFeedbackModerated = false;
     public function setMontantPaye(?float $montantPaye): static
     {
         $this->montantPaye = $montantPaye;
-
         return $this;
     }
-
-    public function getPassenger(): ?Utilisateur
-    {
-        return $this->passenger;
-    }
-
-    public function setPassenger(?Utilisateur $passenger): static
-    {
-        $this->passenger = $passenger;
-        return $this;
-    }
-
 
     public function getIsValidatedByPassenger(): ?bool
     {
         return $this->isValidatedByPassenger;
     }
-    
-    public function setIsValidatedByPassenger(?bool $value): self
+
+    public function setIsValidatedByPassenger(?bool $value): static
     {
         $this->isValidatedByPassenger = $value;
         return $this;
     }
-    
-    public function getPassengerFeedback(): ?string
-    {
-        return $this->passengerFeedback;
-    }
-    
-    public function setPassengerFeedback(?string $feedback): self
-    {
-        $this->passengerFeedback = $feedback;
-        return $this;
-    }
-    
-    public function getPassengerNote(): ?int
-    {
-        return $this->passengerNote;
-    }
-    
-    public function setPassengerNote(?int $note): self
-    {
-        $this->passengerNote = $note;
-        return $this;
-    }
-    
-    public function isIssueReported(): ?bool
-    {
-        return $this->issueReported;
-    }
-    
-    public function setIssueReported(?bool $reported): self
-    {
-        $this->issueReported = $reported;
-        return $this;
-    }
 
-    public function isFeedbackModerated(): ?bool
+    public function isProblemeSignale(): bool
 {
-    return $this->isFeedbackModerated;
+    return $this->problemeSignale;
 }
 
-public function setIsFeedbackModerated(?bool $val): self
+public function setProblemeSignale(bool $problemeSignale): static
 {
-    $this->isFeedbackModerated = $val;
+    $this->problemeSignale = $problemeSignale;
     return $this;
 }
 
-public function getIsCompleted(): ?bool
+public function getDetailsProbleme(): ?string
 {
-    return $this->isCompleted;
+    return $this->detailsProbleme;
 }
 
-public function setIsCompleted(?bool $isCompleted): self
+public function setDetailsProbleme(?string $details): static
 {
-    $this->isCompleted = $isCompleted;
+    $this->detailsProbleme = $details;
     return $this;
 }
-
-    
 }

@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modération des avis{% endblock %}
+
+{% block body %}
+<h2>Avis à modérer</h2>
+
+{% for avis in avisList %}
+    <div class="card p-3 mb-3">
+        <p><strong>Passager :</strong> {{ avis.passager.pseudo }}</p>
+        <p><strong>Note :</strong> {{ avis.passengerNote }}/5</p>
+        <p><strong>Commentaire :</strong> {{ avis.passengerFeedback }}</p>
+        <a href="{{ path('moderation_avis_valider', {id: avis.id}) }}" class="btn btn-success">Valider</a>
+        <a href="{{ path('moderation_avis_refuser', {id: avis.id}) }}" class="btn btn-danger">Refuser</a>
+    </div>
+{% else %}
+    <p>Aucun avis à modérer.</p>
+{% endfor %}
+{% endblock %}

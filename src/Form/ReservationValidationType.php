@@ -20,10 +20,16 @@ class ReservationValidationType extends AbstractType
             ->add('passengerFeedback', TextareaType::class, [
                 'label' => 'Votre retour (facultatif)',
                 'required' => false,
+                'mapped' => false, 
             ])
+            ->add('detailsProbleme', TextareaType::class, [
+                'label' => 'Décrivez le problème rencontré',
+                'required' => false,
+            ])            
             ->add('passengerNote', IntegerType::class, [
                 'label' => 'Note (1 à 5)',
                 'required' => false,
+                'mapped' => false, 
                 'attr' => ['min' => 1, 'max' => 5],
                 'constraints' => [
                     new Assert\Type('integer'),

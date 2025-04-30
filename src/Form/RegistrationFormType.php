@@ -1,9 +1,6 @@
 <?php
 
 
-
-// src/Form/RegistrationFormType.php
-
 namespace App\Form;
 
 use App\Entity\Utilisateur;
@@ -24,13 +21,13 @@ class RegistrationFormType extends AbstractType
             ->add('telephone', TextType::class)
             ->add('adresse', TextType::class)
             ->add('date_naissance', TextType::class)
-            ->add('pseudo', TextType::class, [  // Ajout du champ pseudo
+            ->add('pseudo', TextType::class, [ 
                 'label' => 'Pseudo',
                 'required' => true,
             ])
             ->add('plainPassword', PasswordType::class, [
                 'label' => 'Mot de passe',
-                'mapped' => false,  // Ce champ n'est pas mappé à une propriété de l'entité
+                'mapped' => false,  
             ]);
     }
 
