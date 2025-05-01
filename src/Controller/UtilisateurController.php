@@ -19,6 +19,7 @@ use App\Service\NotificationService;
 use Symfony\Bundle\SecurityBundle\Security; 
 use App\Form\ReservationValidationType;
 use App\Entity\Avis; 
+use App\Repository\AvisRepository;
 
 class UtilisateurController extends AbstractController
 {
@@ -303,6 +304,21 @@ public function terminateTrip(
     return $this->redirectToRoute('espace_utilisateur');
 }
 
+#[Route('/mes-avis', name: 'user_avis')]
+public function mesAvis(AvisRepository $avisRepository): Response
+{
+    $utilisateur = $this->getUser();
+
+    if (!$utilisateur instanceof Utilisateur) {
+        return $this->redirectToRoute('app_login');
+    }
+
+    $avis = $avisRepository->findByUtilisateur($utilisateur);
+
+    return $this->render('utilisateur/avis.html.twig', [
+        'avisList' => $avis,
+    ]);
+}
 
    
 }
