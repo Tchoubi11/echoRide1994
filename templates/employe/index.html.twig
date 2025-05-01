@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Espace Employé{% endblock %}
+
+{% block body %}
+    <h1>Bienvenue dans l'espace employé</h1>
+    <p>Depuis cet espace, vous pouvez modérer les avis et gérer les signalements.</p>
+
+    <ul>
+        <li><a href="{{ path('moderation_avis_liste') }}">Modérer les avis</a></li>
+        <li><a href="{{ path('employe_problemes_liste') }}">Voir les trajets signalés</a></li>
+    </ul>
+{% endblock %}

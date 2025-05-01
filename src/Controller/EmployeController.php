@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/espace-employe')]
 final class EmployeController extends AbstractController
 {
-    // Tableau de bord employé
+    
     #[Route('/', name: 'app_employe')]
     public function index(): Response
     {
@@ -26,7 +26,7 @@ final class EmployeController extends AbstractController
     {
         $avisNonValidés = $avisRepository->findBy(['isValidated' => false]);
 
-        return $this->render('employe/avis/index.html.twig', [
+        return $this->render('employe/avis.html.twig', [
             'avisList' => $avisNonValidés,
         ]);
     }
@@ -69,7 +69,7 @@ final class EmployeController extends AbstractController
     {
         $reservationsAvecProblemes = $repo->findBy(['problemeSignale' => true]);
 
-        return $this->render('employe/problemes/index.html.twig', [
+        return $this->render('employe/problemes.html.twig', [
             'reservations' => $reservationsAvecProblemes
         ]);
     }

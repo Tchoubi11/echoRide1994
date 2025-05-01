@@ -12,14 +12,14 @@
         <p><strong>Passager:</strong> {{ reservation.passager.pseudo }} - {{ reservation.passager.email }}</p>
         <p><strong>Départ:</strong> {{ reservation.covoiturage.lieuDepart }} le {{ reservation.covoiturage.dateDepart|date('d/m/Y H:i') }}</p>
         <p><strong>Arrivée:</strong> {{ reservation.covoiturage.lieuArrivee }} le {{ reservation.covoiturage.dateArrivee|date('d/m/Y H:i') }}</p>
+
+        {% if reservation.detailsProbleme %}
+            <p><strong>Description du problème :</strong> {{ reservation.detailsProbleme }}</p>
+        {% else %}
+            <p><em>Aucun détail fourni.</em></p>
+        {% endif %}
     </div>
 {% else %}
     <p>Aucun trajet signalé.</p>
 {% endfor %}
-{% if reservation.detailsProbleme %}
-    <p><strong>Description du problème :</strong> {{ reservation.detailsProbleme }}</p>
-{% else %}
-    <p><em>Aucun détail fourni.</em></p>
-{% endif %}
-
 {% endblock %}

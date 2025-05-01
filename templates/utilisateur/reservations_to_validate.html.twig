@@ -10,9 +10,9 @@
         <div class="card p-4 mb-4 shadow-sm participation-form">
             <p><strong>Trajet :</strong> {{ participation.covoiturage.lieuDepart }} → {{ participation.covoiturage.lieuArrivee }}</p>
             <p><strong>Date :</strong> {{ participation.covoiturage.dateDepart|date('d/m/Y H:i') }}</p>
-            <p><strong>Statut du trajet :</strong> 
+            <p><strong>Statut du trajet :</strong></p>
+
             
-            <!-- Formulaire de validation du trajet -->
             {{ form_start(participationForms[participation.id]) }}
 
             <div class="form-group mb-2">
@@ -26,14 +26,15 @@
             </div>
 
             <button type="submit" class="btn btn-primary mt-2 validate-btn">✅ Valider le trajet</button>
-            
+
             {{ form_end(participationForms[participation.id]) }}
 
-            <!-- Formulaire de signalement de problème -->
+           
             <form method="post" action="{{ path('reservation_signaler_probleme', { id: participation.id }) }}" class="report-problem-form">
-                <!-- On ajoute les champs hidden avec les données de feedback et note -->
-                <input type="hidden" name="passengerFeedback" value="{{ participation.passengerFeedback }}">
-                <input type="hidden" name="passengerNote" value="{{ participation.passengerNote }}">
+                
+                <input type="hidden" name="passengerFeedback" value="{{ participation.avis ? participation.avis.commentaire|e('html_attr') : '' }}">
+                <input type="hidden" name="passengerNote" value="{{ participation.avis ? participation.avis.note : '' }}">
+
 
                 <button type="submit" class="btn btn-danger mt-2">❌ Signaler un problème</button>
             </form>
@@ -46,7 +47,6 @@
         <a href="{{ path('user_profile') }}" class="btn btn-secondary">👤 Retour à mon profil</a>
         <a href="{{ path('espace_utilisateur') }}" class="btn btn-secondary">⚙️ Retour sur mon espace utilisateur</a>
     </div>
-    
 </div>
 {% endblock %}
 
@@ -61,12 +61,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const reportProblemButton = reportProblemForm.querySelector('button');
 
         validateButton.addEventListener('click', function () {
-            // Quand l'utilisateur clique sur Valider, on désactive le bouton "Signaler un problème"
             reportProblemButton.disabled = true;
         });
 
         reportProblemButton.addEventListener('click', function () {
-            // Quand l'utilisateur clique sur Signaler un problème, on désactive "Valider"
             validateButton.disabled = true;
         });
     });

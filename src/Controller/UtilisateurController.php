@@ -111,7 +111,6 @@ class UtilisateurController extends AbstractController
             ]);
             $formCovoiturage->handleRequest($request);
     
-            // Correction ici : calcul de la date d’arrivée après handleRequest
             if ($formCovoiturage->isSubmitted()) {
                 dump($covoiturage->getNbPlace());
                 if ($covoiturage->getDateDepart() && !$covoiturage->getDateArrivee()) {
@@ -200,6 +199,7 @@ public function validateReservations(
                 $avis->setNote($passengerNote);
                 $avis->setCommentaire($passengerFeedback);
                 $avis->setStatut('en attente');
+                $avis->setIsValidated(false);
                 $avis->setReservation($reservation); 
                 $em->persist($avis);
             }
@@ -249,6 +249,7 @@ public function signalerProbleme(
             $avis->setNote($passengerNote);
             $avis->setCommentaire($passengerFeedback);
             $avis->setStatut('en attente');
+            $avis->setIsValidated(false);
             $avis->setReservation($reservation);
             $em->persist($avis);
         }
@@ -276,23 +277,23 @@ public function terminateTrip(
     EntityManagerInterface $em,
     NotificationService $notificationService
 ): Response {
-    // On récupère le covoiturage
+   
     $covoiturage = $em->getRepository(Covoiturage::class)->find($id);
 
     if (!$covoiturage) {
         throw $this->createNotFoundException('Covoiturage introuvable.');
     }
 
-    // Pour chaque réservation associée au covoiturage
+    
     foreach ($covoiturage->getReservations() as $reservation) {
-        // Marquer que le conducteur a terminé le trajet
-        $reservation->setIsCompleted(true); // ou setIsDriverCompleted(true) si tu veux différencier
+        
+        $reservation->setIsCompleted(true); 
 
-        // Envoyer notification au passager
+        
         $notificationService->notifyPassengerToValidate($reservation);
     }
 
-    // Optionnel : marquer aussi le covoiturage comme terminé
+    
     $covoiturage->setIsCompleted(true);
 
     $em->flush();

@@ -21,6 +21,10 @@ class Reservation
     #[ORM\JoinColumn(nullable: false)]
     private ?Covoiturage $covoiturage = null;
 
+    #[ORM\OneToOne(mappedBy: 'reservation', targetEntity: Avis::class, cascade: ['persist', 'remove'])]
+    private ?Avis $avis = null;
+
+
     #[ORM\Column]
     private ?int $placesReservees = null;
 
@@ -129,6 +133,22 @@ public function getDetailsProbleme(): ?string
 public function setDetailsProbleme(?string $details): static
 {
     $this->detailsProbleme = $details;
+    return $this;
+}
+
+public function getAvis(): ?Avis
+{
+    return $this->avis;
+}
+
+public function setAvis(?Avis $avis): static
+{
+    $this->avis = $avis;
+
+    if ($avis && $avis->getReservation() !== $this) {
+        $avis->setReservation($this);
+    }
+
     return $this;
 }
 }
