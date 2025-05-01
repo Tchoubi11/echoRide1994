@@ -49,7 +49,7 @@
         <h3>Commentaires</h3>
         <ul>
             {% for avis in driverReviews %}
-                <li><strong>{{ avis.user.pseudo }}</strong>: {{ avis.commentaire }} - {{ avis.note }}⭐</li>
+            <li><strong>{{ avis.reservation.passenger.pseudo }}</strong>: {{ avis.commentaire }} - {{ avis.note }}⭐</li>
             {% endfor %}
         </ul>
         {% if driverReviews is empty %}
@@ -57,7 +57,7 @@
         {% endif %}
 
         {% if app.user %}
-            {% set hasReviewed = driverReviews|filter(r => r.user == app.user)|length > 0 %}
+        {% set hasReviewed = driverReviews|filter(r => r.reservation.passenger == app.user)|length > 0 %}
             {% if not hasReviewed %}
                 <h3>Ajouter un avis</h3>
                 {{ form_start(form, {'action': path('covoiturage_details', {'id': ride.id})}) }}
@@ -111,21 +111,6 @@
                 {{ userPreferences.id ? 'Mettre à jour mes préférences' : 'Enregistrer mes préférences' }}
             </button>
         {{ form_end(preferenceForm) }}
-
-        {% if userPreferences.id %}
-            <h4 class="mt-4">Préférences enregistrées :</h4>
-            <ul>
-                <li><strong>Fumeur :</strong> {{ userPreferences.fumeur ? 'Oui' : 'Non' }}</li>
-                <li><strong>Animaux :</strong> {{ userPreferences.animaux ? 'Oui' : 'Non' }}</li>
-                <li><strong>Autres :</strong> 
-                    {% if userPreferences.autres is not empty %}
-                        {{ userPreferences.autres|join(', ') }}
-                    {% else %}
-                        Aucune
-                    {% endif %}
-                </li>
-            </ul>
-        {% endif %}
     </div>
 
     <div class="d-flex gap-2 mt-3">
