@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord Administrateur{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1>Tableau de bord Administrateur</h1>
+
+        <h3 class="mt-4">Total des crédits : {{ totalCredits }}</h3>
+
+        <div class="my-5">
+            <h4>Covoiturages par jour</h4>
+            {{ render_chart(covoiturageChart) }}
+        </div>
+
+        <div class="my-5">
+            <h4>Crédits par jour</h4>
+            {{ render_chart(creditsChart) }}
+        </div>
+
+        <a href="{{ path('admin_employe_create') }}" class="btn btn-primary mt-3">Créer un employé</a>
+    </div>
+{% endblock %}

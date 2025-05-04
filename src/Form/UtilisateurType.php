@@ -5,8 +5,8 @@ namespace App\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use App\Entity\Utilisateur;
 
@@ -15,6 +15,12 @@ class UtilisateurType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('email', EmailType::class, [
+                'label' => 'Adresse email',
+            ])
+            ->add('password', PasswordType::class, [
+                'label' => 'Mot de passe',
+            ])
             ->add('type_utilisateur', ChoiceType::class, [
                 'label' => 'Vous êtes :',
                 'choices' => [
@@ -25,7 +31,6 @@ class UtilisateurType extends AbstractType
                 'expanded' => true,
                 'multiple' => false,
             ])
-           
         ;
     }
 

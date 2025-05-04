@@ -48,7 +48,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?float $credits = 20;
 
     #[ORM\Column(length: 20)]
-    private ?string $type_utilisateur ;
+    private ?string $type_utilisateur;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isSuspended = false;
+
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
 
     #[ORM\OneToOne(mappedBy: 'utilisateur', targetEntity: Preference::class, cascade: ['persist', 'remove'])]
     private ?Preference $preference = null;
@@ -63,9 +69,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "passenger", targetEntity: Reservation::class, cascade: ["remove"])]
     private Collection $reservations;
 
-    #[ORM\OneToMany(mappedBy: "utilisateur", targetEntity: Role::class)]
-    private Collection $roles;
-
     #[ORM\OneToMany(mappedBy: "utilisateur", targetEntity: Voiture::class)]
     private Collection $voitures;
 
@@ -75,7 +78,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->covoiturages = new ArrayCollection();
         $this->reservations = new ArrayCollection();
-        $this->roles = new ArrayCollection();
         $this->voitures = new ArrayCollection();
         $this->credits = 20;
 
@@ -86,7 +88,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         }
     }
 
-    // Getters and Setters
     public function getId(): ?int { return $this->id; }
 
     public function getNom(): ?string { return $this->nom; }
@@ -194,31 +195,28 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        $roles = ['ROLE_USER'];
-        foreach ($this->roles as $role) {
-            $roles[] = $role->getLibelle();
+        $roles = $this->roles;
+        if (!in_array('ROLE_USER', $roles)) {
+            $roles[] = 'ROLE_USER';
         }
         return array_unique($roles);
     }
 
-    public function addRole(Role $role): static
+    public function setRoles(array $roles): static
     {
-        if (!$this->roles->contains($role)) {
-            $this->roles->add($role);
-            $role->setUtilisateur($this);
-        }
-        return $this;
-    }
-
-    public function removeRole(Role $role): static
-    {
-        if ($this->roles->removeElement($role) && $role->getUtilisateur() === $this) {
-            $role->setUtilisateur(null);
-        }
+        $this->roles = $roles;
         return $this;
     }
 
     public function getUserIdentifier(): string { return $this->email; }
 
     public function eraseCredentials(): void {}
+
+    public function isSuspended(): bool { return $this->isSuspended; }
+
+    public function setIsSuspended(bool $isSuspended): static
+    {
+        $this->isSuspended = $isSuspended;
+        return $this;
+    }
 }
