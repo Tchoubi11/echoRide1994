@@ -3,21 +3,44 @@
 {% block title %}Tableau de bord Administrateur{% endblock %}
 
 {% block body %}
-    <div class="container mt-5">
-        <h1>Tableau de bord Administrateur</h1>
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">🎛️ Tableau de bord Administrateur</h1>
 
-        <h3 class="mt-4">Total des crédits : {{ totalCredits }}</h3>
-
-        <div class="my-5">
-            <h4>Covoiturages par jour</h4>
-            {{ render_chart(covoiturageChart) }}
+    <div class="row mb-5">
+        <div class="col-md-4 offset-md-4">
+            <div class="card text-white bg-success shadow">
+                <div class="card-body text-center">
+                    <h5 class="card-title">💰 Total des crédits</h5>
+                    <p class="card-text display-6 fw-bold">{{ totalCredits }} crédits</p>
+                </div>
+            </div>
         </div>
-
-        <div class="my-5">
-            <h4>Crédits par jour</h4>
-            {{ render_chart(creditsChart) }}
-        </div>
-
-        <a href="{{ path('admin_employe_create') }}" class="btn btn-primary mt-3">Créer un employé</a>
     </div>
+
+    <div class="row gy-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    📅 Covoiturages par jour
+                </div>
+                <div class="card-body">
+                    {{ render_chart(covoiturageChart) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    📊 Crédits par jour
+                </div>
+                <div class="card-body">
+                    {{ render_chart(creditsChart) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="{{ path('admin_utilisateur_liste') }}" class="btn btn-outline-primary mt-3">Gérer les utilisateurs</a>
+
+</div>
 {% endblock %}

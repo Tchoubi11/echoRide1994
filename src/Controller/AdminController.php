@@ -3,7 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
-use App\Form\UtilisateurType;
+use App\Form\UtilisateurInformationType;
+
 use App\Service\StatistiqueService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -62,11 +63,13 @@ class AdminController extends AbstractController
         UserPasswordHasherInterface $passwordHasher
     ): Response {
         $user = new Utilisateur();
-        $form = $this->createForm(UtilisateurType::class, $user);
-
+        $form = $this->createForm(UtilisateurInformationType::class, $user); 
+    
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $user->setRoles(['ROLE_EMPLOYE']);
+            $user->setTypeUtilisateur('employe'); 
+    
             $hashedPassword = $passwordHasher->hashPassword(
                 $user,
                 $user->getPassword()
@@ -74,16 +77,17 @@ class AdminController extends AbstractController
             $user->setPassword($hashedPassword);
             $em->persist($user);
             $em->flush();
-
+    
             $this->addFlash('success', 'Employé créé avec succès.');
             return $this->redirectToRoute('admin_dashboard');
         }
-
+    
         return $this->render('admin/employe_create.html.twig', [
             'form' => $form->createView(),
         ]);
     }
-
+    
+    
     #[Route('/admin/utilisateur/{id}/suspend', name: 'admin_suspend_user')]
     public function suspendUser(Utilisateur $user, EntityManagerInterface $em): Response
     {
@@ -93,6 +97,7 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('admin_utilisateur_liste');
     }
 
+
     #[Route('/admin/utilisateur/{id}/reactivate', name: 'admin_reactivate_user')]
     public function reactivateUser(Utilisateur $user, EntityManagerInterface $em): Response
     {
@@ -101,4 +106,16 @@ class AdminController extends AbstractController
         $this->addFlash('success', 'Utilisateur réactivé.');
         return $this->redirectToRoute('admin_utilisateur_liste');
     }
+
+
+    #[Route('/admin/utilisateurs', name: 'admin_utilisateur_liste')]
+public function listeUtilisateurs(EntityManagerInterface $em): Response
+{
+    $utilisateurs = $em->getRepository(Utilisateur::class)->findAll();
+
+    return $this->render('admin/utilisateur_liste.html.twig', [
+        'utilisateurs' => $utilisateurs,
+    ]);
+}
+
 }

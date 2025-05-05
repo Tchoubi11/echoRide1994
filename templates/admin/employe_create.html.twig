@@ -1,0 +1,26 @@
+{# templates/admin/employe_create.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un Employé{% endblock %}
+
+{% block body %}
+    <h1>Créer un Employé</h1>
+
+    {{ form_start(form) }}
+    {{ form_row(form.email) }}
+    {{ form_row(form.password) }}
+    {{ form_row(form.nom) }}
+    {{ form_row(form.prenom) }}
+    {{ form_row(form.telephone) }}
+    {{ form_row(form.adresse) }}
+    {{ form_row(form.date_naissance) }}
+    {{ form_row(form.pseudo) }}
+    
+    <button class="btn btn-primary">Créer l'Employé</button>
+{{ form_end(form) }}
+
+
+    <a href="{{ path('admin_dashboard') }}">Retour au tableau de bord</a>
+{% endblock %}
+

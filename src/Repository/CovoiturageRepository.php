@@ -23,11 +23,11 @@ class CovoiturageRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->andWhere('c.lieu_depart = :depart')
             ->andWhere('c.lieu_arrivee = :arrivee')
-            ->andWhere('c.heure_depart >= :start') // On modifie cette ligne pour ne récupérer que les covoiturages à partir d'aujourd'hui
+            ->andWhere('c.heure_depart >= :start') 
             ->andWhere('c.isCancelled = false')
             ->setParameter('depart', $depart)
             ->setParameter('arrivee', $arrivee)
-            ->setParameter('start', $startOfDay) // Utilise la date actuelle ou la date fournie
+            ->setParameter('start', $startOfDay) 
             ->getQuery()
             ->getResult();
     }

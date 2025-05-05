@@ -35,8 +35,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100)]
     private ?string $adresse = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $date_naissance = null;
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $date_naissance = null;
+
 
     #[ORM\Column(type: "float", nullable: true)]
     private ?float $rating = null;
@@ -118,9 +119,16 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setAdresse(string $adresse): static { $this->adresse = $adresse; return $this; }
 
-    public function getDateNaissance(): ?string { return $this->date_naissance; }
+    public function getDateNaissance(): ?\DateTimeInterface
+{
+    return $this->date_naissance;
+}
 
-    public function setDateNaissance(string $date_naissance): static { $this->date_naissance = $date_naissance; return $this; }
+public function setDateNaissance(?\DateTimeInterface $date_naissance): static
+{
+    $this->date_naissance = $date_naissance;
+    return $this;
+}
 
     public function getPseudo(): ?string { return $this->pseudo; }
 

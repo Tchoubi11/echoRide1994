@@ -38,7 +38,7 @@ class CovoiturageType extends AbstractType
             ])
             ->add('dateArrivee', DateTimeType::class, [
                 'widget' => 'single_text',
-                'required' => false, // DateArrivee est maintenant optionnelle
+                'required' => false, 
             ])
             ->add('prixPersonne', IntegerType::class, [
                 'constraints' => [
@@ -65,7 +65,7 @@ class CovoiturageType extends AbstractType
             ])
             ->add('is_eco', CheckboxType::class, [
                 'label' => 'Eco-friendly',
-                'required' => false,  // facultatif, selon si vous voulez le rendre obligatoire
+                'required' => false,  
             ]);
     }
     

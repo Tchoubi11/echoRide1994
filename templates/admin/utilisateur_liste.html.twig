@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>Liste des utilisateurs</h1>
+
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in utilisateurs %}
+                <tr>
+                    <td>{{ user.nom }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.typeUtilisateur|capitalize }}</td>
+                    <td>
+                        {% if user.isSuspended %}
+                            <span class="badge text-bg-danger">Suspendu</span>
+                        {% else %}
+                            <span class="badge text-bg-success">Actif</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.isSuspended %}
+                            <a href="{{ path('admin_reactivate_user', { id: user.id }) }}" class="btn btn-sm btn-success">Réactiver</a>
+                        {% else %}
+                            <a href="{{ path('admin_suspend_user', { id: user.id }) }}" class="btn btn-sm btn-warning">Suspendre</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
