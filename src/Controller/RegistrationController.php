@@ -34,14 +34,20 @@ class RegistrationController extends AbstractController
             $plainPassword = $form->get('plainPassword')->getData();
 
             // Hacher le mot de passe
-            $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
+$hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
 
-            // Assigner le mot de passe haché à l'utilisateur
-            $user->setPassword($hashedPassword);
+// Assigner le mot de passe haché à l'utilisateur
+$user->setPassword($hashedPassword);
 
-            // Sauvegarder l'utilisateur en base de données
-            $entityManager->persist($user);
-            $entityManager->flush();
+// Ajouter cette condition :
+if ($user->getTypeUtilisateur() !== 'employe') {
+    $user->setCredits(20);
+}
+
+// Sauvegarder l'utilisateur en base de données
+$entityManager->persist($user);
+$entityManager->flush();
+
 
             // Ajouter un message flash de succès
             $this->addFlash('success', 'Votre compte a été créé avec succès !');

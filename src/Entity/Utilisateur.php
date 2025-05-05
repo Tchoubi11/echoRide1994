@@ -46,7 +46,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $pseudo = null;
 
     #[ORM\Column(type: "float", nullable: true)]
-    private ?float $credits = 20;
+private ?float $credits = null;
 
     #[ORM\Column(length: 20)]
     private ?string $type_utilisateur;

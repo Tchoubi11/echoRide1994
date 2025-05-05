@@ -57,35 +57,40 @@ class AdminController extends AbstractController
     }
 
     #[Route('/admin/employes/create', name: 'admin_employe_create')]
-    public function createEmploye(
-        Request $request,
-        EntityManagerInterface $em,
-        UserPasswordHasherInterface $passwordHasher
-    ): Response {
-        $user = new Utilisateur();
-        $form = $this->createForm(UtilisateurInformationType::class, $user); 
-    
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $user->setRoles(['ROLE_EMPLOYE']);
-            $user->setTypeUtilisateur('employe'); 
-    
-            $hashedPassword = $passwordHasher->hashPassword(
-                $user,
-                $user->getPassword()
-            );
-            $user->setPassword($hashedPassword);
-            $em->persist($user);
-            $em->flush();
-    
-            $this->addFlash('success', 'Employé créé avec succès.');
-            return $this->redirectToRoute('admin_dashboard');
-        }
-    
-        return $this->render('admin/employe_create.html.twig', [
-            'form' => $form->createView(),
-        ]);
+public function createEmploye(
+    Request $request,
+    EntityManagerInterface $em,
+    UserPasswordHasherInterface $passwordHasher
+): Response {
+    $user = new Utilisateur();
+    $form = $this->createForm(UtilisateurInformationType::class, $user); 
+
+    $form->handleRequest($request);
+    if ($form->isSubmitted() && $form->isValid()) {
+        $user->setRoles(['ROLE_EMPLOYE']);
+        $user->setTypeUtilisateur('employe');
+
+        
+        $user->setCredits(null);
+
+        $hashedPassword = $passwordHasher->hashPassword(
+            $user,
+            $user->getPassword()
+        );
+        $user->setPassword($hashedPassword);
+
+        $em->persist($user);
+        $em->flush();
+
+        $this->addFlash('success', 'Employé créé avec succès.');
+        return $this->redirectToRoute('admin_dashboard');
     }
+
+    return $this->render('admin/employe_create.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
+
     
     
     #[Route('/admin/utilisateur/{id}/suspend', name: 'admin_suspend_user')]
