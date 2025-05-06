@@ -7,24 +7,16 @@ security:
     providers:
         app_user_provider:
             entity:
-                class: App\Entity\Admin
-                property: email  
+                class: App\Entity\Utilisateur
+                property: email
 
     firewalls:
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
-
         main:
             lazy: true
             provider: app_user_provider
             user_checker: App\Security\UserChecker
-            form_login:
-                login_path: app_login
-                check_path: app_login
-                failure_handler: App\Security\LoginFailureHandler
-                default_target_path: participer_covoiturage
-                enable_csrf: true
+            custom_authenticators:
+                - App\Security\AppAuthenticator
             logout:
                 path: app_logout
                 target: app_home
@@ -34,6 +26,12 @@ security:
                 path: /
 
     access_control:
+        - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/reservation, roles: ROLE_USER }
         - { path: ^/participer, roles: ROLE_USER }
         - { path: ^/espace-employe, roles: ROLE_EMPLOYE }
+        - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/public, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+

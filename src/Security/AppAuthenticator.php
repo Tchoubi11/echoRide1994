@@ -11,10 +11,13 @@ use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+use Symfony\Component\HttpFoundation\Session\Session;
+
 
 class AppAuthenticator extends AbstractAuthenticator
 {
-    private $urlGenerator;
+    private UrlGeneratorInterface $urlGenerator;
 
     public function __construct(UrlGeneratorInterface $urlGenerator)
     {
@@ -27,34 +30,42 @@ class AppAuthenticator extends AbstractAuthenticator
     }
 
     public function authenticate(Request $request): Passport
-{
-    dump('🚀 Authentification en cours...');
-    
-    $email = $request->request->get('email');
-    $password = $request->request->get('password');
+    {
+        $email = trim($request->request->get('email'));
+        $password = $request->request->get('password');
 
-    dump(' Email : ', $email);
-    dump(' Password reçu');
+        if (!$email) {
+            throw new CustomUserMessageAuthenticationException('Le champ email est requis pour l\'authentification.');
+        }
 
-    return new Passport(
-        new UserBadge($email), 
-        new PasswordCredentials($password) 
-    );
-}
+        return new Passport(
+            new UserBadge($email),
+            new PasswordCredentials($password)
+        );
+    }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?RedirectResponse
 {
-    $session = $request->getSession();
-    $targetUrl = $session->get('redirect_after_login', $this->urlGenerator->generate('app_home'));
-    $session->remove('redirect_after_login'); 
+    $user = $token->getUser();
+    $roles = $user->getRoles();
 
-    return new RedirectResponse($targetUrl);
+    if (in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_EMPLOYE', $roles, true)) {
+        return new RedirectResponse($this->urlGenerator->generate('app_home'));
+    }
+
+    return new RedirectResponse($this->urlGenerator->generate('covoiturage_list'));
 }
 
-
+   
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?RedirectResponse
     {
-        // on redirige l'utilisateur en cas d'échec d'authentification
-        return new RedirectResponse($this->urlGenerator->generate('app_login')); 
+        $session = $request->getSession();
+    
+        if ($session instanceof Session) {
+            $session->getFlashBag()->add('error', $exception->getMessage());
+        }
+    
+        return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }
+
 }

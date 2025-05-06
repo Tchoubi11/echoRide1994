@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Form\UtilisateurInformationType;
-
 use App\Service\StatistiqueService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,6 +21,8 @@ class AdminController extends AbstractController
         StatistiqueService $stats,
         ChartBuilderInterface $chartBuilder
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $covoiturages = $stats->getCovoituragesParJour();
         $credits = $stats->getCreditsParJour();
         $totalCredits = $stats->getTotalCredits();
@@ -57,70 +58,77 @@ class AdminController extends AbstractController
     }
 
     #[Route('/admin/employes/create', name: 'admin_employe_create')]
-public function createEmploye(
-    Request $request,
-    EntityManagerInterface $em,
-    UserPasswordHasherInterface $passwordHasher
-): Response {
-    $user = new Utilisateur();
-    $form = $this->createForm(UtilisateurInformationType::class, $user); 
+    public function createEmploye(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-    $form->handleRequest($request);
-    if ($form->isSubmitted() && $form->isValid()) {
-        $user->setRoles(['ROLE_EMPLOYE']);
-        $user->setTypeUtilisateur('employe');
+        $user = new Utilisateur();
+        $form = $this->createForm(UtilisateurInformationType::class, $user);
 
-        
-        $user->setCredits(null);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user->setRoles(['ROLE_EMPLOYE']);
+            $user->setTypeUtilisateur('employe');
+            $user->setCredits(null);
 
-        $hashedPassword = $passwordHasher->hashPassword(
-            $user,
-            $user->getPassword()
-        );
-        $user->setPassword($hashedPassword);
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                $user->getPassword()
+            );
+            $user->setPassword($hashedPassword);
 
-        $em->persist($user);
-        $em->flush();
+            $em->persist($user);
+            $em->flush();
 
-        $this->addFlash('success', 'Employé créé avec succès.');
-        return $this->redirectToRoute('admin_dashboard');
+            $this->addFlash('success', 'Employé créé avec succès.');
+            return $this->redirectToRoute('admin_dashboard');
+        }
+
+        return $this->render('admin/employe_create.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 
-    return $this->render('admin/employe_create.html.twig', [
-        'form' => $form->createView(),
-    ]);
-}
-
-    
-    
     #[Route('/admin/utilisateur/{id}/suspend', name: 'admin_suspend_user')]
-    public function suspendUser(Utilisateur $user, EntityManagerInterface $em): Response
-    {
-        $user->setIsSuspended(true);
-        $em->flush();
-        $this->addFlash('warning', 'Utilisateur suspendu.');
+public function suspendUser(Utilisateur $user, EntityManagerInterface $em): Response
+{
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    if (in_array('ROLE_ADMIN', $user->getRoles())) {
+        $this->addFlash('danger', 'Impossible de suspendre un administrateur.');
         return $this->redirectToRoute('admin_utilisateur_liste');
     }
+
+    $user->setIsSuspended(true);
+    $em->flush();
+    $this->addFlash('warning', 'Utilisateur suspendu.');
+    return $this->redirectToRoute('admin_utilisateur_liste');
+}
 
 
     #[Route('/admin/utilisateur/{id}/reactivate', name: 'admin_reactivate_user')]
     public function reactivateUser(Utilisateur $user, EntityManagerInterface $em): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $user->setIsSuspended(false);
         $em->flush();
         $this->addFlash('success', 'Utilisateur réactivé.');
         return $this->redirectToRoute('admin_utilisateur_liste');
     }
 
-
     #[Route('/admin/utilisateurs', name: 'admin_utilisateur_liste')]
-public function listeUtilisateurs(EntityManagerInterface $em): Response
-{
-    $utilisateurs = $em->getRepository(Utilisateur::class)->findAll();
+    public function listeUtilisateurs(EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-    return $this->render('admin/utilisateur_liste.html.twig', [
-        'utilisateurs' => $utilisateurs,
-    ]);
-}
+        $utilisateurs = $em->getRepository(Utilisateur::class)->findAll();
 
+        return $this->render('admin/utilisateur_liste.html.twig', [
+            'utilisateurs' => $utilisateurs,
+        ]);
+    }
 }
