@@ -43,20 +43,34 @@
         <a href="{{ path('reservations_to_validate') }}" class="btn btn-outline-primary mb-3">📝 Valider mes trajets</a>
 
         {% for res in reservations %}
-            {% if res.covoiturage.isCompleted == false and res.covoiturage.isCancelled == false %}
-                <div class="card p-3 mb-2">
-                    <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
-                    📅 {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
-                    💺 Places réservées : {{ res.placesReservees }}<br>
-                    💰 Payé : {{ res.montantPaye }} crédits
+    {% if res.covoiturage.isCompleted == false and res.covoiturage.isCancelled == false %}
+        <div class="card p-3 mb-2">
+            <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
+            📅 {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
+            💺 Places réservées : {{ res.placesReservees }}<br>
+            💰 Payé : {{ res.montantPaye }} crédits
 
-                    <form method="post" action="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}"
-                          onsubmit="return confirm('Annuler votre participation ?');">
-                        <button type="submit" class="btn btn-warning btn-sm mt-3">Annuler ma participation</button>
-                    </form>
-                </div>
-            {% endif %}
-        {% endfor %}
+            {# 🧾 Bloc pour afficher l’état de validation #}
+            <div class="mt-2">
+                {% if res.aConfirmeParticipation %}
+                    <span class="badge bg-success">✅ Validé</span>
+                {% elseif res.aParticipe %}
+                    <a href="{{ path('reservation_valider', {id: res.id}) }}" class="btn btn-primary btn-sm">
+                        Valider ma participation
+                    </a>
+                {% else %}
+                    <span class="badge bg-warning text-dark">🚫 En attente de validation du chauffeur</span>
+                {% endif %}
+            </div>
+
+            <form method="post" action="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}"
+                  onsubmit="return confirm('Annuler votre participation ?');">
+                <button type="submit" class="btn btn-warning btn-sm mt-3">Annuler ma participation</button>
+            </form>
+        </div>
+    {% endif %}
+{% endfor %}
+
     {% endif %}
 
     {% if utilisateur.typeUtilisateur in ['chauffeur', 'les_deux'] %}

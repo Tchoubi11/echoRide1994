@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Valider les passagers{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Validation des passagers pour le covoiturage #{{ covoiturage.id }}</h2>
+
+    <form method="post">
+        <div class="list-group">
+            {% for reservation in covoiturage.reservations %}
+                <label class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ reservation.passager.nom }}</span>
+                    <input type="checkbox" name="passager_{{ reservation.id }}"
+                           {% if reservation.aParticipe %}checked{% endif %} class="form-check-input">
+                </label>
+            {% else %}
+                <p>Aucun passager pour ce covoiturage.</p>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-success mt-3">Valider la présence</button>
+    </form>
+
+    <a href="{{ path('covoiturage_list') }}" class="btn btn-link mt-3">⬅ Retour</a>
+</div>
+{% endblock %}

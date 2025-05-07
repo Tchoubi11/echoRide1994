@@ -24,6 +24,11 @@ class Reservation
     #[ORM\OneToOne(mappedBy: 'reservation', targetEntity: Avis::class, cascade: ['persist', 'remove'])]
     private ?Avis $avis = null;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $aParticipe = false;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $aConfirmeParticipation = false;
 
     #[ORM\Column]
     private ?int $placesReservees = null;
@@ -151,4 +156,26 @@ public function setAvis(?Avis $avis): static
 
     return $this;
 }
+public function getAParticipe(): bool
+{
+    return $this->aParticipe;
+}
+
+public function setAParticipe(bool $aParticipe): self
+{
+    $this->aParticipe = $aParticipe;
+    return $this;
+}
+
+public function isAConfirmeParticipation(): bool
+{
+    return $this->aConfirmeParticipation;
+}
+
+public function setAConfirmeParticipation(bool $aConfirmeParticipation): self
+{
+    $this->aConfirmeParticipation = $aConfirmeParticipation;
+    return $this;
+}
+
 }

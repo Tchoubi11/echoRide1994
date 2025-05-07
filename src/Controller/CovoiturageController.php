@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Repository\ReservationRepository;
 
 class CovoiturageController extends AbstractController
 {
@@ -311,4 +312,31 @@ public function create(Request $request, EntityManagerInterface $em): Response
         $this->addFlash('success', 'Trajet marqué comme terminé avec succès.');
         return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
     }
+    
+
+    #[Route('/covoiturage/{id}/valider-passagers', name: 'covoiturage_valider_passagers')]
+public function validerPassagers(
+    Covoiturage $covoiturage,
+    Request $request,
+    EntityManagerInterface $em,
+    ReservationRepository $reservationRepo
+): Response {
+    if ($covoiturage->getDriver() !== $this->getUser()) {
+        throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à valider ce covoiturage.");
+    }
+
+    if ($request->isMethod('POST')) {
+        foreach ($covoiturage->getReservations() as $reservation) {
+            $isPresent = $request->request->get('passager_'.$reservation->getId()) === 'on';
+            $reservation->setAParticipe($isPresent);
+        }
+        $em->flush();
+        $this->addFlash('success', 'Présence des passagers mise à jour avec succès.');
+        return $this->redirectToRoute('covoiturage_valider_passagers', ['id' => $covoiturage->getId()]);
+    }
+
+    return $this->render('covoiturage/valider_passagers.html.twig', [
+        'covoiturage' => $covoiturage,
+    ]);
+}
 }

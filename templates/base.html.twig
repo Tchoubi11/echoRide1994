@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EcoRide - Covoiturage écologique{% endblock %}</title>
-    
-    <!-- Lien vers le fichier CSS Bootstrap -->
+
+    <!-- CSS Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
     {% block stylesheets %}
@@ -14,88 +14,88 @@
     {% endblock %}
 </head>
 <body>
-    <header>
-        <!-- Menu de navigation -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container">
-                <a class="navbar-brand" href="{{ path('app_home') }}">EcoRide</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_home') }}">Accueil</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('covoiturage_list') }}">Covoiturages</a>
-                        </li>
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{{ path('app_home') }}">EcoRide</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_home') }}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('covoiturage_list') }}">Covoiturages</a>
+                    </li>
 
-                        {% if app.user %}
-    {% if is_granted('ROLE_ADMIN') %}
-        <li class="nav-item">
-            <a class="nav-link" href="{{ path('admin_dashboard') }}">Espace Admin</a>
-        </li>
-    {% else %}
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Mon espace
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                {% if is_granted('ROLE_EMPLOYE') %}
-                    <li><a class="dropdown-item" href="{{ path('app_employe') }}">Espace Employé</a></li>
-                {% endif %}
-                {% if is_granted('ROLE_CHAUFFEUR') %}
-                    <li><a class="dropdown-item" href="{{ path('espace_chauffeur') }}">Espace Chauffeur</a></li>
-                {% endif %}
-                {% if is_granted('ROLE_PASSAGER') %}
-                    <li><a class="dropdown-item" href="{{ path('espace_passager') }}">Espace Passager</a></li>
-                {% endif %}
-                <li><a class="dropdown-item" href="{{ path('espace_utilisateur') }}">Mon profil</a></li>
-            </ul>
-        </li>
-    {% endif %}
-    
-    <li class="nav-item">
-        <a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a>
-    </li>
-
-                        {% else %}
+                    {% if app.user %}
+                        {% if is_granted('ROLE_ADMIN') %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
+                                <a class="nav-link" href="{{ path('admin_dashboard') }}">Espace Admin</a>
+                            </li>
+                        {% elseif is_granted('ROLE_EMPLOYE') %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('app_employe') }}">Espace Employé</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    Mon espace
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                                    {% if is_granted('ROLE_CHAUFFEUR') %}
+                                        <li><a class="dropdown-item" href="{{ path('espace_chauffeur') }}">Espace Chauffeur</a></li>
+                                    {% endif %}
+                                    {% if is_granted('ROLE_PASSAGER') %}
+                                        <li><a class="dropdown-item" href="{{ path('espace_passager') }}">Espace Passager</a></li>
+                                    {% endif %}
+                                    <li><a class="dropdown-item" href="{{ path('espace_utilisateur') }}">Mon profil</a></li>
+                                </ul>
                             </li>
                         {% endif %}
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('contact') }}">Contact</a>
+                            <a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a>
                         </li>
-                    </ul>
-                </div>
-            </div>    
-        </nav>
-    </header>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
+                        </li>
+                    {% endif %}
 
-    <main>
-        {% block body %}{% endblock %}
-    </main>
-
-    <!-- Bas de page avec adresse et mentions légales -->
-    <footer class="mt-5">
-        <div class="d-flex justify-content-between">
-            <p><strong>Contact :</strong> contact@ecoride.com</p>
-            <p><a href="{{ path('legal_mentions') }}">Mentions légales</a></p>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('contact') }}">Contact</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </footer>
+    </nav>
+</header>
 
-    {% block javascripts %}
-    <script src="{{ asset('scripts/delate.js') }}"></script>
-    <script src="{{ asset('scripts/passager.js') }}"></script>
-    <script src="{{ asset('scripts/dateValidation.js') }}"></script>
-    <script src="{{ asset('scripts/home.js') }}"></script>
-    {% endblock %}
+<main>
+    {% block body %}{% endblock %}
+</main>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+<footer class="mt-5">
+    <div class="d-flex justify-content-between">
+        <p><strong>Contact :</strong> contact@ecoride.com</p>
+        <p><a href="{{ path('legal_mentions') }}">Mentions légales</a></p>
+    </div>
+</footer>
+
+{% block javascripts %}
+<script src="{{ asset('scripts/delate.js') }}"></script>
+<script src="{{ asset('scripts/passager.js') }}"></script>
+<script src="{{ asset('scripts/dateValidation.js') }}"></script>
+<script src="{{ asset('scripts/home.js') }}"></script>
+{% endblock %}
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 </body>
 </html>

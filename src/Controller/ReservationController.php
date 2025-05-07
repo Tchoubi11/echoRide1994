@@ -109,36 +109,6 @@ class ReservationController extends AbstractController
     }
     
 
-    //Annulation d’une réservation par un passager 
-     //#[Route('/reservation/{id}/cancel', name: 'cancel_reservation', methods: ['POST'])]
-    // public function cancelReservation(int $id, EntityManagerInterface $em): JsonResponse
-     //{
-        // ici on récupére la réservation par son ID
-      //   $reservation = $em->getRepository(Reservation::class)->find($id);
-
-      //   if (!$reservation) {
-        //     return new JsonResponse(['success' => false, 'message' => 'Réservation introuvable.'], 404);
-        // }
-
-        // on vérifie si l'utilisateur connecté est bien celui qui a effectué la réservation
-        // $user = $this->getUser();
-        // if ($reservation->getPassenger() !== $user) {
-        //     return new JsonResponse(['success' => false, 'message' => 'Vous ne pouvez annuler que vos propres réservations.'], 403);
-        // }
-
-        // on récupére le covoiturage associé à la réservation
-        // $covoiturage = $reservation->getCovoiturage();
-
-        // on reemett à jour le nombre de places disponibles
-        // $covoiturage->setNbPlace($covoiturage->getNbPlace() + $reservation->getPlacesReservees());
-
-        // Supprimons la réservation
-       //  $em->remove($reservation);
-        // $em->flush();
-
-        // return new JsonResponse(['success' => true, 'message' => 'Réservation annulée avec succès.']);
-    // }
-
 
     #[Route('/mes-reservations', name: 'mes_reservations')]
     public function mesReservations(
@@ -184,7 +154,7 @@ class ReservationController extends AbstractController
             }
     
             // On récupère ici les covoiturages proposés (si utilisateur est chauffeur ou les deux)
-            $covoituragesProposes = $em->getRepository(\App\Entity\Covoiturage::class)->findBy([
+            $em->getRepository(Covoiturage::class)->findBy([
                 'driver' => $user,
             ]);
         }
@@ -201,5 +171,27 @@ class ReservationController extends AbstractController
         ]);
     }
     
+
+    #[Route('/reservation/{id}/valider', name: 'reservation_valider')]
+public function validerReservation(
+    Reservation $reservation,
+    EntityManagerInterface $em
+): Response {
+    if ($reservation->getPassenger() !== $this->getUser()) {
+        throw $this->createAccessDeniedException();
+    }
+
+    if (!$reservation->getAParticipe()) {
+        $this->addFlash('warning', 'Vous ne pouvez valider que si le chauffeur vous a marqué présent.');
+        return $this->redirectToRoute('mes_reservations');
+    }
+
+    $reservation->setAConfirmeParticipation(true);
+
+    $em->flush();
+
+    $this->addFlash('success', 'Merci d\'avoir validé votre trajet !');
+    return $this->redirectToRoute('mes_reservations');
+}
 
 }
