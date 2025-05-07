@@ -165,59 +165,70 @@ class UtilisateurController extends AbstractController
 
     
     #[Route('/mon-espace/covoiturages-a-valider', name: 'reservations_to_validate')]
-public function validateReservations(
-    Request $request,
-    EntityManagerInterface $em,
-    NotificationService $notificationService,
-    Security $security
-): Response {
-    $user = $security->getUser();
-
-    $reservations = $em->getRepository(Reservation::class)->findBy([
-        'passenger' => $user,
-        'isValidatedByPassenger' => null,
-    ]);
-
-    $forms = [];
-
-    foreach ($reservations as $reservation) {
-        $form = $this->createForm(ReservationValidationType::class, $reservation);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $reservation->setIsValidatedByPassenger(true);
-
-            $passengerFeedback = $form->get('passengerFeedback')->getData();
-            $passengerNote = $form->get('passengerNote')->getData();
-
-            $driver = $reservation->getCovoiturage()->getDriver();
-            $driver->setCredits($driver->getCredits() + $reservation->getCovoiturage()->getPrixPersonne());
-
-            $notificationService->notifyDriverOfValidation($driver, $reservation);
-
-            if ($passengerNote || $passengerFeedback) {
-                $avis = new Avis();
-                $avis->setNote($passengerNote);
-                $avis->setCommentaire($passengerFeedback);
-                $avis->setStatut('en attente');
-                $avis->setIsValidated(false);
-                $avis->setReservation($reservation); 
-                $em->persist($avis);
+    public function validateReservations(
+        Request $request,
+        EntityManagerInterface $em,
+        NotificationService $notificationService,
+        Security $security
+    ): Response {
+        $user = $security->getUser();
+    
+        // Seules les réservations où le chauffeur et le passager ont confirmé leur participation
+        $reservations = $em->getRepository(Reservation::class)->findBy([
+            'passenger' => $user,
+            'isValidatedByPassenger' => null,
+            'aConfirmeParticipation' => true,
+            'aParticipe' => true,
+        ]);
+    
+        $forms = [];
+    
+        foreach ($reservations as $reservation) {
+            $form = $this->createForm(ReservationValidationType::class, $reservation);
+            $form->handleRequest($request);
+    
+            if ($form->isSubmitted() && $form->isValid()) {
+                $reservation->setIsValidatedByPassenger(true);
+    
+                $passengerFeedback = $form->get('passengerFeedback')->getData();
+                $passengerNote = $form->get('passengerNote')->getData();
+    
+                $covoiturage = $reservation->getCovoiturage();
+                $driver = $covoiturage->getDriver();
+    
+                // Ajouter les crédits au chauffeur
+                $driver->setCredits($driver->getCredits() + $covoiturage->getPrixPersonne());
+                $notificationService->notifyDriverOfValidation($driver, $reservation);
+    
+                // Enregistrement de l'avis
+                if ($passengerNote || $passengerFeedback) {
+                    $avis = new Avis();
+                    $avis->setNote($passengerNote);
+                    $avis->setCommentaire($passengerFeedback);
+                    $avis->setStatut('en attente');
+                    $avis->setIsValidated(false);
+                    $avis->setReservation($reservation);
+                    $em->persist($avis);
+                }
+    
+                // Marquer le trajet comme terminé
+                $covoiturage->setIsCompleted(true);
+    
+                $em->flush();
+    
+                $this->addFlash('success', 'Trajet validé avec succès.');
+                return $this->redirectToRoute('reservations_to_validate');
             }
-
-            $em->flush();
-
-            return $this->redirectToRoute('reservations_to_validate');
+    
+            $forms[$reservation->getId()] = $form->createView();
         }
-
-        $forms[$reservation->getId()] = $form->createView();
+    
+        return $this->render('utilisateur/reservations_to_validate.html.twig', [
+            'participations' => $reservations,
+            'participationForms' => $forms,
+        ]);
     }
-
-    return $this->render('utilisateur/reservations_to_validate.html.twig', [
-        'participations' => $reservations,
-        'participationForms' => $forms,
-    ]);
-}
+    
 
 
 

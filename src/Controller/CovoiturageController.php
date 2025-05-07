@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Repository\ReservationRepository;
+
 
 class CovoiturageController extends AbstractController
 {
@@ -314,24 +314,35 @@ public function create(Request $request, EntityManagerInterface $em): Response
     }
     
 
-    #[Route('/covoiturage/{id}/valider-passagers', name: 'covoiturage_valider_passagers')]
+    #[Route('/covoiturage/{id}/valider-passagers', name: 'covoiturage_valider_passagers', methods: ['GET', 'POST'])]
 public function validerPassagers(
     Covoiturage $covoiturage,
     Request $request,
-    EntityManagerInterface $em,
-    ReservationRepository $reservationRepo
+    EntityManagerInterface $em
 ): Response {
+    
+    // Vérification que l'utilisateur est bien le conducteur
     if ($covoiturage->getDriver() !== $this->getUser()) {
         throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à valider ce covoiturage.");
     }
 
+    // Validation des passagers
     if ($request->isMethod('POST')) {
         foreach ($covoiturage->getReservations() as $reservation) {
             $isPresent = $request->request->get('passager_'.$reservation->getId()) === 'on';
             $reservation->setAParticipe($isPresent);
+
+            // Vérification et validation de l'avis pour chaque réservation
+            if ($isPresent && $reservation->getAvis()) {
+                $avis = $reservation->getAvis();
+                $avis->setIsValidated(true); 
+                $em->persist($avis); 
+            }
         }
-        $em->flush();
+        $em->flush(); 
+
         $this->addFlash('success', 'Présence des passagers mise à jour avec succès.');
+
         return $this->redirectToRoute('covoiturage_valider_passagers', ['id' => $covoiturage->getId()]);
     }
 
@@ -339,4 +350,5 @@ public function validerPassagers(
         'covoiturage' => $covoiturage,
     ]);
 }
+
 }
