@@ -135,4 +135,47 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+    function escapeHTML(str) {
+        const element = document.createElement('div');
+        if (str) {
+            element.innerText = str;
+            element.textContent = str;
+        }
+        return element.innerHTML;
+    }
+
+    function validateInput(input) {
+        const pattern = /^[a-zA-Z0-9\s]*$/;
+        return pattern.test(input);
+    }
+
+    const form = document.getElementById('searchForm');
+    if (form) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const departure = document.getElementById('departure').value;
+            const destination = document.getElementById('destination').value;
+
+            if (!validateInput(departure) || !validateInput(destination)) {
+                alert('Veuillez entrer des valeurs valides (lettres, chiffres et espaces seulement).');
+                return;
+            }
+
+            if (departure.length > 100 || destination.length > 100) {
+                alert('Les valeurs doivent être inférieures à 100 caractères.');
+                return;
+            }
+
+            const safeDeparture = escapeHTML(departure);
+            const safeDestination = escapeHTML(destination);
+
+            alert(`Recherche de trajet de ${safeDeparture} à ${safeDestination}`);
+        });
+    }
+});
+
+    </script>
 {% endblock %}
