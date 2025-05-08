@@ -1,19 +1,17 @@
-
 body {
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #e8f7e7;  
-    color: #333; 
+    background-color: #e8f7e7;
+    color: #333;
 }
 
-
+/* Header */
 header {
-    background-color: #4CAF50; 
-    color: white; 
-    padding: 30px 0;
+    
+    color: white;
     text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 header h1 {
@@ -23,49 +21,34 @@ header h1 {
 }
 
 
+
+/* Navbar */
 nav.navbar {
-    background-color: #66BB6A !important;  
-    box-shadow: none !important; 
-    border: none !important;  
+    background-color: #66BB6A;
+    box-shadow: none;
+    border: none;
 }
 
-
-
-nav.navbar .nav-link {
-    color: white !important; 
+nav.navbar .nav-item .nav-link {
+    color: white;
     text-decoration: none;
-    padding: 10px 20px; 
-    box-shadow: none !important; 
-    border: none !important;  
+    padding: 10px 20px;
 }
 
-
-nav.navbar .nav-link:hover {
-    background-color: #81c784 !important; 
+nav.navbar .nav-item .nav-link:hover,
+nav.navbar .nav-item .nav-link:focus {
+    background-color: #81c784;
     border-radius: 5px;
-    color: white !important;  
-    box-shadow: none !important; 
-    border: none !important;  
+    color: white;
 }
-
 
 nav.navbar .nav-item.active .nav-link {
-    background-color: #4caf50 !important;  
-    color: white !important;  
+    background-color: #4caf50;
+    color: white;
     border-radius: 5px;
-    box-shadow: none !important; 
-    border: none !important;
 }
 
-
-nav.navbar .nav-link:focus {
-    background-color: #81c784 !important; 
-    color: white !important;
-    box-shadow: none !important; 
-    border: none !important; 
-}
-
-
+/* Carousel */
 .carousel {
     position: relative;
     max-width: 100%;
@@ -75,27 +58,27 @@ nav.navbar .nav-link:focus {
 .carousel-item img {
     width: 100%;
     height: auto;
-    max-height: 400px; 
+    max-height: 400px;
     object-fit: cover;
 }
 
 .carousel-caption {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    background-color: rgba(0, 0, 0, 0.5);  
-    color: white;
-    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.5);
+    left: 50%;
+    transform: translateX(-50%);
+    width: fit-content;
+    padding: 15px 25px;
     border-radius: 5px;
 }
 
-.carousel-caption h5, .carousel-caption p {
-    color: #fff; 
+.carousel-caption h5,
+.carousel-caption p {
+    color: #fff;
 }
 
-
+/* Buttons */
 .btn {
-    background-color: #4CAF50; 
+    background-color: #4CAF50;
     color: white;
     padding: 12px 25px;
     border: none;
@@ -106,10 +89,10 @@ nav.navbar .nav-link:focus {
 }
 
 .btn:hover {
-    background-color: #388E3C; 
+    background-color: #388E3C;
 }
 
-
+/* Search Section */
 .search-container {
     text-align: center;
     padding: 50px;
@@ -142,18 +125,19 @@ nav.navbar .nav-link:focus {
     background-color: #66bb6a;
 }
 
-
+/* Container */
 .container {
     margin-top: 50px;
 }
 
 .container h2 {
     text-align: center;
-    color: #388E3C; 
+    color: #388E3C;
     font-size: 2rem;
     margin-bottom: 30px;
 }
 
+/* Images */
 .row img {
     max-width: 100%;
     border-radius: 10px;
@@ -161,14 +145,14 @@ nav.navbar .nav-link:focus {
 }
 
 .row img:hover {
-    transform: scale(1.05); 
+    transform: scale(1.05);
 }
 
 .text-center {
     color: #4CAF50;
 }
 
-
+/* Footer */
 footer {
     background-color: #333;
     color: white;
@@ -178,7 +162,7 @@ footer {
 }
 
 footer a {
-    color: #66bb6a;  
+    color: #66bb6a;
     text-decoration: none;
 }
 
@@ -193,7 +177,7 @@ footer a:hover {
         left: 10px;
         font-size: 0.9rem;
     }
-    
+
     .search-container {
         padding: 30px;
     }
@@ -203,16 +187,17 @@ footer a:hover {
     }
 }
 
+/* Form Styling */
 .container .row p {
-    color: #000;  
+    color: #000;
 }
-  
-  .form-group .input-group {
+
+.form-group .input-group {
     display: flex;
     align-items: center;
-    max-width: 200px; 
-    width: 100%; 
-    margin-top: 10px; 
+    max-width: 200px;
+    width: 100%;
+    margin-top: 10px;
 }
 
 .form-group .input-group button {
@@ -225,15 +210,13 @@ footer a:hover {
     text-align: center;
 }
 
-
 .form-group {
-    margin-bottom: 20px; 
+    margin-bottom: 20px;
 }
 
 button[type="submit"] {
-    margin-top: 20px; 
+    margin-top: 20px;
 }
-
 
 .form-group label {
     margin-bottom: 10px;
