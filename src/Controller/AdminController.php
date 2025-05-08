@@ -3,111 +3,82 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
-use App\Form\UtilisateurInformationType;
 use App\Service\StatistiqueService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
-use Symfony\UX\Chartjs\Model\Chart;
 
 class AdminController extends AbstractController
 {
     #[Route('/admin', name: 'admin_dashboard')]
-    public function index(
-        StatistiqueService $stats,
-        ChartBuilderInterface $chartBuilder
-    ): Response {
+    public function index(StatistiqueService $stats): Response
+    {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+        // Récupère les statistiques
         $covoiturages = $stats->getCovoituragesParJour();
         $credits = $stats->getCreditsParJour();
         $totalCredits = $stats->getTotalCredits();
 
-        $covoiturageChart = $chartBuilder->createChart(Chart::TYPE_LINE);
-        $covoiturageChart->setData([
-            'labels' => array_keys($covoiturages),
+        // Fusion des dates
+        $dates = array_unique(array_merge(array_keys($covoiturages), array_keys($credits)));
+        sort($dates);
+
+        // Initialisation des données complètes avec valeurs 0
+        $covoituragesParJour = [];
+        $creditsParJour = [];
+
+        foreach ($dates as $date) {
+            $covoituragesParJour[$date] = $covoiturages[$date] ?? 0;
+            $creditsParJour[$date] = $credits[$date] ?? 0;
+        }
+
+        // Préparation des données au format Chart.js (pour le controller Stimulus)
+        $covoiturageChart = [
+            'labels' => array_keys($covoituragesParJour),
             'datasets' => [[
                 'label' => 'Covoiturages par jour',
-                'data' => array_values($covoiturages),
-                'borderColor' => 'rgb(75, 192, 192)',
-                'fill' => false,
-            ]],
-        ]);
+                'data' => array_values($covoituragesParJour),
+                'backgroundColor' => 'rgba(75, 192, 192, 0.6)',
+                'borderColor' => 'rgba(75, 192, 192, 1)',
+                'borderWidth' => 1
+            ]]
+        ];
 
-        $creditsChart = $chartBuilder->createChart(Chart::TYPE_BAR);
-        $creditsChart->setData([
-            'labels' => array_keys($credits),
+        $creditsChart = [
+            'labels' => array_keys($creditsParJour),
             'datasets' => [[
                 'label' => 'Crédits par jour',
-                'data' => array_values($credits),
-                'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                'data' => array_values($creditsParJour),
+                'backgroundColor' => 'rgba(255, 99, 132, 0.6)',
                 'borderColor' => 'rgba(255, 99, 132, 1)',
-                'borderWidth' => 1,
-            ]],
-        ]);
+                'borderWidth' => 1
+            ]]
+        ];
 
         return $this->render('admin/index.html.twig', [
             'totalCredits' => $totalCredits,
-            'covoiturageChart' => $covoiturageChart,
-            'creditsChart' => $creditsChart,
-        ]);
-    }
-
-    #[Route('/admin/employes/create', name: 'admin_employe_create')]
-    public function createEmploye(
-        Request $request,
-        EntityManagerInterface $em,
-        UserPasswordHasherInterface $passwordHasher
-    ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        $user = new Utilisateur();
-        $form = $this->createForm(UtilisateurInformationType::class, $user);
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $user->setRoles(['ROLE_EMPLOYE']);
-            $user->setTypeUtilisateur('employe');
-            $user->setCredits(null);
-
-            $hashedPassword = $passwordHasher->hashPassword(
-                $user,
-                $user->getPassword()
-            );
-            $user->setPassword($hashedPassword);
-
-            $em->persist($user);
-            $em->flush();
-
-            $this->addFlash('success', 'Employé créé avec succès.');
-            return $this->redirectToRoute('admin_dashboard');
-        }
-
-        return $this->render('admin/employe_create.html.twig', [
-            'form' => $form->createView(),
+            'covoiturageChart' => ['data' => $covoiturageChart],
+            'creditsChart' => ['data' => $creditsChart],
         ]);
     }
 
     #[Route('/admin/utilisateur/{id}/suspend', name: 'admin_suspend_user')]
-public function suspendUser(Utilisateur $user, EntityManagerInterface $em): Response
-{
-    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+    public function suspendUser(Utilisateur $user, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-    if (in_array('ROLE_ADMIN', $user->getRoles())) {
-        $this->addFlash('danger', 'Impossible de suspendre un administrateur.');
+        if (in_array('ROLE_ADMIN', $user->getRoles())) {
+            $this->addFlash('danger', 'Impossible de suspendre un administrateur.');
+            return $this->redirectToRoute('admin_utilisateur_liste');
+        }
+
+        $user->setIsSuspended(true);
+        $em->flush();
+        $this->addFlash('warning', 'Utilisateur suspendu.');
         return $this->redirectToRoute('admin_utilisateur_liste');
     }
-
-    $user->setIsSuspended(true);
-    $em->flush();
-    $this->addFlash('warning', 'Utilisateur suspendu.');
-    return $this->redirectToRoute('admin_utilisateur_liste');
-}
-
 
     #[Route('/admin/utilisateur/{id}/reactivate', name: 'admin_reactivate_user')]
     public function reactivateUser(Utilisateur $user, EntityManagerInterface $em): Response

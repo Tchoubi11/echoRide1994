@@ -14,42 +14,35 @@ class StatistiqueService
     }
 
     public function getCovoituragesParJour(): array
-{
-    // On récupère toutes les réservations validées
-    $reservations = $this->em->getRepository(\App\Entity\Reservation::class)->findBy([
-        'statut' => 'validée'
-    ]);
+    {
+        $conn = $this->em->getConnection();
+        $sql = "
+            SELECT DATE(c.start_at) as jour, COUNT(DISTINCT c.id) as nb
+            FROM covoiturage c
+            INNER JOIN reservation r ON c.id = r.covoiturage_id
+            WHERE r.statut = :statut
+            AND c.start_at IS NOT NULL
+            GROUP BY jour
+            ORDER BY jour ASC
+        ";
+    
+        $stmt = $conn->prepare($sql);
+$stmt->bindValue('statut', 'confirmée');
+$resultSet = $stmt->executeQuery();
 
-    // On groupe les covoiturages par jour
-    $groupedByDay = [];
-    foreach ($reservations as $r) {
-        // Accéder à la date de départ du covoiturage associé
-        $date = $r->getCovoiturage()?->getDateDepart();
-
-        if (!$date instanceof \DateTimeInterface) {
-            continue; // On ignore si la date est invalide
-        }
-
-        // On formatte la date pour la grouper par jour
-        $day = $date->format('Y-m-d');
-        if (!isset($groupedByDay[$day])) {
-            $groupedByDay[$day] = 0;
-        }
-        $groupedByDay[$day]++;
+    
+        return array_column($resultSet->fetchAllAssociative(), 'nb', 'jour');
     }
-
-    // Trier par date
-    ksort($groupedByDay);
-    return $groupedByDay;
-}
+    
 
 
 public function getCreditsParJour(): array
 {
     // On récupère toutes les réservations validées
     $reservations = $this->em->getRepository(\App\Entity\Reservation::class)->findBy([
-        'statut' => 'validée'
+        'statut' => 'confirmée'
     ]);
+    
 
     // On groupe les crédits par jour
     $creditsByDay = [];

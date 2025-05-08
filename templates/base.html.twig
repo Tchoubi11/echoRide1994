@@ -9,8 +9,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
     {% block stylesheets %}
-    <link href="{{ asset('styles.css') }}" rel="stylesheet">  
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+        {{ encore_entry_link_tags('app') }}
+        <link href="{{ asset('styles.css') }}" rel="stylesheet">  
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     {% endblock %}
 </head>
 <body>
@@ -88,14 +89,21 @@
 </footer>
 
 {% block javascripts %}
-<script src="{{ asset('scripts/delate.js') }}"></script>
-<script src="{{ asset('scripts/passager.js') }}"></script>
-<script src="{{ asset('scripts/dateValidation.js') }}"></script>
-<script src="{{ asset('scripts/home.js') }}"></script>
+    {{ encore_entry_script_tags('app') }}
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tes scripts personnalisés -->
+    <script src="{{ asset('scripts/delate.js') }}"></script>
+    <script src="{{ asset('scripts/passager.js') }}"></script>
+    <script src="{{ asset('scripts/dateValidation.js') }}"></script>
+    <script src="{{ asset('scripts/home.js') }}"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 {% endblock %}
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
