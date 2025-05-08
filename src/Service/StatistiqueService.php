@@ -27,8 +27,8 @@ class StatistiqueService
         ";
     
         $stmt = $conn->prepare($sql);
-$stmt->bindValue('statut', 'confirmée');
-$resultSet = $stmt->executeQuery();
+        $stmt->bindValue('statut', 'confirmée');
+        $resultSet = $stmt->executeQuery();
 
     
         return array_column($resultSet->fetchAllAssociative(), 'nb', 'jour');
@@ -36,8 +36,8 @@ $resultSet = $stmt->executeQuery();
     
 
 
-public function getCreditsParJour(): array
-{
+     public function getCreditsParJour(): array
+    {
     // On récupère toutes les réservations validées
     $reservations = $this->em->getRepository(\App\Entity\Reservation::class)->findBy([
         'statut' => 'confirmée'
@@ -47,7 +47,7 @@ public function getCreditsParJour(): array
     // On groupe les crédits par jour
     $creditsByDay = [];
     foreach ($reservations as $r) {
-        // Accéder à la date de départ du covoiturage associé
+        // on accède à la date de départ du covoiturage associé
         $date = $r->getCovoiturage()?->getDateDepart();
         if (!$date instanceof \DateTimeInterface) {
             continue; // On ignore si la date est invalide
@@ -56,7 +56,7 @@ public function getCreditsParJour(): array
         // On formatte la date pour la grouper par jour
         $day = $date->format('Y-m-d');
 
-        // Récupérer le montant payé par le passager
+        // on récupère le montant payé par le passager
         $montant = $r->getMontantPaye() ?? 0;
 
         if (!isset($creditsByDay[$day])) {
@@ -65,18 +65,17 @@ public function getCreditsParJour(): array
         $creditsByDay[$day] += $montant;
     }
 
-    // Trier par date
+    // on trie par date
     ksort($creditsByDay);
     return $creditsByDay;
-}
+   }
 
 
-public function getTotalCredits(): float
-{
+   public function getTotalCredits(): float
+  {
     return (float) $this->em->createQuery(
         'SELECT SUM(r.montantPaye) FROM App\Entity\Reservation r WHERE r.statut = :status'
-    )->setParameter('status', 'validée')
+    )->setParameter('status', 'confirmée')
      ->getSingleScalarResult();
-}
-
+  }
 }
