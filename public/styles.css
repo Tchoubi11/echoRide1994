@@ -221,3 +221,22 @@ button[type="submit"] {
 .form-group label {
     margin-bottom: 10px;
 }
+
+form input, form textarea {
+    border: 1px solid #ccc;
+    transition: border-color 0.3s;
+}
+
+form input:focus, form textarea:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+.btn-success {
+    background-color: #4CAF50;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #388E3C;
+}

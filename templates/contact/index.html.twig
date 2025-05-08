@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact - EcoRide{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="text-center mb-5">
+        <h1 class="text-success fw-bold">Nous contacter</h1>
+        <p class="text-muted">Une question, une suggestion ou un problème ? Écrivez-nous, nous vous répondrons rapidement.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <form action="#" method="post" class="p-4 shadow rounded bg-white">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nom</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Votre nom" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Adresse e-mail</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="votre@email.com" required>
+                </div>
+                <div class="mb-3">
+                    <label for="subject" class="form-label">Sujet</label>
+                    <input type="text" id="subject" name="subject" class="form-control" placeholder="Sujet du message" required>
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Message</label>
+                    <textarea id="message" name="message" class="form-control" rows="5" placeholder="Écrivez votre message ici..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Envoyer le message</button>
+            </form>
+        </div>
+
+        <div class="col-md-6 d-flex flex-column justify-content-center">
+            <div class="bg-light p-4 rounded shadow-sm mb-4">
+                <h5 class="text-success">📍 Adresse</h5>
+                <p>123 Avenue Verte, 75000 Paris, France</p>
+            </div>
+            <div class="bg-light p-4 rounded shadow-sm mb-4">
+                <h5 class="text-success">📧 Email</h5>
+                <p>support@ecoride.com</p>
+            </div>
+            <div class="bg-light p-4 rounded shadow-sm">
+                <h5 class="text-success">📞 Téléphone</h5>
+                <p>+33 1 23 45 67 89</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a href="{{ path('app_home') }}" class="btn btn-primary">
+            ⬅ Retour à l'accueil
+        </a>
+    </div>
+</div>
+{% endblock %}
