@@ -1,6 +1,6 @@
 <?php
 
-// src/Form/CovoiturageSearchType.php
+
 
 namespace App\Form;
 
@@ -35,14 +35,14 @@ class CovoiturageSearchType extends AbstractType
             ->add('date_depart', DateType::class, [
                 'label' => 'Date',
                 'widget' => 'single_text',
-                'input' => 'string',  // Utiliser 'string' au lieu de 'datetime'
+                'input' => 'string',  
                 'attr' => [
-                    'min' => (new \DateTime())->format('Y-m-d'), // Format adapté
+                    'min' => (new \DateTime())->format('Y-m-d'), 
                 ],
                 'constraints' => [
                     new Assert\NotBlank(['message' => 'Veuillez saisir une date.']),
                     new Assert\GreaterThanOrEqual([
-                        'value' => (new \DateTime())->format('Y-m-d'), // Comparer les dates avec le format string 'Y-m-d'
+                        'value' => (new \DateTime())->format('Y-m-d'), 
                         'message' => 'La date doit être égale ou supérieure à aujourd\'hui.'
                     ])
                 ]
@@ -56,7 +56,7 @@ class CovoiturageSearchType extends AbstractType
                     'data' => false,
                 ])
                 ->add('max_price', NumberType::class, [
-                    'label' => 'Prix maximum (€)',
+                    'label' => 'Prix maximum (crédits)',
                     'required' => false,
                 ])
                 ->add('max_duration', NumberType::class, [

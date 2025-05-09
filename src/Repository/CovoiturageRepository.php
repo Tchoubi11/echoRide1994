@@ -39,7 +39,7 @@ public function findNextAvailableRide(string $departure, string $destination, \D
     return $this->createQueryBuilder('c')
         ->andWhere('c.lieu_depart = :departure')
         ->andWhere('c.lieu_arrivee = :destination')
-        ->andWhere('c.heure_depart > :date') // corrigé ici
+        ->andWhere('c.heure_depart > :date') 
         ->andWhere('c.nbPlace > 0')
         ->setParameter('departure', $departure)
         ->setParameter('destination', $destination)
@@ -98,19 +98,20 @@ public function findFilteredRides(
     }
 
     if ($maxPrice !== null) {
-        $queryBuilder->andWhere('c.prixPersonne <= :maxPrice')
+        $queryBuilder->andWhere('c.prix_personne <= :maxPrice')
             ->setParameter('maxPrice', $maxPrice);
     }
 
     if ($maxDuration !== null) {
-        $queryBuilder->andWhere('c.duree <= :maxDuration')
+        $queryBuilder->andWhere('c.max_duration <= :maxDuration')
             ->setParameter('maxDuration', $maxDuration);
-    }
+    }    
 
     if ($minRating !== null) {
-        $queryBuilder->andWhere('c.driver.rating >= :minRating')
+        $queryBuilder->andWhere('c.min_rating >= :minRating')
             ->setParameter('minRating', $minRating);
     }
+    
 
     if ($isEco !== null) {
         $queryBuilder->andWhere('c.isEco = :isEco')

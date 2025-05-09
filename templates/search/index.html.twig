@@ -1,129 +1,134 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="container mt-5">
-        <h2>Rechercher un covoiturage</h2>
+<div class="container mt-5">
+    <h2>Affinez votre recherche pour trouver le covoiturage idéal</h2>
 
-        {% if rides is empty and searchPerformed %}
-            <!-- Affichons uniquement le message d'erreur si aucune donnée n'est trouvée -->
-            <div id="noResultsAlert" class="alert alert-warning text-center shadow-sm p-4">
-                <div class="mb-3">
-                    <i class="fa fa-suitcase fa-3x" style="color: #f39c12;"></i>
-                </div>
-                <p><strong>Il n'y a pas de trajets disponibles pour la date renseignée, veuillez modifier la date de voyage à la date du premier itinéraire le plus proche</strong></p>
-                <a href="{{ path('app_home') }}" class="btn btn-primary" id="create-alert-button" onclick="createAlert()">Créer une alerte</a>
-            </div>
-        {% else %}
-            <!-- Affichons le formulaire si des résultats existent ou s'il n'y a pas d'erreur -->
-            {{ form_start(form, {'attr': {'id': 'search-form'}}) }}
-            <div class="row">
-                <div class="col-md-6">
-                    {{ form_row(form.lieu_depart) }}
-                    {{ form_row(form.lieu_arrivee) }}
-                    {{ form_row(form.date_depart) }}
-                </div>
-                <div class="col-md-6">
-                    {{ form_row(form.is_eco) }}
-                    {{ form_row(form.max_price) }}
-                    {{ form_row(form.max_duration) }}
-                    {{ form_row(form.min_rating) }}
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary mt-3">Rechercher</button>
-            {{ form_end(form) }}
-        {% endif %}
+    {% if query is defined %}
+        <div class="alert alert-info">
+            Résultats pour la ville : <strong>{{ query }}</strong>
+        </div>
+    {% endif %}
 
-        <hr>
-
-        {% if rides is not empty %}
-            <h3 class="mt-4">Covoiturages disponibles</h3>
-            <div id="rides-list" class="row">
-                {% for ride in rides %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card shadow-sm">
-                            <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile" style="width: 100px; height: auto;">
-                            <div class="card-body">
-                                <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
-                                <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
-                                <p><strong>Places restantes :</strong> {{ ride.nbPlace }}</p>
-                                <p><strong>Prix :</strong> {{ ride.prixPersonne }} €</p>
-                                <p><strong>Départ :</strong> {{ ride.dateDepart|date('d/m/Y H:i') }}</p>
-                                <p><strong>Arrivée :</strong> {{ ride.dateArrivee|date('d/m/Y H:i') }}</p>
-                                <p><strong>Écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
-                                <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+   
+    <div id="noResultsAlert" class="alert alert-warning mt-3" style="display: none;">
+        Aucun covoiturage trouvé avec ces critères.
     </div>
 
-    <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
+    {{ form_start(form, {
+        'attr': {'id':'search-form'},
+        'action': path('search_route'),
+        'method': 'POST'
+    }) }}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.querySelector('#search-form');
-            if (!form) {
-                console.warn("Le formulaire n'a pas été trouvé !");
+    <div class="row">
+        <div class="col-md-6">
+            {{ form_row(form.lieu_depart) }}
+            {{ form_row(form.lieu_arrivee) }}
+            {{ form_row(form.date_depart) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.is_eco) }}
+            {{ form_row(form.max_price) }}
+            {{ form_row(form.max_duration) }}
+            {{ form_row(form.min_rating) }}
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Rechercher</button>
+
+    {{ form_end(form) }}
+
+    <hr>
+
+    {% if rides is not empty %}
+        <h3 class="mt-4">Covoiturages disponibles</h3>
+        <div id="rides-list" class="row">
+            {% for ride in rides %}
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile" style="width: 100px; height: auto;">
+                        <div class="card-body">
+                            <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
+                            <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
+                            <p><strong>Places restantes :</strong> {{ ride.nbPlace }}</p>
+                            <p><strong>Prix :</strong> {{ ride.prixPersonne }} credits</p>
+                            <p><strong>Départ :</strong> {{ ride.dateDepart|date('d/m/Y H:i') }}</p>
+                            <p><strong>Arrivée :</strong> {{ ride.dateArrivee|date('d/m/Y H:i') }}</p>
+                            <p><strong>Écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
+                            <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-secondary">Détail</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('#search-form');
+    if (!form) {
+        console.warn("Le formulaire n'a pas été trouvé !");
+        return;
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(form);
+
+        fetch("{{ path('search_route') }}", {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    console.error("Erreur serveur :", err.message);
+                    throw new Error(err.message || "Erreur inconnue");
+                });
+            }
+            return response.json();  
+        })
+        .then(data => {
+            const resultsContainer = document.getElementById('rides-list');
+            const noResultsAlert = document.getElementById('noResultsAlert');
+
+            resultsContainer.innerHTML = '';
+            noResultsAlert.style.display = 'none';
+
+            if (data.noResults || !data.rides || data.rides.length === 0) {
+                noResultsAlert.style.display = 'block';
                 return;
             }
 
-            form.addEventListener('submit', function (event) {
-                event.preventDefault();
-                const formData = new FormData(form);
-
-                fetch("{{ path('search_route') }}", {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const resultsContainer = document.getElementById('rides-list');
-                    const noResultsAlert = document.getElementById('noResultsAlert');
-                    const formContainer = document.getElementById('search-form');
-
-                    // Réinitialisons les résultats
-                    resultsContainer.innerHTML = '';
-                    noResultsAlert.style.display = 'none';
-                    formContainer.style.display = 'block';
-
-                    if (data.noResults || !data.rides || data.rides.length === 0) {
-                        noResultsAlert.style.display = 'block';
-                        formContainer.style.display = 'none';
-                    } else {
-                        data.rides.forEach(ride => {
-                            const rideElement = document.createElement('div');
-                            rideElement.classList.add('col-md-6', 'mb-4');
-                            rideElement.innerHTML = `
-                                <div class="card shadow-sm">
-                                    <div class="card-body">
-                                        <p><strong>Pseudo :</strong> ${ride.driver.pseudo}</p>
-                                        <p><strong>Places restantes :</strong> ${ride.nbPlace}</p>
-                                        <p><strong>Prix :</strong> ${ride.prixPersonne} €</p>
-                                        <p><strong>Date et Heure de départ :</strong> ${ride.dateDepart} à ${ride.heureDepart}</p>
-                                        <a href="/covoiturage/${ride.id}" class="btn btn-secondary">Détail</a>
-                                    </div>
-                                </div>
-                            `;
-                            resultsContainer.appendChild(rideElement);
-                        });
-                    }
-                })
-                .catch(error => console.error('Erreur lors de la requête Fetch:', error));
+            data.rides.forEach(ride => {
+                const rideElement = document.createElement('div');
+                rideElement.classList.add('col-md-6', 'mb-4');
+                rideElement.innerHTML = `
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <p><strong>Pseudo :</strong> ${ride.driver.pseudo}</p>
+                            <p><strong>Places restantes :</strong> ${ride.nbPlace}</p>
+                            <p><strong>Prix :</strong> ${ride.prixPersonne} €</p>
+                            <p><strong>Date et Heure de départ :</strong> ${ride.dateDepart} à ${ride.heureDepart}</p>
+                            <a href="/covoiturage/${ride.id}" class="btn btn-secondary">Détail</a>
+                        </div>
+                    </div>
+                `;
+                resultsContainer.appendChild(rideElement);
             });
+        })
+        .catch(error => {
+            console.error('Erreur lors de la requête Fetch :', error.message);
+            alert("Une erreur est survenue lors de la recherche : " + error.message);
         });
+    });
+});
 
-        // 
-        function createAlert() {
-            const alertButton = document.getElementById('create-alert-button');
-            alertButton.textContent = 'Alerte créée';  
-            alertButton.classList.remove('btn-primary'); 
-            alertButton.classList.add('btn-success');   
-            alertButton.disabled = true;  
+</script>
 
-            
-        }
-    </script>
 {% endblock %}
