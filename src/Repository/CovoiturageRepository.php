@@ -122,4 +122,49 @@ public function findFilteredRides(
 }
 
     
+//public function searchWithFilters(array $criteria): array
+//{
+ //   $qb = $this->createQueryBuilder('c')
+    //    ->join('c.driver', 'd')
+     //   ->where('c.dateDepart >= :now')
+    //    ->setParameter('now', new \DateTime());
+
+   // if (!empty($criteria['lieu_depart'])) {
+   //     $qb->andWhere('LOWER(c.lieu_depart) LIKE :lieu_depart')
+       //    ->setParameter('lieu_depart', '%' . strtolower($criteria['lieu_depart']) . '%');
+  //  }
+
+  //  if (!empty($criteria['lieu_arrivee'])) {
+   //     $qb->andWhere('LOWER(c.lieu_arrivee) LIKE :lieu_arrivee')
+   //        ->setParameter('lieu_arrivee', '%' . strtolower($criteria['lieu_arrivee']) . '%');
+   // }
+
+  //  if (!empty($criteria['date_depart'])) {
+    //    $qb->andWhere('DATE(c.dateDepart) = :date_depart')
+  //         ->setParameter('date_depart', $criteria['date_depart']->format('Y-m-d'));
+  //  }
+
+  //  if (!empty($criteria['max_price'])) {
+   //     $qb->andWhere('c.prixPersonne <= :max_price')
+        //   ->setParameter('max_price', $criteria['max_price']);
+  //  }
+
+  //  if (!empty($criteria['max_duration'])) {
+   //     $qb->andWhere('c.duree <= :max_duration')
+   //        ->setParameter('max_duration', $criteria['max_duration']);
+  //  }
+
+   // if (!empty($criteria['min_rating'])) {
+   //     $qb->andWhere('d.rating >= :min_rating')
+  //         ->setParameter('min_rating', $criteria['min_rating']);
+  //  }
+
+  //  if (!empty($criteria['is_eco'])) {
+   //     $qb->andWhere('c.isEco = :is_eco')
+    //       ->setParameter('is_eco', $criteria['is_eco']);
+   // }
+
+ //   return $qb->getQuery()->getResult();
+//}
+
 }

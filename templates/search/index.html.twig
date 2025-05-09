@@ -38,6 +38,12 @@
 
     {{ form_end(form) }}
 
+    {% if searchPerformed and rides is empty %}
+    <div class="alert alert-danger mt-4">
+        ❌ Aucun covoiturage trouvé correspondant à vos critères de recherche.
+    </div>
+{% endif %}
+
     <hr>
 
     {% if rides is not empty %}
