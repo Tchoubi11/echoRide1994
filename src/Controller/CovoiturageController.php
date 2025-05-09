@@ -44,17 +44,36 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
     $searchPerformed = false;
     $now = new \DateTime();
 
-    
     $quickQuery = $request->query->get('query');
     if ($quickQuery) {
         $rides = $covoiturageRepository->createQueryBuilder('c')
             ->where('LOWER(c.lieu_depart) LIKE :search')
-            ->orWhere('LOWER(c.lieu_arrivee) LIKE :search')        
+            ->orWhere('LOWER(c.lieu_arrivee) LIKE :search')
             ->setParameter('search', '%' . strtolower($quickQuery) . '%')
             ->getQuery()
             ->getResult();
 
         $searchPerformed = true;
+
+        // Retourne une réponse JSON pour AJAX
+        if ($request->isXmlHttpRequest()) {
+            $data = [];
+            foreach ($rides as $ride) {
+                $data[] = [
+                    'id' => $ride->getId(),
+                    'driver' => $ride->getDriver()->getPseudo(),
+                    'nbPlace' => $ride->getNbPlace(),
+                    'prixPersonne' => $ride->getPrixPersonne(),
+                    'dateDepart' => $ride->getDateDepart()->format('d/m/Y H:i'),
+                    'heureDepart' => $ride->getDateDepart()->format('H:i'),
+                ];
+            }
+
+            return $this->json([
+                'rides' => $data,
+                'noResults' => count($data) === 0,
+            ]);
+        }
 
         return $this->render('search/index.html.twig', [
             'form' => $form->createView(),
@@ -64,7 +83,6 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
         ]);
     }
 
-    
     if ($request->isMethod('GET') && $session->has('search_criteria')) {
         $data = $session->get('search_criteria');
         $dateDepartObj = new \DateTime($data['date_depart']);
@@ -77,7 +95,6 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
         $searchPerformed = true;
     }
 
-    
     if ($form->isSubmitted() && $form->isValid()) {
         $data = $form->getData();
         $dateDepartObj = $data['date_depart'] ?? $now;
@@ -99,6 +116,26 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
         ]);
 
         $searchPerformed = true;
+
+        // Si la requête est AJAX, renvoie des résultats en JSON
+        if ($request->isXmlHttpRequest()) {
+            $data = [];
+            foreach ($rides as $ride) {
+                $data[] = [
+                    'id' => $ride->getId(),
+                    'driver' => $ride->getDriver()->getPseudo(),
+                    'nbPlace' => $ride->getNbPlace(),
+                    'prixPersonne' => $ride->getPrixPersonne(),
+                    'dateDepart' => $ride->getDateDepart()->format('d/m/Y H:i'),
+                    'heureDepart' => $ride->getDateDepart()->format('H:i'),
+                ];
+            }
+
+            return $this->json([
+                'rides' => $data,
+                'noResults' => count($data) === 0,
+            ]);
+        }
     }
 
     return $this->render('search/index.html.twig', [

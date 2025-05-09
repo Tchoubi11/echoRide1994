@@ -68,65 +68,44 @@
 <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('#search-form');
-    if (!form) {
-        console.warn("Le formulaire n'a pas été trouvé !");
+    fetch("{{ path('search_route') }}", {
+    method: 'POST',
+    body: formData,
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+})
+.then(response => response.json())  // Cela va automatiquement essayer de parser la réponse en JSON
+.then(data => {
+    const resultsContainer = document.getElementById('rides-list');
+    const noResultsAlert = document.getElementById('noResultsAlert');
+
+    resultsContainer.innerHTML = '';
+    noResultsAlert.style.display = 'none';
+
+    if (data.noResults || !data.rides || data.rides.length === 0) {
+        noResultsAlert.style.display = 'block';
         return;
     }
 
-    form.addEventListener('submit', function (event) {
-        event.preventDefault();
-        const formData = new FormData(form);
-
-        fetch("{{ path('search_route') }}", {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    console.error("Erreur serveur :", err.message);
-                    throw new Error(err.message || "Erreur inconnue");
-                });
-            }
-            return response.json();  
-        })
-        .then(data => {
-            const resultsContainer = document.getElementById('rides-list');
-            const noResultsAlert = document.getElementById('noResultsAlert');
-
-            resultsContainer.innerHTML = '';
-            noResultsAlert.style.display = 'none';
-
-            if (data.noResults || !data.rides || data.rides.length === 0) {
-                noResultsAlert.style.display = 'block';
-                return;
-            }
-
-            data.rides.forEach(ride => {
-                const rideElement = document.createElement('div');
-                rideElement.classList.add('col-md-6', 'mb-4');
-                rideElement.innerHTML = `
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <p><strong>Pseudo :</strong> ${ride.driver.pseudo}</p>
-                            <p><strong>Places restantes :</strong> ${ride.nbPlace}</p>
-                            <p><strong>Prix :</strong> ${ride.prixPersonne} €</p>
-                            <p><strong>Date et Heure de départ :</strong> ${ride.dateDepart} à ${ride.heureDepart}</p>
-                            <a href="/covoiturage/${ride.id}" class="btn btn-secondary">Détail</a>
-                        </div>
-                    </div>
-                `;
-                resultsContainer.appendChild(rideElement);
-            });
-        })
-        .catch(error => {
-            console.error('Erreur lors de la requête Fetch :', error.message);
-            alert("Une erreur est survenue lors de la recherche : " + error.message);
-        });
+    data.rides.forEach(ride => {
+        const rideElement = document.createElement('div');
+        rideElement.classList.add('col-md-6', 'mb-4');
+        rideElement.innerHTML = `
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <p><strong>Pseudo :</strong> ${ride.driver}</p>
+                    <p><strong>Places restantes :</strong> ${ride.nbPlace}</p>
+                    <p><strong>Prix :</strong> ${ride.prixPersonne} €</p>
+                    <p><strong>Date et Heure de départ :</strong> ${ride.dateDepart} à ${ride.heureDepart}</p>
+                    <a href="/covoiturage/${ride.id}" class="btn btn-secondary">Détail</a>
+                </div>
+            </div>
+        `;
+        resultsContainer.appendChild(rideElement);
     });
+})
+.catch(error => {
+    console.error('Erreur lors de la requête Fetch :', error.message);
+    alert("Une erreur est survenue lors de la recherche : " + error.message);
 });
 
 </script>
