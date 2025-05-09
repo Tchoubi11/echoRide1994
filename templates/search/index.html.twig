@@ -10,7 +10,6 @@
         </div>
     {% endif %}
 
-   
     <div id="noResultsAlert" class="alert alert-warning mt-3" style="display: none;">
         Aucun covoiturage trouvé avec ces critères.
     </div>
@@ -50,7 +49,7 @@
                         <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile" style="width: 100px; height: auto;">
                         <div class="card-body">
                             <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
-                            <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
+                           <p><strong>Note :</strong> <span class="star-rating">{{ ride.driver.rating|star_rating }}</span></p>
                             <p><strong>Places restantes :</strong> {{ ride.nbPlace }}</p>
                             <p><strong>Prix :</strong> {{ ride.prixPersonne }} credits</p>
                             <p><strong>Départ :</strong> {{ ride.dateDepart|date('d/m/Y H:i') }}</p>
@@ -68,46 +67,60 @@
 <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
 
 <script>
+function getStarRating(rating) {
+    if (typeof rating !== 'number' || rating < 0) return 'Non noté';
+    const r = Math.min(5, Math.max(0, Math.round(rating)));
+    return '★'.repeat(r) + '☆'.repeat(5 - r);
+}
+
+document.getElementById('search-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
     fetch("{{ path('search_route') }}", {
-    method: 'POST',
-    body: formData,
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-})
-.then(response => response.json())  // Cela va automatiquement essayer de parser la réponse en JSON
-.then(data => {
-    const resultsContainer = document.getElementById('rides-list');
-    const noResultsAlert = document.getElementById('noResultsAlert');
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultsContainer = document.getElementById('rides-list');
+        const noResultsAlert = document.getElementById('noResultsAlert');
 
-    resultsContainer.innerHTML = '';
-    noResultsAlert.style.display = 'none';
+        resultsContainer.innerHTML = '';
+        noResultsAlert.style.display = 'none';
 
-    if (data.noResults || !data.rides || data.rides.length === 0) {
-        noResultsAlert.style.display = 'block';
-        return;
-    }
+        if (data.noResults || !data.rides || data.rides.length === 0) {
+            noResultsAlert.style.display = 'block';
+            return;
+        }
 
-    data.rides.forEach(ride => {
-        const rideElement = document.createElement('div');
-        rideElement.classList.add('col-md-6', 'mb-4');
-        rideElement.innerHTML = `
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <p><strong>Pseudo :</strong> ${ride.driver}</p>
-                    <p><strong>Places restantes :</strong> ${ride.nbPlace}</p>
-                    <p><strong>Prix :</strong> ${ride.prixPersonne} €</p>
-                    <p><strong>Date et Heure de départ :</strong> ${ride.dateDepart} à ${ride.heureDepart}</p>
-                    <a href="/covoiturage/${ride.id}" class="btn btn-secondary">Détail</a>
+        data.rides.forEach(ride => {
+            const rideElement = document.createElement('div');
+            rideElement.classList.add('col-md-6', 'mb-4');
+            rideElement.innerHTML = `
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <p><strong>Pseudo :</strong> ${ride.driver}</p>
+                        <p><strong>Note :</strong> <span class="star-rating">${getStarRating(ride.rating)}</span></p>
+
+                        <p><strong>Places restantes :</strong> ${ride.nbPlace}</p>
+                        <p><strong>Prix :</strong> ${ride.prixPersonne} crédits</p>
+                        <p><strong>Date et Heure de départ :</strong> ${ride.dateDepart}</p>
+                        <a href="/covoiturage/${ride.id}" class="btn btn-secondary">Détail</a>
+                    </div>
                 </div>
-            </div>
-        `;
-        resultsContainer.appendChild(rideElement);
+            `;
+            resultsContainer.appendChild(rideElement);
+        });
+    })
+    .catch(error => {
+        console.error('Erreur lors de la requête Fetch :', error.message);
+        alert("Une erreur est survenue lors de la recherche : " + error.message);
     });
-})
-.catch(error => {
-    console.error('Erreur lors de la requête Fetch :', error.message);
-    alert("Une erreur est survenue lors de la recherche : " + error.message);
 });
-
 </script>
+
 
 {% endblock %}

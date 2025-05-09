@@ -17,7 +17,7 @@
     <div class="card p-3 shadow-sm mt-3">
         <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" alt="Photo du chauffeur" class="driver-photo-icon" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
         <p><strong>Pseudo du chauffeur :</strong> {{ ride.driver.pseudo }}</p>
-        <p><strong>{{ ride.driver.pseudo }}</strong> ({{ ride.driver.rating }} ⭐)</p>
+        <p><strong>{{ ride.driver.pseudo }}</strong> (<span class="star-rating">{{ ride.driver.rating|star_rating }}</span>)</p>
         <p><strong>Lieu de départ :</strong> {{ ride.lieuDepart }}</p>
         <p><strong>Lieu d'arrivée :</strong> {{ ride.lieuArrivee }}</p>
         <p><strong>Prix :</strong> {{ ride.prixPersonne }} Crédits</p>
@@ -52,7 +52,9 @@
         <h3>Commentaires</h3>
         <ul>
             {% for avis in driverReviews %}
-                <li><strong>{{ avis.reservation.passenger.pseudo }}</strong>: {{ avis.commentaire }} - {{ avis.note }}⭐</li>
+                <li><strong>{{ avis.reservation.passenger.pseudo }}</strong> :
+                    {{ avis.commentaire }} - <span class="star-rating">{{ avis.note|star_rating }}</span>
+                </li>
             {% endfor %}
         </ul>
         {% if driverReviews is empty %}

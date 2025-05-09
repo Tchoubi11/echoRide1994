@@ -55,13 +55,14 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
 
         $searchPerformed = true;
 
-        // Retourne une réponse JSON pour AJAX
+        
         if ($request->isXmlHttpRequest()) {
             $data = [];
             foreach ($rides as $ride) {
                 $data[] = [
                     'id' => $ride->getId(),
                     'driver' => $ride->getDriver()->getPseudo(),
+                    'rating' => $ride->getDriver()->getRating(),
                     'nbPlace' => $ride->getNbPlace(),
                     'prixPersonne' => $ride->getPrixPersonne(),
                     'dateDepart' => $ride->getDateDepart()->format('d/m/Y H:i'),
@@ -117,13 +118,13 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
 
         $searchPerformed = true;
 
-        // Si la requête est AJAX, renvoie des résultats en JSON
         if ($request->isXmlHttpRequest()) {
             $data = [];
             foreach ($rides as $ride) {
                 $data[] = [
                     'id' => $ride->getId(),
                     'driver' => $ride->getDriver()->getPseudo(),
+                    'rating' => $ride->getDriver()->getRating(),
                     'nbPlace' => $ride->getNbPlace(),
                     'prixPersonne' => $ride->getPrixPersonne(),
                     'dateDepart' => $ride->getDateDepart()->format('d/m/Y H:i'),

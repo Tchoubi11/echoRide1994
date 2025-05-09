@@ -14,23 +14,26 @@ class CovoiturageRepository extends ServiceEntityRepository
     }
 
     public function findAvailableRides(string $depart, string $arrivee, \DateTimeInterface $date): array
-    {
-        $mutableDate = \DateTime::createFromInterface($date);
-    
-        $startOfDay = (clone $mutableDate)->setTime(0, 0);
-        $endOfDay = (clone $mutableDate)->setTime(23, 59, 59);
-    
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.lieu_depart = :depart')
-            ->andWhere('c.lieu_arrivee = :arrivee')
-            ->andWhere('c.heure_depart >= :start') 
-            ->andWhere('c.isCancelled = false')
-            ->setParameter('depart', $depart)
-            ->setParameter('arrivee', $arrivee)
-            ->setParameter('start', $startOfDay) 
-            ->getQuery()
-            ->getResult();
-    }
+{
+    $mutableDate = \DateTime::createFromInterface($date);
+
+    $startOfDay = (clone $mutableDate)->setTime(0, 0);
+    $endOfDay = (clone $mutableDate)->setTime(23, 59, 59);
+
+    return $this->createQueryBuilder('c')
+        ->leftJoin('c.driver', 'd')  
+        ->addSelect('d')             
+        ->andWhere('c.lieu_depart = :depart')
+        ->andWhere('c.lieu_arrivee = :arrivee')
+        ->andWhere('c.heure_depart >= :start') 
+        ->andWhere('c.isCancelled = false')
+        ->setParameter('depart', $depart)
+        ->setParameter('arrivee', $arrivee)
+        ->setParameter('start', $startOfDay) 
+        ->getQuery()
+        ->getResult();
+}
+
     
 
 
@@ -60,10 +63,7 @@ public function findNextAvailableRide(string $departure, string $destination, \D
             ->getOneOrNullResult();
     }
     
-    
 
-
-    
 public function findFilteredRides(
     string $departure, 
     string $destination, 

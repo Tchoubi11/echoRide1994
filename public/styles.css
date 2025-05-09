@@ -240,3 +240,9 @@ form input:focus, form textarea:focus {
 .btn-success:hover {
     background-color: #388E3C;
 }
+
+.star-rating {
+    color: #f5c518; 
+    font-size: 1.2rem;
+}
+

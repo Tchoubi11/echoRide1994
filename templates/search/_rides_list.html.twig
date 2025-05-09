@@ -6,9 +6,9 @@
                     <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile" style="width: 100px; height: auto;">
                     <div class="card-body">
                         <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
-                        <p><strong>Note :</strong> {{ ride.driver.rating }}⭐</p>
+                        <p><strong>Note :</strong> <span class="star-rating text-warning">{{ ride.driver.rating|star_rating }}</span></p>
                         <p><strong>Places restantes :</strong> {{ ride.getNbPlace() }}</p>
-                        <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} €</p>
+                        <p><strong>Prix :</strong> {{ ride.getPrixPersonne() }} crédits</p>
                         <p><strong>Départ :</strong> {{ ride.getDateDepart()|date('d/m/Y H:i') }}</p>
                         <p><strong>Arrivée :</strong> {{ ride.getDateArrivee()|date('d/m/Y H:i') }}</p>
                         <p><strong>Écologique :</strong> {{ ride.getIsEco() ? 'Oui' : 'Non' }}</p>
