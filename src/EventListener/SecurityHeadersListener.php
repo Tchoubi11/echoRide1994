@@ -16,13 +16,14 @@ class SecurityHeadersListener implements EventSubscriberInterface
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self';");
+        //$response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self';");
     }
 
-    public static function getSubscribedEvents()
-    {
-        return [
-            KernelEvents::RESPONSE => 'onKernelResponse',
-        ];
-    }
+    public static function getSubscribedEvents(): array
+{
+    return [
+        KernelEvents::RESPONSE => 'onKernelResponse',
+    ];
+}
+
 }

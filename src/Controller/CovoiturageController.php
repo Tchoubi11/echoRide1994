@@ -26,13 +26,18 @@ use Symfony\Component\Routing\Annotation\Route;
 class CovoiturageController extends AbstractController
 {
     #[Route('/covoiturages', name: 'covoiturage_list')]
-    public function listAllRides(CovoiturageRepository $covoiturageRepository): Response
-    {
-        $rides = $covoiturageRepository->findAll(); 
-        return $this->render('covoiturage/list.html.twig', [
-            'rides' => $rides,
-        ]);
+public function listAllRides(CovoiturageRepository $covoiturageRepository): Response
+{
+    if (!$this->getUser()) {
+        $this->addFlash('warning', 'Veuillez vous connecter pour accéder aux covoiturages.');
+        return $this->redirectToRoute('app_login');
     }
+
+    $rides = $covoiturageRepository->findAll(); 
+    return $this->render('covoiturage/list.html.twig', [
+        'rides' => $rides,
+    ]);
+}
 
     #[Route('/search', name: 'search_route', methods: ['GET', 'POST'])]
 public function search(Request $request, CovoiturageRepository $covoiturageRepository, SessionInterface $session): Response
@@ -303,9 +308,14 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
     #[Route('/covoiturage/creer', name: 'covoiturage_create')]
 public function create(Request $request, EntityManagerInterface $em): Response
 {
+    /** @var Utilisateur $user */
     $user = $this->getUser();
     if (!$user) {
         return $this->redirectToRoute('app_login');
+    }
+  
+   if ($user->getTypeUtilisateur() !== 'chauffeur') {
+        return $this->redirectToRoute('profile'); 
     }
 
     $covoiturage = new Covoiturage();
