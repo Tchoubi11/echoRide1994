@@ -14,6 +14,7 @@
         Aucun covoiturage trouvé avec ces critères.
     </div>
 
+    {# Formulaire de recherche avec les critères sélectionnés #}
     {{ form_start(form, {
         'attr': {'id':'search-form'},
         'action': path('search_route'),
@@ -39,13 +40,14 @@
     {{ form_end(form) }}
 
     {% if searchPerformed and rides is empty %}
-    <div class="alert alert-danger mt-4">
-        ❌ Aucun covoiturage trouvé correspondant à vos critères de recherche.
-    </div>
-{% endif %}
+        <div class="alert alert-danger mt-4">
+            ❌ Aucun covoiturage trouvé correspondant à vos critères de recherche.
+        </div>
+    {% endif %}
 
     <hr>
 
+    {# Affichage des résultats de recherche (les covoiturages trouvés) #}
     {% if rides is not empty %}
         <h3 class="mt-4">Covoiturages disponibles</h3>
         <div id="rides-list" class="row">
@@ -55,9 +57,9 @@
                         <img src="{{ asset('uploads/images/67c88b34e4a07.jpg') }}" class="driver-photo-icon" alt="Profile" style="width: 100px; height: auto;">
                         <div class="card-body">
                             <p><strong>Pseudo :</strong> {{ ride.driver.pseudo }}</p>
-                           <p><strong>Note :</strong> <span class="star-rating">{{ ride.driver.rating|star_rating }}</span></p>
+                            <p><strong>Note :</strong> <span class="star-rating">{{ ride.driver.rating|star_rating }}</span></p>
                             <p><strong>Places restantes :</strong> {{ ride.nbPlace }}</p>
-                            <p><strong>Prix :</strong> {{ ride.prixPersonne }} credits</p>
+                            <p><strong>Prix :</strong> {{ ride.prixPersonne }} crédits</p>
                             <p><strong>Départ :</strong> {{ ride.dateDepart|date('d/m/Y H:i') }}</p>
                             <p><strong>Arrivée :</strong> {{ ride.dateArrivee|date('d/m/Y H:i') }}</p>
                             <p><strong>Écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
@@ -68,6 +70,7 @@
             {% endfor %}
         </div>
     {% endif %}
+
 </div>
 
 <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">⬅ Retour à l'accueil</a>
@@ -127,6 +130,5 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
     });
 });
 </script>
-
 
 {% endblock %}

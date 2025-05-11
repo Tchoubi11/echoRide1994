@@ -121,6 +121,36 @@ public function findFilteredRides(
     return $queryBuilder->getQuery()->getResult();
 }
 
+
+public function searchWithEnoughPlaces(int $nbPeople, ?\DateTime $dateDepart = null, ?string $lieuDepart = null, ?string $lieuArrivee = null)
+{
+    $qb = $this->createQueryBuilder('c')
+        ->where('c.nbPlace >= :nbPeople')
+        ->setParameter('nbPeople', $nbPeople);
+
+    // Filtre par date de départ si spécifié
+    if ($dateDepart) {
+        $qb->andWhere('c.heure_depart >= :dateDepart')
+           ->setParameter('dateDepart', $dateDepart);
+    }
+
+    // Filtre par lieu de départ si spécifié
+    if ($lieuDepart) {
+        $qb->andWhere('LOWER(c.lieu_depart) LIKE :lieuDepart')
+           ->setParameter('lieuDepart', '%' . strtolower($lieuDepart) . '%');
+    }
+
+    // Filtre par lieu d'arrivée si spécifié
+    if ($lieuArrivee) {
+        $qb->andWhere('LOWER(c.lieu_arrivee) LIKE :lieuArrivee')
+           ->setParameter('lieuArrivee', '%' . strtolower($lieuArrivee) . '%');
+    }
+
+    return $qb->getQuery()->getResult();
+}
+
+
+
     
 //public function searchWithFilters(array $criteria): array
 //{

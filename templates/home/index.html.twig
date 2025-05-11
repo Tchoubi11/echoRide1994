@@ -96,7 +96,7 @@
             <ul class="list-group mt-4">
                 {% for ride in rides %}
                     <li class="list-group-item">
-                        <p><strong>{{ ride.driver.pseudo }}</strong> ({{ ride.driver.rating }} ⭐)</p>
+                       <p><strong>{{ ride.driver.pseudo }}</strong> - <strong>Note :</strong> <span class="star-rating">{{ ride.driver.rating|star_rating }}</span></p>
                         <p>Départ : {{ ride.lieuDepart }} -> Arrivée : {{ ride.lieuArrivee }}</p>
                         <p>Places restantes : {{ ride.nbPlace }}</p>
                         <p>Prix : {{ ride.prixPersonne }} €</p>
