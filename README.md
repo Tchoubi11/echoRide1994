@@ -33,6 +33,27 @@ Faciliter la mise en relation de conducteurs et passagers pour des trajets parta
 
 ---
 
+## 🗄️ Intégration de MongoDB pour la gestion des crédits
+
+Ce projet utilise MongoDB pour gérer le système de crédits des utilisateurs. Les crédits sont stockés dans une collection dédiée et sont manipulés via le repository `CreditRepository`.
+
+### Prérequis
+
+- MongoDB installé localement ou via MongoDB Atlas.
+- Configuration de la connexion MongoDB dans le fichier `.env.local`.
+
+### Fonctionnalités
+
+- Attribution de 20 crédits à l'inscription.
+- Déduction de 2 crédits par réservation, représentant la commission de la plateforme.
+- Validation manuelle des crédits par un modérateur avant attribution.
+
+### Sécurité
+
+- Protection contre les injections MongoDB via l'utilisation de Doctrine MongoDB ODM.
+- Validation des données côté serveur avant toute opération sur la base de données.
+
+----
 ## 🛠️ Technologies utilisées
 
 - **Backend** : PHP 8.2.27, Symfony
