@@ -20,6 +20,8 @@ use Symfony\Bundle\SecurityBundle\Security;
 use App\Form\ReservationValidationType;
 use App\Entity\Avis; 
 use App\Repository\AvisRepository;
+use App\Service\CreditService;
+
 
 class UtilisateurController extends AbstractController
 {
@@ -166,69 +168,72 @@ class UtilisateurController extends AbstractController
     
     #[Route('/mon-espace/covoiturages-a-valider', name: 'reservations_to_validate')]
     public function validateReservations(
-        Request $request,
-        EntityManagerInterface $em,
-        NotificationService $notificationService,
-        Security $security
-    ): Response {
-        $user = $security->getUser();
-    
-        // Seules les réservations où le chauffeur et le passager ont confirmé leur participation
-        $reservations = $em->getRepository(Reservation::class)->findBy([
-            'passenger' => $user,
-            'isValidatedByPassenger' => null,
-            'aConfirmeParticipation' => true,
-            'aParticipe' => true,
-        ]);
-    
-        $forms = [];
-    
-        foreach ($reservations as $reservation) {
-            $form = $this->createForm(ReservationValidationType::class, $reservation);
-            $form->handleRequest($request);
-    
-            if ($form->isSubmitted() && $form->isValid()) {
-                $reservation->setIsValidatedByPassenger(true);
-    
-                $passengerFeedback = $form->get('passengerFeedback')->getData();
-                $passengerNote = $form->get('passengerNote')->getData();
-    
-                $covoiturage = $reservation->getCovoiturage();
-                $driver = $covoiturage->getDriver();
-    
-                // Ajouter les crédits au chauffeur
-                $driver->setCredits($driver->getCredits() + $covoiturage->getPrixPersonne());
-                $notificationService->notifyDriverOfValidation($driver, $reservation);
-    
-                // Enregistrement de l'avis
-                if ($passengerNote || $passengerFeedback) {
-                    $avis = new Avis();
-                    $avis->setNote($passengerNote);
-                    $avis->setCommentaire($passengerFeedback);
-                    $avis->setStatut('en attente');
-                    $avis->setIsValidated(false);
-                    $avis->setReservation($reservation);
-                    $em->persist($avis);
-                }
-    
-                // Marquer le trajet comme terminé
-                $covoiturage->setIsCompleted(true);
-    
-                $em->flush();
-    
-                $this->addFlash('success', 'Trajet validé avec succès.');
-                return $this->redirectToRoute('reservations_to_validate');
+    Request $request,
+    EntityManagerInterface $em,
+    NotificationService $notificationService,
+    Security $security,
+    CreditService $creditService // Injection de CreditService
+): Response {
+    $user = $security->getUser();
+
+    // Seules les réservations où le chauffeur et le passager ont confirmé leur participation
+    $reservations = $em->getRepository(Reservation::class)->findBy([
+        'passenger' => $user,
+        'isValidatedByPassenger' => null,
+        'aConfirmeParticipation' => true,
+        'aParticipe' => true,
+    ]);
+
+    $forms = [];
+
+    foreach ($reservations as $reservation) {
+        $form = $this->createForm(ReservationValidationType::class, $reservation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $reservation->setIsValidatedByPassenger(true);
+
+            $passengerFeedback = $form->get('passengerFeedback')->getData();
+            $passengerNote = $form->get('passengerNote')->getData();
+
+            $covoiturage = $reservation->getCovoiturage();
+            $driver = $covoiturage->getDriver();
+
+            // Ajouter les crédits au chauffeur via MongoDB (en utilisant le CreditService)
+            $amount = $covoiturage->getPrixPersonne();
+            $creditService->addCredits($driver->getId(), $amount); // Ajouter des crédits
+
+            $notificationService->notifyDriverOfValidation($driver, $reservation);
+
+            // Enregistrement de l'avis
+            if ($passengerNote || $passengerFeedback) {
+                $avis = new Avis();
+                $avis->setNote($passengerNote);
+                $avis->setCommentaire($passengerFeedback);
+                $avis->setStatut('en attente');
+                $avis->setIsValidated(false);
+                $avis->setReservation($reservation);
+                $em->persist($avis);
             }
-    
-            $forms[$reservation->getId()] = $form->createView();
+
+            // Marquer le trajet comme terminé
+            $covoiturage->setIsCompleted(true);
+
+            $em->flush();
+
+            $this->addFlash('success', 'Trajet validé avec succès.');
+            return $this->redirectToRoute('reservations_to_validate');
         }
-    
-        return $this->render('utilisateur/reservations_to_validate.html.twig', [
-            'participations' => $reservations,
-            'participationForms' => $forms,
-        ]);
+
+        $forms[$reservation->getId()] = $form->createView();
     }
-    
+
+    return $this->render('utilisateur/reservations_to_validate.html.twig', [
+        'participations' => $reservations,
+        'participationForms' => $forms,
+    ]);
+}
+
 
 
 
