@@ -457,4 +457,49 @@ public function validerPassagers(
     ]);
 }
 
+#[Route('/covoiturage/{id}/modifier-preferences', name: 'edit_driver_preferences')]
+public function editDriverPreferences(
+    int $id,
+    Request $request,
+    EntityManagerInterface $em
+): Response {
+    $ride = $em->getRepository(Covoiturage::class)->find($id);
+    if (!$ride) {
+        throw $this->createNotFoundException('Covoiturage introuvable.');
+    }
+
+    $user = $this->getUser();
+
+    // Vérifie que l'utilisateur est le conducteur
+    if ($ride->getDriver() !== $user) {
+        $this->addFlash('danger', 'Vous n\'êtes pas autorisé à modifier ces préférences.');
+        return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
+    }
+
+    $driver = $ride->getDriver();
+    $preferences = $driver->getPreference();
+
+    if (!$preferences) {
+        $preferences = new Preference();
+        $preferences->setUtilisateur($driver);
+    }
+
+    $form = $this->createForm(PreferenceType::class, $preferences);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $em->persist($preferences);
+        $em->flush();
+
+        $this->addFlash('success', 'Préférences mises à jour avec succès.');
+        return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
+    }
+
+    return $this->render('preference/edit.html.twig', [
+        'form' => $form->createView(),
+        'ride' => $ride,
+    ]);
+}
+
+
 }

@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mes préférences{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h2>Modifier mes préférences de conducteur</h2>
+
+        {{ form_start(form) }}
+            {{ form_row(form.fumeur) }}
+            {{ form_row(form.animaux) }}
+            {{ form_row(form.autres) }}
+            <button class="btn btn-primary">Enregistrer</button>
+        {{ form_end(form) }}
+
+        <a href="{{ path('covoiturage_details', {'id': ride.id}) }}" class="btn btn-secondary mt-3">Retour</a>
+    </div>
+{% endblock %}
