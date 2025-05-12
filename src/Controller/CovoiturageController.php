@@ -21,6 +21,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\CreditService;
+
 
 
 class CovoiturageController extends AbstractController
@@ -272,51 +274,57 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
     }
 
     #[Route('/covoiturage/{id}/annuler', name: 'annuler_covoiturage', methods: ['POST'])]
-    public function annuler(int $id, EntityManagerInterface $em, NotificationService $notifier, Request $request): Response
-    {
-        /** @var Utilisateur $user */
-        $user = $this->getUser();
-        if (!$user) {
-            throw $this->createAccessDeniedException('Utilisateur non connecté.');
-        }
-
-        $covoiturage = $em->getRepository(Covoiturage::class)->find($id);
-        if (!$covoiturage) {
-            throw $this->createNotFoundException('Covoiturage introuvable.');
-        }
-
-        $isDriver = $covoiturage->getDriver()->getId() === $user->getId();
-
-        if ($isDriver) {
-            $notifier->notifyPassengersOfCancellation($covoiturage);
-            $covoiturage->setIsCancelled(true);
-            $em->flush();
-            $this->addFlash('success', 'Covoiturage annulé avec succès.');
-        } else {
-            $reservation = $em->getRepository(Reservation::class)->findOneBy([
-                'covoiturage' => $covoiturage,
-                'passenger' => $user
-            ]);
-
-            if (!$reservation) {
-                throw $this->createAccessDeniedException('Vous n’avez pas de réservation sur ce covoiturage.');
-            }
-
-            $places = $reservation->getPlacesReservees();
-            $user->setCredits($user->getCredits() + $places);
-            $covoiturage->setNbPlace($covoiturage->getNbPlace() + $places);
-            $em->remove($reservation);
-            $em->flush();
-            $notifier->notifyPassengerOfCancellation($user, $covoiturage);
-            $this->addFlash('success', 'Réservation annulée avec succès.');
-        }
-
-        if ($request->isXmlHttpRequest()) {
-            return new JsonResponse(['success' => true]);
-        }
-
-        return $this->redirectToRoute('historique_covoiturages');
+public function annuler(
+    int $id,
+    EntityManagerInterface $em,
+    NotificationService $notifier,
+    Request $request,
+    CreditService $creditService
+): Response {
+    /** @var Utilisateur $user */
+    $user = $this->getUser();
+    if (!$user) {
+        throw $this->createAccessDeniedException('Utilisateur non connecté.');
     }
+
+    $covoiturage = $em->getRepository(Covoiturage::class)->find($id);
+    if (!$covoiturage) {
+        throw $this->createNotFoundException('Covoiturage introuvable.');
+    }
+
+    $isDriver = $covoiturage->getDriver()->getId() === $user->getId();
+
+    if ($isDriver) {
+        $notifier->notifyPassengersOfCancellation($covoiturage);
+        $covoiturage->setIsCancelled(true);
+        $em->flush();
+        $this->addFlash('success', 'Covoiturage annulé avec succès.');
+    } else {
+        $reservation = $em->getRepository(Reservation::class)->findOneBy([
+            'covoiturage' => $covoiturage,
+            'passenger' => $user
+        ]);
+
+        if (!$reservation) {
+            throw $this->createAccessDeniedException('Vous n’avez pas de réservation sur ce covoiturage.');
+        }
+
+        $places = $reservation->getPlacesReservees();
+        $creditService->addCredits($user->getId(), $places);
+        $covoiturage->setNbPlace($covoiturage->getNbPlace() + $places);
+        $em->remove($reservation);
+        $em->flush();
+        $notifier->notifyPassengerOfCancellation($user, $covoiturage);
+        $this->addFlash('success', 'Réservation annulée avec succès.');
+    }
+
+    if ($request->isXmlHttpRequest()) {
+        return new JsonResponse(['success' => true]);
+    }
+
+    return $this->redirectToRoute('historique_covoiturages');
+}
+
 
     #[Route('/covoiturage/creer', name: 'covoiturage_create')]
 public function create(Request $request, EntityManagerInterface $em): Response

@@ -45,9 +45,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50, unique: true)]
     private ?string $pseudo = null;
 
-    #[ORM\Column(type: "float", nullable: true)]
-private ?float $credits = null;
-
     #[ORM\Column(length: 20)]
     private ?string $type_utilisateur;
 
@@ -80,7 +77,6 @@ private ?float $credits = null;
         $this->covoiturages = new ArrayCollection();
         $this->reservations = new ArrayCollection();
         $this->voitures = new ArrayCollection();
-        $this->credits = 20;
 
         if (!$this->photo) {
             $defaultImage = new Image();
@@ -137,10 +133,6 @@ public function setDateNaissance(?\DateTimeInterface $date_naissance): static
     public function getRating(): ?float { return $this->rating; }
 
     public function setRating(?float $rating): static { $this->rating = $rating; return $this; }
-
-    public function getCredits(): ?float { return $this->credits; }
-
-    public function setCredits(?float $credits): static { $this->credits = $credits; return $this; }
 
     public function getTypeUtilisateur(): ?string { return $this->type_utilisateur; }
 
