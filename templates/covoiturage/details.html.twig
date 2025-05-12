@@ -130,15 +130,16 @@
         {% endif %}
     </div>
 
-    {% if app.user and (ride.nbPlace <= 0 or app.user.credits < ride.prixPersonne) %}
-        <p class="mt-3 text-danger">
-            {% if ride.nbPlace <= 0 %}
-                Plus de places disponibles.
-            {% elseif app.user.credits < ride.prixPersonne %}
-                <strong>Attention !!! Il ne vous reste plus assez de crédits.</strong>
-            {% endif %}
-        </p>
-    {% endif %}
+    {% if app.user and (ride.nbPlace <= 0 or (credits is not null and credits < ride.prixPersonne)) %}
+    <p class="mt-3 text-danger">
+        {% if ride.nbPlace <= 0 %}
+            Plus de places disponibles.
+        {% elseif credits is not null and credits < ride.prixPersonne %}
+            <strong>Attention !!! Il ne vous reste plus assez de crédits.</strong>
+        {% endif %}
+    </p>
+{% endif %}
+
 
     <div class="mt-4">
         <a href="{{ path('user_profile') }}" class="btn btn-secondary">👤 Retour sur mon profil</a>

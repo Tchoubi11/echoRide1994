@@ -22,6 +22,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\CreditService;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+
+
+
 
 
 
@@ -168,8 +173,14 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
 
 
     #[Route('/covoiturage/{id}', name: 'covoiturage_details')]
-    public function details(int $id, CovoiturageRepository $covoiturageRepository, Request $request, EntityManagerInterface $em): Response
-    {
+   public function details(
+        int $id,
+        CovoiturageRepository $covoiturageRepository,
+        Request $request,
+        EntityManagerInterface $em,
+        CreditService $creditService,
+        AuthorizationCheckerInterface $security // Remplace Security (déprécié)
+    ): Response {
         $ride = $covoiturageRepository->find($id);
         if (!$ride) {
             throw $this->createNotFoundException('Covoiturage non trouvé.');
@@ -178,7 +189,6 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
         $driver = $ride->getDriver();
         $driverCar = $driver ? $driver->getVoitures()->first() : null;
 
-       
         $driverReviews = [];
         if ($driver) {
             foreach ($driver->getCovoiturages() as $covoiturage) {
@@ -196,7 +206,7 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
         $user = $this->getUser();
         $userPreferences = $user ? $user->getPreference() : null;
 
-        if (!$userPreferences) {
+        if (!$userPreferences && $user) {
             $userPreferences = new Preference();
             $userPreferences->setUtilisateur($user);
         }
@@ -211,7 +221,6 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
             return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
         }
 
-        // 🆕 Création de l'avis
         $review = new Avis();
         $form = $this->createForm(AvisType::class, $review);
         $form->handleRequest($request);
@@ -219,7 +228,7 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
         if ($form->isSubmitted() && $form->isValid()) {
             $reservation = $em->getRepository(Reservation::class)->findOneBy([
                 'covoiturage' => $ride,
-                'passenger' => $this->getUser()
+                'passenger' => $user
             ]);
 
             if (!$reservation) {
@@ -237,6 +246,12 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
             return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
         }
 
+        // 🆕 Récupération des crédits de l'utilisateur
+        $credits = null;
+        if ($user instanceof UserInterface) {
+            $credits = $creditService->getUserCredits($user->getId());
+        }
+
         return $this->render('covoiturage/details.html.twig', [
             'ride' => $ride,
             'driverReviews' => $driverReviews,
@@ -245,7 +260,8 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
             'form' => $form->createView(),
             'rideId' => $id,
             'userPreferences' => $userPreferences,
-            'preferenceForm' => $preferenceForm->createView(), 
+            'preferenceForm' => $preferenceForm->createView(),
+            'credits' => $credits,
         ]);
     }
 
