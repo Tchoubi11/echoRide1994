@@ -1,1 +1,127 @@
 "# echoRide1994" 
+
+# 🚗 EcoRide – Plateforme de covoiturage écologique
+
+**EcoRide** est une plateforme de covoiturage écologique développée en PHP avec Symfony, pensée pour rapprocher conducteurs et passagers tout en favorisant l’utilisation de véhicules hybrides et électriques. Le projet a été conçu dans le cadre d’un examen, et est destiné à être accessible au public ainsi qu’au jury.
+
+## 📸 Aperçu de l’application
+
+![Aperçu de l'application](public/uploads/images/6821b525b8057.png)
+
+---
+
+## 🌱 Objectif
+
+Faciliter la mise en relation de conducteurs et passagers pour des trajets partagés, en intégrant des filtres écologiques et un système de crédits interne. L’objectif est de promouvoir une mobilité plus responsable.
+
+---
+
+## 🧩 Fonctionnalités principales
+
+- 🔍 **Recherche de trajets** avec filtres avancés (écologique, prix, durée, note conducteur…)
+- 🧑‍💻 **Gestion des utilisateurs** (inscription, profils passager/conducteur)
+- 🧾 **Réservation de trajets**
+- ⭐ **Système de notation** des conducteurs
+- 🔐 **Espace administrateur** (modération, gestion des comptes)
+- 📊 **Tableau de bord** avec statistiques (Chart.js)
+- 📧 **Notifications email** avec MailHog
+- 👨‍🏭 **Espace employé** pour gestion des avis et modération
+- 💰 **Système de crédits intégré** :
+  - 20 crédits offerts à l’inscription
+  - 2 crédits de commission par réservation
+  - Validation manuelle par modérateur avant attribution des crédits
+
+---
+
+## 🛠️ Technologies utilisées
+
+- **Backend** : PHP 8.2.27, Symfony
+- **Base de données** : MySQL 8.2
+- **Frontend** : Twig, Bootstrap 5, JavaScript, Chart.js
+- **Conteneurisation** : Docker
+- **Email** : MailHog pour l’environnement local
+
+---
+
+## ⚙️ Installation
+
+### Pré-requis
+
+- PHP ≥ 8.2
+- Symfony 6.4.21 
+- Composer
+- Docker & Docker Compose
+- MySQL
+
+### Étapes
+
+```bash
+git clone https://github.com/Tchoubi11/echoRide1994.git
+cd ecoride
+
+# Installation des dépendances
+composer install
+
+# Configuration de l'environnement
+cp .env .env.local
+# Modifie les infos de connexion à la base de données si besoin
+
+# Lancement de Docker (MySQL + MailHog)
+docker-compose up -d
+
+# Migration + Fixtures
+php bin/console doctrine:database:create
+php bin/console doctrine:migrations:migrate
+php bin/console doctrine:fixtures:load
+
+# Lancer le serveur local
+symfony server:start
+
+## 🔐 Accès par défaut
+
+- **Admin**
+  - Email : `admin@echoride.com`
+  - Mot de passe : `Admin22`
+
+## 🧾 Structure du projet
+- `/public` : Fichiers publics (images, JS, CSS)
+- `/templates` : Vues et composants Twig
+- `/uploads/photos` : Stockage des photos de profil
+- `/vendor` : Dépendances Composer
+- `/config` : Configuration Symfony
+
+
+## 🔒 Sécurité
+Le projet respecte les bonnes pratiques de sécurité :
+
+✅ Protection SQL Injection avec Doctrine ORM
+
+✅ Protection XSS (filtrage des entrées, échappement Twig)
+
+✅ Token CSRF pour tous les formulaires
+
+✅ Sessions sécurisées
+
+✅ Validation côté serveur
+
+✅ Tests avec Nikto + Snyk
+
+✅ En-têtes HTTP sécurisés configurés
+
+📱 Responsive
+Interface adaptative optimisée pour :
+
+🖥️ Ordinateurs
+
+📱 Smartphones
+
+📱 Tablettes
+Grâce à Bootstrap.
+
+🧑‍🎓 Auteur / Licence
+Développé par Tchoubaye Bakala Frank Hervé
+📚 Dans le cadre d’un projet d’examen
+
+📬 Contact
+Pour toute question, amélioration ou bug :
+📧 tchoubayefranck@gmail.com
