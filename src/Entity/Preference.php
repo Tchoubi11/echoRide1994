@@ -26,6 +26,9 @@ class Preference
     #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Utilisateur $utilisateur = null;
 
+    #[ORM\OneToOne(mappedBy: 'preference', targetEntity: Covoiturage::class, cascade: ['persist', 'remove'])]
+    private ?Covoiturage $covoiturage = null;
+
 
     public function getId(): ?int
     {
@@ -78,4 +81,16 @@ public function setUtilisateur(?Utilisateur $utilisateur): static
     $this->utilisateur = $utilisateur;
     return $this;
 }
+
+public function getCovoiturage(): ?Covoiturage
+    {
+        return $this->covoiturage;
+    }
+
+    public function setCovoiturage(?Covoiturage $covoiturage): self
+    {
+        $this->covoiturage = $covoiturage;
+        return $this;
+    }
+
 }

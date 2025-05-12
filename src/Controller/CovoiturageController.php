@@ -173,97 +173,105 @@ public function search(Request $request, CovoiturageRepository $covoiturageRepos
 
 
     #[Route('/covoiturage/{id}', name: 'covoiturage_details')]
-   public function details(
-        int $id,
-        CovoiturageRepository $covoiturageRepository,
-        Request $request,
-        EntityManagerInterface $em,
-        CreditService $creditService,
-        AuthorizationCheckerInterface $security // Remplace Security (déprécié)
-    ): Response {
-        $ride = $covoiturageRepository->find($id);
-        if (!$ride) {
-            throw $this->createNotFoundException('Covoiturage non trouvé.');
-        }
+public function details(
+    int $id,
+    CovoiturageRepository $covoiturageRepository,
+    Request $request,
+    EntityManagerInterface $em,
+    CreditService $creditService,
+    AuthorizationCheckerInterface $security
+): Response {
+    $ride = $covoiturageRepository->find($id);
+    if (!$ride) {
+        throw $this->createNotFoundException('Covoiturage non trouvé.');
+    }
 
-        $driver = $ride->getDriver();
-        $driverCar = $driver ? $driver->getVoitures()->first() : null;
+    $driver = $ride->getDriver();
+    $driverCar = $driver ? $driver->getVoitures()->first() : null;
 
-        $driverReviews = [];
-        if ($driver) {
-            foreach ($driver->getCovoiturages() as $covoiturage) {
-                foreach ($covoiturage->getReservations() as $reservation) {
-                    if ($reservation->getAvis()) {
-                        $driverReviews[] = $reservation->getAvis();
-                    }
+    $driverReviews = [];
+    if ($driver) {
+        foreach ($driver->getCovoiturages() as $covoiturage) {
+            foreach ($covoiturage->getReservations() as $reservation) {
+                if ($reservation->getAvis()) {
+                    $driverReviews[] = $reservation->getAvis();
                 }
             }
         }
-
-        $driverPreferences = $driver ? $driver->getPreference() : null;
-
-        /** @var Utilisateur $user */
-        $user = $this->getUser();
-        $userPreferences = $user ? $user->getPreference() : null;
-
-        if (!$userPreferences && $user) {
-            $userPreferences = new Preference();
-            $userPreferences->setUtilisateur($user);
-        }
-
-        $preferenceForm = $this->createForm(PreferenceType::class, $userPreferences);
-        $preferenceForm->handleRequest($request);
-
-        if ($preferenceForm->isSubmitted() && $preferenceForm->isValid()) {
-            $em->persist($userPreferences);
-            $em->flush();
-            $this->addFlash('success', 'Préférences enregistrées avec succès.');
-            return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
-        }
-
-        $review = new Avis();
-        $form = $this->createForm(AvisType::class, $review);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $reservation = $em->getRepository(Reservation::class)->findOneBy([
-                'covoiturage' => $ride,
-                'passenger' => $user
-            ]);
-
-            if (!$reservation) {
-                $this->addFlash('danger', 'Vous devez avoir une réservation pour laisser un avis.');
-                return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
-            }
-
-            $review->setReservation($reservation);
-            $review->setStatut('actif');
-
-            $em->persist($review);
-            $em->flush();
-
-            $this->addFlash('success', 'Votre avis a été ajouté avec succès.');
-            return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
-        }
-
-        // 🆕 Récupération des crédits de l'utilisateur
-        $credits = null;
-        if ($user instanceof UserInterface) {
-            $credits = $creditService->getUserCredits($user->getId());
-        }
-
-        return $this->render('covoiturage/details.html.twig', [
-            'ride' => $ride,
-            'driverReviews' => $driverReviews,
-            'driverPreferences' => $driverPreferences,
-            'driverCar' => $driverCar,
-            'form' => $form->createView(),
-            'rideId' => $id,
-            'userPreferences' => $userPreferences,
-            'preferenceForm' => $preferenceForm->createView(),
-            'credits' => $credits,
-        ]);
     }
+
+    $driverPreferences = $driver ? $driver->getPreference() : null;
+
+    /** @var Utilisateur $user */
+    $user = $this->getUser();
+    $userPreferences = $user ? $user->getPreference() : null;
+
+    if (!$userPreferences && $user) {
+        $userPreferences = new Preference();
+        $userPreferences->setUtilisateur($user);
+    }
+
+    // Détection du mode "édition"
+    $editPrefs = $request->query->getBoolean('editPrefs');
+
+    $preferenceForm = $this->createForm(PreferenceType::class, $userPreferences);
+    $preferenceForm->handleRequest($request);
+
+    if ($preferenceForm->isSubmitted() && $preferenceForm->isValid()) {
+        $em->persist($userPreferences);
+        $em->flush();
+        $this->addFlash('success', 'Préférences enregistrées avec succès.');
+        return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
+    }
+
+    // Gestion du formulaire d'avis
+    $review = new Avis();
+    $form = $this->createForm(AvisType::class, $review);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $reservation = $em->getRepository(Reservation::class)->findOneBy([
+            'covoiturage' => $ride,
+            'passenger' => $user
+        ]);
+
+        if (!$reservation) {
+            $this->addFlash('danger', 'Vous devez avoir une réservation pour laisser un avis.');
+            return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
+        }
+
+        $review->setReservation($reservation);
+        $review->setStatut('actif');
+
+        $em->persist($review);
+        $em->flush();
+
+        $this->addFlash('success', 'Votre avis a été ajouté avec succès.');
+        return $this->redirectToRoute('covoiturage_details', ['id' => $id]);
+    }
+
+    // Récupération des crédits
+    $credits = null;
+    if ($user instanceof UserInterface) {
+        $credits = $creditService->getUserCredits($user->getId());
+    }
+
+    $isOwner = $user && $userPreferences && $user->getId() === $userPreferences->getUtilisateur()->getId();
+
+    return $this->render('covoiturage/details.html.twig', [
+        'ride' => $ride,
+        'driverReviews' => $driverReviews,
+        'driverPreferences' => $driverPreferences,
+        'driverCar' => $driverCar,
+        'form' => $form->createView(),
+        'rideId' => $id,
+        'userPreferences' => $userPreferences,
+        'preferenceForm' => $preferenceForm->createView(),
+        'credits' => $credits,
+        'isOwner' => $isOwner,
+        'editPrefs' => $editPrefs,
+    ]);
+}
 
     #[Route('/profil/modifier', name: 'edit_user')]
     public function edit(Request $request, EntityManagerInterface $em): Response
@@ -342,7 +350,7 @@ public function annuler(
 }
 
 
-    #[Route('/covoiturage/creer', name: 'covoiturage_create')]
+   #[Route('/covoiturage/creer', name: 'covoiturage_create')]
 public function create(Request $request, EntityManagerInterface $em): Response
 {
     /** @var Utilisateur $user */
@@ -350,13 +358,23 @@ public function create(Request $request, EntityManagerInterface $em): Response
     if (!$user) {
         return $this->redirectToRoute('app_login');
     }
-  
-   if ($user->getTypeUtilisateur() !== 'chauffeur') {
-        return $this->redirectToRoute('profile'); 
+
+    if ($user->getTypeUtilisateur() !== 'chauffeur') {
+        return $this->redirectToRoute('profile');
     }
 
     $covoiturage = new Covoiturage();
     $covoiturage->setDriver($user);
+
+    // Initialisation des préférences si null
+    if ($covoiturage->getPreference() === null) {
+        $preference = new Preference();
+        $preference->setFumeur(false);
+        $preference->setAnimaux(false);
+        $preference->setAutres([]);
+        $covoiturage->setPreference($preference);
+    }
+
     $form = $this->createForm(CovoiturageType::class, $covoiturage, ['user' => $user]);
     $form->handleRequest($request);
 
@@ -375,6 +393,7 @@ public function create(Request $request, EntityManagerInterface $em): Response
 
         $em->persist($covoiturage);
         $em->flush();
+
         $this->addFlash('success', 'Votre covoiturage a été créé avec succès !');
         return $this->redirectToRoute('covoiturage_details', ['id' => $covoiturage->getId()]);
     }
@@ -383,6 +402,7 @@ public function create(Request $request, EntityManagerInterface $em): Response
         'formCovoiturage' => $form->createView(),
     ]);
 }
+
 
     #[Route('/covoiturage/{id}/demarrer', name: 'demarrer_covoiturage')]
     public function demarrer(int $id, EntityManagerInterface $em): Response
@@ -426,14 +446,20 @@ public function validerPassagers(
     Request $request,
     EntityManagerInterface $em
 ): Response {
-    
     // Vérification que l'utilisateur est bien le conducteur
     if ($covoiturage->getDriver() !== $this->getUser()) {
         throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à valider ce covoiturage.");
     }
 
-    // Validation des passagers
+    // Validation des passagers si la méthode est POST
     if ($request->isMethod('POST')) {
+        // Vérification de l'ID de covoiturage dans la requête pour éviter la soumission multiple
+        $rideId = $request->request->get('covoiturage_id');
+        if ($rideId != $covoiturage->getId()) {
+            throw $this->createNotFoundException('Covoiturage introuvable.');
+        }
+
+        // On boucle sur toutes les réservations pour mettre à jour la présence des passagers
         foreach ($covoiturage->getReservations() as $reservation) {
             $isPresent = $request->request->get('passager_'.$reservation->getId()) === 'on';
             $reservation->setAParticipe($isPresent);
@@ -445,17 +471,23 @@ public function validerPassagers(
                 $em->persist($avis); 
             }
         }
+
+        // Persister les modifications
         $em->flush(); 
 
+        // Ajouter un message flash pour indiquer que la validation des passagers a réussi
         $this->addFlash('success', 'Présence des passagers mise à jour avec succès.');
 
-        return $this->redirectToRoute('covoiturage_valider_passagers', ['id' => $covoiturage->getId()]);
+        // Rediriger vers la même page pour éviter la soumission multiple
+        return $this->redirectToRoute('covoiturage_details', ['id' => $covoiturage->getId()]);
     }
 
+    // Rendu du formulaire pour valider les passagers
     return $this->render('covoiturage/valider_passagers.html.twig', [
         'covoiturage' => $covoiturage,
     ]);
 }
+
 
 #[Route('/covoiturage/{id}/modifier-preferences', name: 'edit_driver_preferences')]
 public function editDriverPreferences(

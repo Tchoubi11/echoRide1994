@@ -46,12 +46,6 @@ class Voiture
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
-    // src/Entity/Voiture.php
-
-#[ORM\ManyToOne(targetEntity: Preference::class, cascade: ["persist"])]  // Ajout de cascade={"persist"}
-#[ORM\JoinColumn(name: 'preference_id', referencedColumnName: 'id')]
-private ?Preference $preference = null;
-
 
     #[ORM\OneToMany(mappedBy: 'voiture', targetEntity: Covoiturage::class)]
     private Collection $covoiturages;
@@ -154,18 +148,7 @@ private ?Preference $preference = null;
         $this->placesDisponibles = $placesDisponibles;
         return $this;
     }
-
-    public function getPreference(): ?Preference
-{
-    return $this->preference;
-}
-
-public function setPreference(?Preference $preference): static
-{
-    $this->preference = $preference;
-    return $this;
-}
-
+    
 public function getCovoiturages(): Collection
 {
     return $this->covoiturages;

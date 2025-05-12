@@ -40,7 +40,6 @@
 
         <p><strong>Voyage écologique :</strong> {{ ride.isEco ? 'Oui' : 'Non' }}</p>
 
-        <!-- Véhicule -->
         <p><strong>Véhicule :</strong></p>
         {% if driverCar %}
             <p><strong>Marque et Modèle :</strong> {{ driverCar.marque.libelle }} - {{ driverCar.modele }}</p>
@@ -84,6 +83,7 @@
             </a>
         {% endif %}
 
+        <hr>
         <h3>Vos préférences :</h3>
         {% if userPreferences %}
             <ul>
@@ -101,6 +101,8 @@
             <p>Vous n'avez pas encore défini vos préférences.</p>
         {% endif %}
 
+        {% if app.user == ride.driver %}
+    {% if editPrefs %}
         <h3>Mettre à jour mes préférences :</h3>
         {{ form_start(preferenceForm) }}
             <div class="mb-3">
@@ -119,6 +121,13 @@
                 {{ userPreferences.id ? 'Mettre à jour mes préférences' : 'Enregistrer mes préférences' }}
             </button>
         {{ form_end(preferenceForm) }}
+    {% else %}
+        <a href="{{ path('covoiturage_details', {'id': ride.id, 'editPrefs': 1}) }}" class="btn btn-outline-info mt-2">
+            ✏️ Modifier mes préférences
+        </a>
+    {% endif %}
+{% endif %}
+
     </div>
 
     <div class="d-flex gap-2 mt-3">

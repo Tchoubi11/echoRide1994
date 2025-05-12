@@ -14,6 +14,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use App\Form\PreferenceType;
+
 
 class CovoiturageType extends AbstractType
 {
@@ -66,7 +68,12 @@ class CovoiturageType extends AbstractType
             ->add('is_eco', CheckboxType::class, [
                 'label' => 'Eco-friendly',
                 'required' => false,  
-            ]);
+            ])
+            ->add('preference', PreferenceType::class, [
+                'label' => false,
+                'required' => false,
+            ])
+              ;
     }
     
     public function configureOptions(OptionsResolver $resolver): void

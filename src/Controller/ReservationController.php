@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ReservationController extends AbstractController
 {
-    #[Route('/participer/{rideId}', name: 'participer_covoiturage', requirements: ['rideId' => '\d+'], methods: ['GET', 'POST'])]
+   #[Route('/participer/{rideId}', name: 'participer_covoiturage', requirements: ['rideId' => '\d+'], methods: ['GET', 'POST'])]
 public function participate(
     Request $request,
     int $rideId,
@@ -56,30 +56,31 @@ public function participate(
         return $this->redirectToRoute('covoiturage_list');
     }
 
-    // Calcul du prix total : prix fixé par le chauffeur + 2 crédits pour la plateforme
+    // Prix total : prix du covoiturage + 2 crédits de commission
     $prixTotal = $ride->getPrixPersonne() + 2;
 
+    // Récupère les crédits utilisateur via CreditService (MongoDB)
     $userCredits = $creditService->getUserCredits($user->getId());
+
     if ($userCredits < $prixTotal || $ride->getPlacesRestantes() <= 0) {
-        $this->addFlash('error', 'Vous n\'avez pas assez de crédits pour réserver.');
+        $this->addFlash('error', 'Vous n\'avez pas assez de crédits pour réserver ou plus de places disponibles.');
         return $this->render('reservation/participate.html.twig', [
             'ride' => $ride,
-            'user' => $user,
             'rideId' => $rideId,
+            'userCredits' => $userCredits,
         ]);
     }
 
     if ($request->isMethod('POST')) {
         if ($session->get('confirm_' . $rideId)) {
-            // Débit du crédit via le service MongoDB
+            // Déduire les crédits
             $success = $creditService->removeCredits($user->getId(), $prixTotal);
-
             if (!$success) {
                 $this->addFlash('error', 'Erreur lors du traitement des crédits.');
                 return $this->redirectToRoute('covoiturage_list');
             }
 
-            // Création de la réservation
+            // Réservation
             $reservation = new Reservation();
             $reservation->setPassenger($user);
             $reservation->setCovoiturage($ride);
@@ -98,6 +99,7 @@ public function participate(
             $this->addFlash('success', 'Votre réservation a été confirmée avec succès !');
             return $this->redirectToRoute('covoiturage_list');
         } else {
+            // Première soumission (demande de confirmation)
             $session->set('confirm_' . $rideId, true);
             $this->addFlash('warning', 'Veuillez confirmer votre réservation en cliquant à nouveau sur "Oui, confirmer".');
         }
@@ -105,8 +107,8 @@ public function participate(
 
     return $this->render('reservation/participate.html.twig', [
         'ride' => $ride,
-        'user' => $user,
         'rideId' => $rideId,
+        'userCredits' => $userCredits,
     ]);
 }
 

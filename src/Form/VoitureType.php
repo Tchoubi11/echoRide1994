@@ -6,7 +6,6 @@ namespace App\Form;
 
 use App\Entity\Voiture;
 use App\Entity\Marque;
-use App\Form\PreferenceType;  // Assure-toi d'importer PreferenceType
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -40,14 +39,11 @@ class VoitureType extends AbstractType
                     'Electrique' => 'electrique',
                     'Hybride' => 'hybride',
                 ],
-                'label' => 'Type d\'énergie',  // Le libellé pour l'utilisateur
-                'required' => true,  // Assurez-vous qu'il est requis si nécessaire
+                'label' => 'Type d\'énergie',  
+                'required' => true,  
             ])
             ->add('placesDisponibles', IntegerType::class)
-            ->add('preference', PreferenceType::class, [  
-                'label' => false,
-                'required' => false,
-            ]);
+            ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

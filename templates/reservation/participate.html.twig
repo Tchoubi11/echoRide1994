@@ -7,7 +7,8 @@
 <p>Vous vous apprêtez à participer au covoiturage de <strong>{{ ride.lieuDepart }}</strong> à <strong>{{ ride.lieuArrivee }}</strong>.</p>
 <p><strong>Prix par personne :</strong> {{ ride.prixPersonne }} crédits.</p>
 <p><strong>Places restantes :</strong> {{ ride.placesRestantes }}.</p>
-<p><strong>Vos crédits actuels :</strong> <span id="userCredits">{{ user.credits }}</span> crédits.</p>
+<p><strong>Vos crédits actuels :</strong> <span id="userCredits">{{ userCredits }}</span> crédits.</p>
+
 
 
 <div id="flashMessages" style="display: none;"></div>
@@ -34,7 +35,7 @@
     const flashMessages = document.getElementById('flashMessages');
     const confirmForm = document.getElementById('confirmForm');
 
-    let userCredits = parseInt(userCreditsElement.textContent.trim(), 10);
+    let userCredits = parseInt("{{ userCredits|json_encode|raw }}", 10);
     let ridePrice = parseInt("{{ ride.prixPersonne|json_encode|raw }}", 10);
 
     confirmButton.addEventListener('click', function() {

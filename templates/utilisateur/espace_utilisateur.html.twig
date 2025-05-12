@@ -99,19 +99,25 @@
     {% endif %}
 
     {% if formCovoiturage is defined and formCovoiturage is not null %}
-        <h3 class="mt-5">➕ Proposer un trajet</h3>
-        {{ form_start(formCovoiturage) }}
-            {{ form_row(formCovoiturage.lieuDepart) }}
-            {{ form_row(formCovoiturage.lieuArrivee) }}
-            {{ form_row(formCovoiturage.dateDepart) }}
-            {{ form_row(formCovoiturage.dateArrivee) }}
-            {{ form_row(formCovoiturage.prixPersonne) }}
-            {{ form_row(formCovoiturage.nbPlace) }}
-            {{ form_row(formCovoiturage.voiture) }}
-            {{ form_row(formCovoiturage.is_eco) }}
-            <button class="btn btn-success mt-3">Proposer</button>
-        {{ form_end(formCovoiturage) }}
-    {% endif %}
+    <h3 class="mt-5">➕ Proposer un trajet</h3>
+    {{ form_start(formCovoiturage) }}
+        {{ form_row(formCovoiturage.lieuDepart) }}
+        {{ form_row(formCovoiturage.lieuArrivee) }}
+        {{ form_row(formCovoiturage.dateDepart) }}
+        {{ form_row(formCovoiturage.dateArrivee) }}
+        {{ form_row(formCovoiturage.prixPersonne) }}
+        {{ form_row(formCovoiturage.nbPlace) }}
+        {{ form_row(formCovoiturage.voiture) }}
+        {{ form_row(formCovoiturage.is_eco) }}
+
+        <h4 class="mt-4">Préférences</h4>
+        {{ form_row(formCovoiturage.preference.fumeur) }}
+        {{ form_row(formCovoiturage.preference.animaux) }}
+        {{ form_row(formCovoiturage.preference.autres) }}
+
+        <button class="btn btn-success mt-3">Proposer</button>
+    {{ form_end(formCovoiturage) }}
+{% endif %}
 
     <a href="{{ path('user_profile') }}" class="btn btn-secondary mt-4">👤 Voir mon profil</a>
 </div>

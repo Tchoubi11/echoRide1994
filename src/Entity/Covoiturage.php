@@ -81,6 +81,11 @@ class Covoiturage
     #[ORM\JoinColumn(nullable: false)]
     private ?Voiture $voiture = null;
 
+    #[ORM\OneToOne(cascade: ['persist', 'remove'], inversedBy: 'covoiturage')]
+    #[ORM\JoinColumn(name: 'preference_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Preference $preference = null;
+
+
     public function __construct()
     {
         $this->reservations = new ArrayCollection();
@@ -347,5 +352,17 @@ public function setEndAt(?\DateTimeImmutable $endAt): self
     $this->endAt = $endAt;
     return $this;
 }
+
+
+ public function getPreference(): ?Preference
+    {
+        return $this->preference;
+    }
+
+    public function setPreference(?Preference $preference): self
+    {
+        $this->preference = $preference;
+        return $this;
+    }
 
 }

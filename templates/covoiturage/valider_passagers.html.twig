@@ -9,15 +9,13 @@
     {# Détection d'une validation déjà faite #}
     {% set presence_validee = app.session.flashbag.peek('success')|length > 0 %}
 
-    {# Affichage du message flash si présent #}
-    {% if presence_validee %}
-        {% for message in app.session.flashbag.get('success') %}
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
+    {# Affichage des messages flash de succès si présent #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+    {% endfor %}
 
     <form method="post" action="{{ path('covoiturage_valider_passagers', {'id': covoiturage.id}) }}">
         <input type="hidden" name="_token" value="{{ csrf_token('valider_passagers') }}">
