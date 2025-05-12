@@ -61,26 +61,6 @@
             <p>Aucun avis pour ce conducteur.</p>
         {% endif %}
 
-        {% if app.user %}
-            {% set hasReviewed = driverReviews|filter(r => r.reservation.passenger == app.user)|length > 0 %}
-            {% if not hasReviewed %}
-                <h3>Ajouter un avis</h3>
-                {{ form_start(form, {'action': path('covoiturage_details', {'id': ride.id})}) }}
-                    <div class="form-group">
-                        {{ form_row(form.commentaire) }}
-                    </div>
-                    <div class="form-group">
-                        {{ form_row(form.note) }}
-                    </div>
-                    <button class="btn btn-primary" type="submit">Ajouter l'avis</button>
-                {{ form_end(form) }}
-            {% else %}
-                <p>Vous avez déjà laissé un avis pour ce conducteur.</p>
-            {% endif %}
-        {% else %}
-            <p>Vous devez être connecté pour laisser un avis.</p>
-        {% endif %}
-
         <p><strong>Préférences du conducteur :</strong></p>
         {% if driverPreferences %}
             <ul>
@@ -99,6 +79,23 @@
         {% endif %}
 
         <h3>Vos préférences :</h3>
+        {% if userPreferences %}
+            <ul>
+                <li><strong>Fumeur :</strong> {{ userPreferences.fumeur ? 'Oui' : 'Non' }}</li>
+                <li><strong>Animaux :</strong> {{ userPreferences.animaux ? 'Oui' : 'Non' }}</li>
+                <li><strong>Autres :</strong> 
+                    {% if userPreferences.autres is not empty %}
+                        {{ userPreferences.autres|join(', ') }}
+                    {% else %}
+                        Aucune
+                    {% endif %}
+                </li>
+            </ul>
+        {% else %}
+            <p>Vous n'avez pas encore défini vos préférences.</p>
+        {% endif %}
+
+        <h3>Mettre à jour mes préférences :</h3>
         {{ form_start(preferenceForm) }}
             <div class="mb-3">
                 {{ form_label(preferenceForm.fumeur) }}
@@ -139,7 +136,6 @@
         {% endif %}
     </p>
 {% endif %}
-
 
     <div class="mt-4">
         <a href="{{ path('user_profile') }}" class="btn btn-secondary">👤 Retour sur mon profil</a>
