@@ -73,7 +73,7 @@ public function participate(
 
     if ($request->isMethod('POST')) {
         if ($session->get('confirm_' . $rideId)) {
-            // Déduire les crédits
+            // Déduction des crédits
             $success = $creditService->removeCredits($user->getId(), $prixTotal);
             if (!$success) {
                 $this->addFlash('error', 'Erreur lors du traitement des crédits.');
@@ -169,23 +169,39 @@ public function participate(
     }
 
     #[Route('/reservation/{id}/valider', name: 'reservation_valider')]
-    public function validerReservation(
-        Reservation $reservation,
-        EntityManagerInterface $em
-    ): Response {
-        if ($reservation->getPassenger() !== $this->getUser()) {
-            throw $this->createAccessDeniedException();
-        }
+public function validerReservation(
+    Reservation $reservation,
+    EntityManagerInterface $em,
+    CreditService $creditService 
+): Response {
+    if ($reservation->getPassenger() !== $this->getUser()) {
+        throw $this->createAccessDeniedException();
+    }
 
-        if (!$reservation->getAParticipe()) {
-            $this->addFlash('warning', 'Vous ne pouvez valider que si le chauffeur vous a marqué présent.');
-            return $this->redirectToRoute('mes_reservations');
-        }
-
-        $reservation->setAConfirmeParticipation(true);
-        $em->flush();
-
-        $this->addFlash('success', 'Merci d\'avoir validé votre trajet !');
+    if (!$reservation->getAParticipe()) {
+        $this->addFlash('warning', 'Vous ne pouvez valider que si le chauffeur vous a marqué présent.');
         return $this->redirectToRoute('mes_reservations');
     }
+
+    // Marque la participation du passager comme confirmée
+    $reservation->setAConfirmeParticipation(true);
+
+    // Vérification si le conducteur mérite des crédits 
+    $covoiturage = $reservation->getCovoiturage();
+    $driver = $covoiturage->getDriver();
+
+    // Ajout des crédits au conducteur 
+    if ($covoiturage->isCompleted() && $covoiturage->getPrixPersonne()) {  
+    $amount = $covoiturage->getPrixPersonne();
+    $creditService->addCredits($driver->getId(), $amount); 
+    }
+
+
+    // Enregistrement des changements
+    $em->flush();
+
+    $this->addFlash('success', 'Merci d\'avoir validé votre trajet !');
+    return $this->redirectToRoute('mes_reservations');
+}
+
 }

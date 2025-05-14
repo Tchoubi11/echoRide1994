@@ -7,3 +7,6 @@ controllers:
 app_register:
     path: /register
     controller: App\Controller\RegistrationController::register
+user_migrate:
+    path: /migrate/users
+    controller: App\Controller\UtilisateurController::migrateToMongoDB

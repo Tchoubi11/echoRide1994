@@ -21,15 +21,17 @@ use App\Form\ReservationValidationType;
 use App\Entity\Avis; 
 use App\Repository\AvisRepository;
 use App\Service\CreditService;
-
+use App\Service\UserMigrationService;
 
 class UtilisateurController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
+    private $userMigrationService;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager,UserMigrationService $userMigrationService)
     {
         $this->entityManager = $entityManager;
+        $this->userMigrationService = $userMigrationService;
     }
 
     #[Route('/profile', name: 'user_profile')]
@@ -95,7 +97,7 @@ public function espaceUtilisateur(Request $request): Response
         'driver' => $user,
     ]);
 
-    // ✅ Vérifie les préférences fumeur à partir des covoiturages existants
+    //  Vérifie les préférences fumeur à partir des covoiturages existants
     $accepteFumeur = false;
     foreach ($covoituragesProposes as $covoiturage) {
         $preference = $covoiturage->getPreference();
@@ -174,7 +176,7 @@ public function espaceUtilisateur(Request $request): Response
     EntityManagerInterface $em,
     NotificationService $notificationService,
     Security $security,
-    CreditService $creditService // Injection de CreditService
+    CreditService $creditService 
 ): Response {
     $user = $security->getUser();
 
@@ -201,9 +203,9 @@ public function espaceUtilisateur(Request $request): Response
             $covoiturage = $reservation->getCovoiturage();
             $driver = $covoiturage->getDriver();
 
-            // Ajouter les crédits au chauffeur via MongoDB (en utilisant le CreditService)
+            // Ajout des crédits au chauffeur via MongoDB 
             $amount = $covoiturage->getPrixPersonne();
-            $creditService->addCredits($driver->getId(), $amount); // Ajouter des crédits
+            $creditService->addCredits($driver->getId(), $amount); 
 
             $notificationService->notifyDriverOfValidation($driver, $reservation);
 
@@ -235,8 +237,6 @@ public function espaceUtilisateur(Request $request): Response
         'participationForms' => $forms,
     ]);
 }
-
-
 
 
 #[Route('/reservation/{id}/signaler-probleme', name: 'reservation_signaler_probleme', methods: ['POST', 'GET'])]
@@ -338,5 +338,14 @@ public function mesAvis(AvisRepository $avisRepository): Response
     ]);
 }
 
-   
+#[Route('/migrate/users', name: 'migrate_users')]
+    public function migrateToMongoDB(): Response
+    {
+        // Appel de la méthode pour migrer les utilisateurs vers MongoDB
+        $result = $this->userMigrationService->migrateUsersToMongoDB();
+
+        // Retour d'une réponse
+        return new Response($result);
+    }
+
 }

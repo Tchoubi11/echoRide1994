@@ -18,26 +18,36 @@
         </thead>
         <tbody>
             {% for user in utilisateurs %}
-                <tr>
-                    <td>{{ user.nom }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.typeUtilisateur|capitalize }}</td>
-                    <td>
-                        {% if user.isSuspended %}
-                            <span class="badge text-bg-danger">Suspendu</span>
-                        {% else %}
-                            <span class="badge text-bg-success">Actif</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if user.isSuspended %}
-                            <a href="{{ path('admin_reactivate_user', { id: user.id }) }}" class="btn btn-sm btn-success">Réactiver</a>
-                        {% else %}
-                            <a href="{{ path('admin_suspend_user', { id: user.id }) }}" class="btn btn-sm btn-warning">Suspendre</a>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
+    <tr>
+        <td>{{ user.nom }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+            {% if 'ROLE_ADMIN' in user.roles %}
+                <span class="badge bg-secondary">Administrateur</span>
+            {% elseif 'ROLE_EMPLOYE' in user.roles %}
+                <span class="badge bg-info">Employé</span>
+            {% else %}
+                <span class="badge bg-light text-dark">Utilisateur</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if user.isSuspended %}
+                <span class="badge bg-danger">Suspendu</span>
+            {% else %}
+                <span class="badge bg-success">Actif</span>
+            {% endif %}
+        </td>
+        <td>
+    {% if user.isSuspended %}
+        <a href="{{ path('admin_reactivate_user', { id: user.id }) }}" class="btn btn-sm btn-success">Réactiver</a>
+    {% else %}
+        <a href="{{ path('admin_suspend_user', { id: user.id }) }}" class="btn btn-sm btn-warning">Suspendre</a>
+    {% endif %}
+</td>
+
+    </tr>
+{% endfor %}
+
         </tbody>
     </table>
 </div>

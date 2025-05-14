@@ -8,10 +8,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Form\UtilisateurInformationType;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AdminController extends AbstractController
 {
-    #[Route('/admin', name: 'admin_dashboard')]
+   #[Route('/admin/dashboard', name: 'admin_dashboard')]
+
     public function index(StatistiqueService $stats): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -102,4 +106,41 @@ class AdminController extends AbstractController
             'utilisateurs' => $utilisateurs,
         ]);
     }
+
+    #[Route('/admin/employe/creer', name: 'admin_employe_creer')]
+public function creerEmploye(
+    Request $request,
+    EntityManagerInterface $em, 
+    UserPasswordHasherInterface $passwordHasher
+): Response {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    $employe = new Utilisateur();
+    $form = $this->createForm(UtilisateurInformationType::class, $employe);
+
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        
+        $hashedPassword = $passwordHasher->hashPassword(
+            $employe,
+            $form->get('password')->getData()
+        );
+        $employe->setPassword($hashedPassword);
+
+        
+        $employe->setRoles(['ROLE_EMPLOYE']);
+        $employe->setTypeUtilisateur('employe');
+
+        $em->persist($employe);
+        $em->flush();
+
+        $this->addFlash('success', 'Employé créé avec succès.');
+        return $this->redirectToRoute('admin_utilisateur_liste');
+    }
+
+    return $this->render('admin/employe_create.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
 }
