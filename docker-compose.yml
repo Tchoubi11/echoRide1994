@@ -1,0 +1,35 @@
+services:
+  # MySQL
+  mysql:
+    image: mysql:8.2
+    container_name: echoride-mysql
+    environment:
+      MYSQL_DATABASE: echoride
+      MYSQL_USER: echoride_user
+      MYSQL_PASSWORD: secretpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # MongoDB
+  mongodb:
+    image: mongo:latest
+    container_name: echoride-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: examplepassword
+    ports:
+      - "27017:27017"
+
+  # Mailhog
+  mailer:
+    image: mailhog/mailhog
+    container_name: echoride-mailhog
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+volumes:
+  mysql_data:
