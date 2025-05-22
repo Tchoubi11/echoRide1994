@@ -5,14 +5,14 @@ FROM php:8.3-fpm-alpine
 RUN apk --no-cache add \
     libpng-dev \
     libjpeg-turbo-dev \
-    libfreetype6-dev \
+    freetype-dev \
     libxml2-dev \
     zip \
     git \
     bash \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql xml opcache \
-    && apk del libpng-dev libjpeg-turbo-dev libfreetype6-dev
+    && apk del libpng-dev libjpeg-turbo-dev freetype-dev
 
 # Configuration du répertoire de travail
 WORKDIR /var/www/html
