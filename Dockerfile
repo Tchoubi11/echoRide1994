@@ -10,7 +10,7 @@ RUN apk update && apk --no-cache add \
     zip \
     git \
     bash \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-png-dir=/usr/include \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql xml opcache \
     && apk del libpng-dev libjpeg-turbo-dev freetype-dev
 
