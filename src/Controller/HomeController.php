@@ -19,7 +19,7 @@ class HomeController extends AbstractController
     #[Route('/', name: 'app_home')]
     public function index(Request $request, CovoiturageRepository $covoiturageRepository): Response
     {
-        // Créer et traiter le formulaire en désactivant les filtres avancés
+        // Créeons et traitons le formulaire en désactivant les filtres avancés
         $form = $this->createForm(CovoiturageSearchType::class, null, [
             'showAdvancedFilters' => false
         ]);
@@ -32,7 +32,7 @@ class HomeController extends AbstractController
             $destination = $data['lieu_arrivee'];
             $date = $data['date_depart'];
 
-            // Récupérer les covoiturages selon les critères
+            // Récupérerons  les covoiturages selon les critères
             $covoiturages = $covoiturageRepository->findAvailableRides($departure, $destination, $date);
         }
 
@@ -47,14 +47,14 @@ class HomeController extends AbstractController
     {
         $session = $request->getSession();
     
-        // Vérifie si l'utilisateur est déjà connecté
+        // Vérifions si l'utilisateur est déjà connecté
         if ($this->getUser()) {
             $redirectUrl = $session->get('redirect_after_login', null);
             $session->remove('redirect_after_login'); // Supprime après récupération
             return $redirectUrl ? $this->redirect($redirectUrl) : $this->redirectToRoute('covoiturage_list');
         }
     
-        // Récupère les erreurs de connexion
+        // Récupèrons les erreurs de connexion
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
     

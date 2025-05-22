@@ -14,6 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class VoitureType extends AbstractType
 {
@@ -42,7 +43,22 @@ class VoitureType extends AbstractType
                 'label' => 'Type d\'énergie',  
                 'required' => true,  
             ])
-            ->add('placesDisponibles', IntegerType::class)
+            ->add('placesDisponibles', IntegerType::class)->add('placesDisponibles', IntegerType::class, [
+                'label' => 'Nombre de places disponibles',
+                'required' => true,
+                'data' => 1,
+                'attr' => [
+                    'min' => 1,
+                    'step' => 1,
+                ],
+                'constraints' => [
+                    new Assert\NotNull(['message' => 'Le nombre de places ne peut pas être nul.']),
+                    new Assert\Range([
+                        'min' => 1,
+                        'minMessage' => 'Le nombre de places doit être au minimum {{ limit }}.',
+                    ]),
+                ],
+            ]);
             ;
     }
 

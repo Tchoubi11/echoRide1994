@@ -211,7 +211,7 @@ public function details(
         $userPreferences->setUtilisateur($user);
     }
 
-    // Détection du mode "édition"
+    
     $editPrefs = $request->query->getBoolean('editPrefs');
 
     $preferenceForm = $this->createForm(PreferenceType::class, $userPreferences);
@@ -350,7 +350,7 @@ public function annuler(
 }
 
 
-   #[Route('/covoiturage/creer', name: 'covoiturage_create')]
+ #[Route('/covoiturage/creer', name: 'covoiturage_create')]
 public function create(Request $request, EntityManagerInterface $em): Response
 {
     /** @var Utilisateur $user */
@@ -373,12 +373,22 @@ public function create(Request $request, EntityManagerInterface $em): Response
         $preference->setAnimaux(false);
         $preference->setAutres([]);
         $covoiturage->setPreference($preference);
+
+        // ✅ Ajout nécessaire pour que Preference soit sauvegardé en BDD
+        $em->persist($preference);
     }
 
     $form = $this->createForm(CovoiturageType::class, $covoiturage, ['user' => $user]);
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
+        // Vérification si un véhicule a été sélectionné
+        if (!$covoiturage->getVoiture()) {
+            $this->addFlash('warning', 'Vous devez sélectionner un véhicule pour créer ce covoiturage.');
+            return $this->redirectToRoute('covoiturage_create');
+        }
+
+        // Génération de la date d’arrivée si elle n'est pas renseignée
         if (!$covoiturage->getDateArrivee() && $covoiturage->getDateDepart()) {
             $dateDepart = $covoiturage->getDateDepart();
 

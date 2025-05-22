@@ -30,23 +30,29 @@ class Reservation
     #[ORM\Column(type: 'boolean')]
     private bool $aConfirmeParticipation = false;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isCancelled = false;
+
     #[ORM\Column]
     private ?int $placesReservees = null;
 
     #[ORM\Column(length: 50)]
     private ?string $statut = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(name: "montantPaye", nullable: true)]
     private ?float $montantPaye = null;
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
+
+    #[ORM\Column(name: "isValidatedByPassenger", type: "boolean", nullable: true)]
     private ?bool $isValidatedByPassenger = null;
 
-    #[ORM\Column(type: 'boolean')]
-   private bool $problemeSignale = false;
 
-   #[ORM\Column(type: 'text', nullable: true)]
-   private ?string $detailsProbleme = null;
+    #[ORM\Column(name: "problemeSignale", type: "boolean")]
+    private bool $problemeSignale = false;
+
+
+    #[ORM\Column(type: 'text', nullable: true, name: 'detailsProbleme')]
+    private ?string $detailsProbleme = null;
 
     public function getId(): ?int
     {
@@ -119,10 +125,11 @@ class Reservation
         return $this;
     }
 
-    public function isProblemeSignale(): bool
+    public function getProblemeSignale(): bool
 {
     return $this->problemeSignale;
 }
+
 
 public function setProblemeSignale(bool $problemeSignale): static
 {
@@ -178,4 +185,14 @@ public function setAConfirmeParticipation(bool $aConfirmeParticipation): self
     return $this;
 }
 
+public function isCancelled(): bool
+{
+    return $this->isCancelled;
+}
+
+public function setIsCancelled(bool $isCancelled): self
+{
+    $this->isCancelled = $isCancelled;
+    return $this;
+}
 }

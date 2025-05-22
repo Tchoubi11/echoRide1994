@@ -2,6 +2,14 @@
 
 {% block body %}
 <div class="container mt-5">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} mt-3">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
     <h2>Bonjour {{ utilisateur.pseudo }}</h2>
 
     <h3>Je suis :</h3>
@@ -40,37 +48,34 @@
 
     {% if utilisateur.typeUtilisateur in ['passager', 'les_deux'] %}
         <h3 class="mt-4">🧾 Mes réservations en tant que passager</h3>
-        <a href="{{ path('reservations_to_validate') }}" class="btn btn-outline-primary mb-3">📝 Valider mes trajets</a>
 
         {% for res in reservations %}
-    {% if res.covoiturage.isCompleted == false and res.covoiturage.isCancelled == false %}
-        <div class="card p-3 mb-2">
-            <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
-            📅 {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
-            💺 Places réservées : {{ res.placesReservees }}<br>
-            💰 Payé : {{ res.montantPaye }} crédits
+            {% if res.covoiturage.isCompleted == false and res.covoiturage.isCancelled == false %}
+                <div class="card p-3 mb-2">
+                    <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
+                    📅 {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
+                    💺 Places réservées : {{ res.placesReservees }}<br>
+                    💰 Payé : {{ res.montantPaye }} crédits
 
-            {# 🧾 Bloc pour afficher l’état de validation #}
-            <div class="mt-2">
-                {% if res.aConfirmeParticipation %}
-                    <span class="badge bg-success">✅ Validé</span>
-                {% elseif res.aParticipe %}
-                    <a href="{{ path('reservation_valider', {id: res.id}) }}" class="btn btn-primary btn-sm">
-                        Valider ma participation
-                    </a>
-                {% else %}
-                    <span class="badge bg-warning text-dark">🚫 En attente de validation du chauffeur</span>
-                {% endif %}
-            </div>
+                    <div class="mt-2">
+                        {% if res.aConfirmeParticipation %}
+                            <span class="badge bg-success">✅ Validé</span>
+                        {% elseif res.aParticipe %}
+                            <a href="{{ path('reservation_valider', {id: res.id}) }}" class="btn btn-primary btn-sm">
+                                Valider ma participation
+                            </a>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">🚫 En attente de validation du chauffeur</span>
+                        {% endif %}
+                    </div>
 
-            <form method="post" action="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}"
-                  onsubmit="return confirm('Annuler votre participation ?');">
-                <button type="submit" class="btn btn-warning btn-sm mt-3">Annuler ma participation</button>
-            </form>
-        </div>
-    {% endif %}
-{% endfor %}
-
+                    <form method="post" action="{{ path('annuler_covoiturage', { id: res.covoiturage.id }) }}"
+                          onsubmit="return confirm('Annuler votre participation ?');">
+                        <button type="submit" class="btn btn-warning btn-sm mt-3">Annuler ma participation</button>
+                    </form>
+                </div>
+            {% endif %}
+        {% endfor %}
     {% endif %}
 
     {% if utilisateur.typeUtilisateur in ['chauffeur', 'les_deux'] %}
@@ -99,26 +104,32 @@
     {% endif %}
 
     {% if formCovoiturage is defined and formCovoiturage is not null %}
-    <h3 class="mt-5">➕ Proposer un trajet</h3>
-    {{ form_start(formCovoiturage) }}
-        {{ form_row(formCovoiturage.lieuDepart) }}
-        {{ form_row(formCovoiturage.lieuArrivee) }}
-        {{ form_row(formCovoiturage.dateDepart) }}
-        {{ form_row(formCovoiturage.dateArrivee) }}
-        {{ form_row(formCovoiturage.prixPersonne) }}
-        {{ form_row(formCovoiturage.nbPlace) }}
-        {{ form_row(formCovoiturage.voiture) }}
-        {{ form_row(formCovoiturage.is_eco) }}
+        <h3 class="mt-5">➕ Proposer un trajet</h3>
+        {{ form_start(formCovoiturage) }}
+            {{ form_row(formCovoiturage.lieuDepart) }}
+            {{ form_row(formCovoiturage.lieuArrivee) }}
+            {{ form_row(formCovoiturage.dateDepart) }}
+            {{ form_row(formCovoiturage.dateArrivee) }}
+            {{ form_row(formCovoiturage.prixPersonne) }}
+            {{ form_row(formCovoiturage.nbPlace) }}
+            {{ form_row(formCovoiturage.voiture) }}
+            {{ form_row(formCovoiturage.is_eco) }}
 
-        <h4 class="mt-4">Préférences</h4>
-        {{ form_row(formCovoiturage.preference.fumeur) }}
-        {{ form_row(formCovoiturage.preference.animaux) }}
-        {{ form_row(formCovoiturage.preference.autres) }}
+            <h4 class="mt-4">Préférences</h4>
+            {{ form_row(formCovoiturage.preference.fumeur) }}
+            {{ form_row(formCovoiturage.preference.animaux) }}
+            {{ form_row(formCovoiturage.preference.autres) }}
 
-        <button class="btn btn-success mt-3">Proposer</button>
-    {{ form_end(formCovoiturage) }}
-{% endif %}
+            <button class="btn btn-success mt-3">Proposer</button>
+        {{ form_end(formCovoiturage) }}
+    {% endif %}
 
-    <a href="{{ path('user_profile') }}" class="btn btn-secondary mt-4">👤 Voir mon profil</a>
+    <div class="d-flex gap-2 mt-4">
+        {% if utilisateur.typeUtilisateur in ['passager', 'les_deux'] %}
+            <a href="{{ path('reservations_to_validate') }}" class="btn btn-outline-primary">📝 Valider mes trajets</a>
+        {% endif %}
+
+        <a href="{{ path('user_profile') }}" class="btn btn-secondary">👤 Voir mon profil</a>
+    </div>
 </div>
 {% endblock %}

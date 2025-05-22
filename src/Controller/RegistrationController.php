@@ -36,16 +36,13 @@ class RegistrationController extends AbstractController
             $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
             $user->setPassword($hashedPassword);
 
-            // Facultatif : encore utile uniquement si tu veux garder le champ crédits SQL
-            // if ($user->getTypeUtilisateur() !== 'employe') {
-            //     $user->setCredits(20);
-            // }
-
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // ✅ Ajout des crédits MongoDB via le service
-            $this->creditService->getOrCreateCredit($user->getId());
+            $typeUtilisateur = strtolower($user->getTypeUtilisateur());
+            $initialCredits = in_array($typeUtilisateur, ['passager', 'chauffeur']) ? 20 : 0;
+
+            $this->creditService->getOrCreateCredit($user->getId(), $initialCredits);
 
             $this->addFlash('success', 'Votre compte a été créé avec succès !');
 

@@ -1,22 +1,41 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}EcoRide - Covoiturage écologique{% endblock %}</title>
 
     <!-- CSS Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     {% block stylesheets %}
         {{ encore_entry_link_tags('app') }}
-        <link href="{{ asset('styles.css') }}" rel="stylesheet">  
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+        <link href="{{ asset('styles.css') }}" rel="stylesheet" />
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     {% endblock %}
 </head>
+<style>
+    #cookie-banner {
+    background-color: #222;
+    color: white;
+    padding: 15px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 9999;
+    text-align: center;
+    font-size: 16px;
+    border-top: 3px solid #28a745;
+}
+#cookie-banner button {
+    margin: 0 10px;
+}
+
+</style>
 <body>
+
 <header>
-    <nav class="navbar navbar-expand-lg ">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="{{ path('app_home') }}">
                 <span class="bg-success text-white rounded-circle d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
@@ -31,24 +50,23 @@
                     <span style="color: violet;">d</span>
                     <span style="color: pink;">e</span>
                 </span>
-            </a>            
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-    
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('app_home') }}">Accueil</a>
                     </li>
                     <li class="nav-item">
-    <a class="nav-link" href="{{ app.user ? path('covoiturage_list') : path('app_login') }}">
-        Covoiturages
-    </a>
-</li>
+                        <a class="nav-link" href="{{ app.user ? path('covoiturage_list') : path('app_login') }}">
+                            Covoiturages
+                        </a>
+                    </li>
 
-    
                     {% if app.user %}
                         {% if is_granted('ROLE_ADMIN') %}
                             <li class="nav-item">
@@ -59,22 +77,11 @@
                                 <a class="nav-link" href="{{ path('app_employe') }}">Espace Employé</a>
                             </li>
                         {% else %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    Mon espace
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                                    {% if is_granted('ROLE_CHAUFFEUR') %}
-                                        <li><a class="dropdown-item" href="{{ path('espace_chauffeur') }}">Espace Chauffeur</a></li>
-                                    {% endif %}
-                                    {% if is_granted('ROLE_PASSAGER') %}
-                                        <li><a class="dropdown-item" href="{{ path('espace_passager') }}">Espace Passager</a></li>
-                                    {% endif %}
-                                    <li><a class="dropdown-item" href="{{ path('espace_utilisateur') }}">Mon profil</a></li>
-                                </ul>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('espace_utilisateur') }}">Mon espace</a>
                             </li>
                         {% endif %}
+
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a>
                         </li>
@@ -83,6 +90,7 @@
                             <a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
                         </li>
                     {% endif %}
+
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('contact') }}">Contact</a>
                     </li>
@@ -109,16 +117,87 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- jQuery  -->
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Bootstrap Bundle  -->
+    <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- scripts personnalisés -->
     <script src="{{ asset('scripts/delate.js') }}"></script>
     <script src="{{ asset('scripts/passager.js') }}"></script>
     <script src="{{ asset('scripts/dateValidation.js') }}"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    console.log("Script de la bannière chargé et exécuté.");
+
+    // Fonction pour définir un cookie
+    function setCookie(name, value, days) {
+        const d = new Date();
+        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000)); // Délai en jours
+        const expires = "expires=" + d.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    // Fonction pour obtenir un cookie par son nom
+    function getCookie(name) {
+        let value = "; " + document.cookie;
+        let parts = value.split("; " + name + "=");
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+    }
+
+    // Fonction pour créer la bannière de cookies
+    function createCookieBanner() {
+        console.log("Création de la bannière de cookies");
+        const banner = document.createElement('div');
+        banner.id = 'cookie-banner';
+        banner.style.position = 'fixed';
+        banner.style.bottom = '0';
+        banner.style.width = '100%';
+        banner.style.background = '#222';
+        banner.style.color = '#fff';
+        banner.style.padding = '1em';
+        banner.style.textAlign = 'center';
+        banner.style.zIndex = '9999';
+        banner.style.display = 'flex';
+        banner.style.justifyContent = 'center';
+        banner.style.alignItems = 'center';
+        banner.style.gap = '1em';
+        banner.style.flexWrap = 'wrap';
+
+        banner.innerHTML = `
+            <span>Ce site utilise des cookies pour améliorer votre expérience.</span>
+            <button class="accept" style="padding: 0.5em 1em; background-color: #28a745; border: none; color: white; border-radius: 5px; cursor: pointer;">Accepter</button>
+            <button class="refuse" style="padding: 0.5em 1em; background-color: #dc3545; border: none; color: white; border-radius: 5px; cursor: pointer;">Refuser</button>
+        `;
+
+        document.body.appendChild(banner);
+
+        // Lors de l'acceptation des cookies
+        banner.querySelector('button.accept').addEventListener('click', function() {
+            setCookie('user_cookie_consent', 'accepted', 365);
+            banner.remove();
+        });
+
+        // Lors du refus des cookies
+        banner.querySelector('button.refuse').addEventListener('click', function() {
+            setCookie('user_cookie_consent', 'refused', 365);
+            banner.remove();
+        });
+    }
+
+    // Vérification si le cookie 'user_cookie_consent' est déjà défini
+    const consent = getCookie('user_cookie_consent');
+    console.log("Cookie consent: ", consent);  // Ajoute un log pour tester la valeur du cookie
+    if (!consent) {
+        createCookieBanner();  // Affiche la bannière si aucun consentement n'est trouvé
+    }
+});
+
+    </script>
+
 {% endblock %}
 
 </body>

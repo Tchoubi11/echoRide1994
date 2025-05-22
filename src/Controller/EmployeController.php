@@ -13,7 +13,6 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/espace-employe')]
 final class EmployeController extends AbstractController
 {
-    
     #[Route('/', name: 'app_employe')]
     public function index(): Response
     {

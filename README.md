@@ -10,6 +10,12 @@
 
 ---
 
+## 📚 Documentation technique
+
+Vous pouvez consulter la documentation technique complète du projet EcoRide ici :  
+👉 [Documentation technique - EcoRide](https://1drv.ms/w/c/6921ec449c7d056d/EURi_bfBBJlNhUuK9DfehOEBSYsHi4-DUNtq2q0U3Lblmg?e=Lds5TZ)
+
+
 ## 🌱 Objectif
 
 Faciliter la mise en relation de conducteurs et passagers pour des trajets partagés, en intégrant des filtres écologiques et un système de crédits interne. L’objectif est de promouvoir une mobilité plus responsable.
@@ -59,7 +65,6 @@ Ce projet utilise MongoDB pour gérer le système de crédits des utilisateurs. 
 - **Backend** : PHP 8.2.27, Symfony
 - **Base de données** : MySQL 8.2
 - **Frontend** : Twig, Bootstrap 5, JavaScript, Chart.js
-- **Conteneurisation** : Docker
 - **Email** : MailHog pour l’environnement local
 
 ---
@@ -71,8 +76,8 @@ Ce projet utilise MongoDB pour gérer le système de crédits des utilisateurs. 
 - PHP ≥ 8.2
 - Symfony 6.4.21 
 - Composer
-- Docker & Docker Compose
 - MySQL
+- MongoDB
 
 ### Étapes
 
@@ -84,11 +89,14 @@ cd ecoride
 composer install
 
 # Configuration de l'environnement
-cp .env .env.local
-# Modifie les infos de connexion à la base de données si besoin
+cp .env.dev .env.local
 
-# Lancement de Docker (MySQL + MailHog)
-docker-compose up -d
+Pour MySQL :
+DATABASE_URL="mysql://echorideuser:Tchoubaye11@127.0.0.1:3306/ecoride"
+
+Pour MongoDB :
+MONGODB_URL="mongodb://Tchoubi:Tchoubaye11@localhost:27017/ecoride1994"
+
 
 # Migration + Fixtures
 php bin/console doctrine:database:create
@@ -98,11 +106,15 @@ php bin/console doctrine:fixtures:load
 # Lancer le serveur local
 symfony server:start
 
+# Accéder à l'application :
+
+`Ouvrir un navigateur et aller à http://localhost:8000.`
+
 ## 🔐 Accès par défaut
 
 - **Admin**
   - Email : `admin@echoride.com`
-  - Mot de passe : `Admin22`
+  - Mot de passe : `Admin22.`
 
 ## 🧾 Structure du projet
 - `/public` : Fichiers publics (images, JS, CSS)

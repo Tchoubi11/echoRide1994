@@ -11,7 +11,7 @@ class LegalMentionsController extends AbstractController
     #[Route('/legal-mentions', name: 'legal_mentions')]
     public function index(): Response
     {
-        // Vous pouvez ajouter votre logique ici ou simplement renvoyer la vue.
+        
         return $this->render('legal_mentions/mentions.html.twig');
     }
 }

@@ -34,8 +34,10 @@
                 <strong>{{ res.covoiturage.lieuDepart }} → {{ res.covoiturage.lieuArrivee }}</strong><br>
                 Départ : {{ res.covoiturage.dateDepart|date('d/m/Y H:i') }}<br>
 
-                {% if res.covoiturage.isCancelled %}
-                    <span class="badge bg-danger mt-2">❌ Trajet annulé</span>
+                {% if res.isCancelled %}
+                    <span class="badge bg-danger mt-2">❌ Réservation annulée</span>
+                {% elseif res.covoiturage.isCancelled %}
+                    <span class="badge bg-danger mt-2">🚫 Trajet annulé</span>
                 {% elseif res.covoiturage.isCompleted %}
                     <span class="badge bg-success mt-2">✅ Terminé</span>
                     <p class="text-muted mb-0">Arrivé à {{ res.covoiturage.endAt|date('d/m/Y H:i') }}</p>
@@ -53,6 +55,5 @@
         <a href="{{ path('app_home') }}" class="btn btn-primary">🏠 Accueil</a>
         <a href="{{ path('espace_utilisateur') }}" class="btn btn-secondary">⚙️ Retour sur mon espace utilisateur</a>
     </div>
-    
 </div>
 {% endblock %}

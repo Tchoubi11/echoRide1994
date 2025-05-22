@@ -32,6 +32,7 @@ class Covoiturage
   #[ORM\Column(type: 'datetime_immutable', nullable: true)]
    private ?\DateTimeImmutable $startAt = null;
 
+
    #[ORM\Column(type: 'boolean')]
    private bool $isCompleted = false;
    

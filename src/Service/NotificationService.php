@@ -22,21 +22,22 @@ class NotificationService
     {
         $reservations = $covoiturage->getReservations();
         $passengersToNotify = [];
-    
+
         foreach ($reservations as $reservation) {
             $passenger = $reservation->getPassenger();
-    
+
             if (!$passenger || $passenger->getId() === $covoiturage->getDriver()->getId()) {
                 continue;
             }
-    
+
             $passenger->setCredits($passenger->getCredits() + $reservation->getPlacesReservees());
             $this->em->remove($reservation);
-    
+
             $passengersToNotify[] = $passenger;
         }
-    
-        // Envoi d'emails après suppression
+
+        $this->em->flush(); 
+
         foreach ($passengersToNotify as $passenger) {
             try {
                 $html = $this->twig->render('emails/annulation_covoiturage.html.twig', [
@@ -44,23 +45,22 @@ class NotificationService
                     'driver' => $covoiturage->getDriver(),
                     'covoiturage' => $covoiturage,
                 ]);
-    
+
                 $email = (new Email())
                     ->from('noreply@tonsite.com')
                     ->to($passenger->getEmail() ?: 'dev@localhost')
                     ->subject('🚗 Covoiturage annulé')
                     ->html($html);
-    
+
                 $this->mailer->send($email);
             } catch (\Throwable $e) {
-                // Log ou gestion d'erreur 
+                error_log('[NotificationService] Erreur envoi mail annulation passager ID '.$passenger->getId().': ' . $e->getMessage());
             }
         }
     }
 
     public function notifyPassengerOfCancellation(Utilisateur $passenger, Covoiturage $covoiturage): void
     {
-        // Flush avant envoi
         $this->em->flush();
 
         try {
@@ -77,7 +77,7 @@ class NotificationService
 
             $this->mailer->send($email);
         } catch (\Throwable $e) {
-            // Log ou gestion d'erreur
+            error_log('[NotificationService] Erreur envoi mail annulation réservation passager ID '.$passenger->getId().': ' . $e->getMessage());
         }
     }
 
@@ -98,50 +98,46 @@ class NotificationService
 
             $this->mailer->send($email);
         } catch (\Throwable $e) {
-            error_log('[NotificationService] Erreur d\'envoi du mail admin : ' . $e->getMessage());
+            error_log('[NotificationService] Erreur envoi mail admin: ' . $e->getMessage());
         }
     }
 
     public function notifyPassengerToValidate(Reservation $reservation): void
     {
         try {
-            dump('MAIL ENVOYÉ À : '.$reservation->getPassenger()->getEmail());
-    
             $html = $this->twig->render('emails/validation_request.html.twig', [
                 'reservation' => $reservation,
             ]);
-    
+
             $email = (new Email())
                 ->from('noreply@tonsite.com')
                 ->to($reservation->getPassenger()->getEmail())
                 ->subject('🚗 Merci de valider votre trajet')
                 ->html($html);
-    
+
             $this->mailer->send($email);
         } catch (\Throwable $e) {
-            dump('Erreur mail : '.$e->getMessage());
+            error_log('[NotificationService] Erreur envoi mail validation passager ID '.$reservation->getPassenger()->getId().': ' . $e->getMessage());
         }
     }
-    
-    public function notifyDriverOfValidation(Utilisateur $driver, Reservation $reservation)
+
+    public function notifyDriverOfValidation(Utilisateur $driver, Reservation $reservation): void
     {
         try {
             $html = $this->twig->render('emails/driver_validated.html.twig', [
                 'reservation' => $reservation,
                 'driver' => $driver,
             ]);
-    
+
             $email = (new Email())
                 ->from('noreply@tonsite.com')
                 ->to($driver->getEmail())
                 ->subject('🚗 Un passager a validé le trajet')
                 ->html($html);
-    
+
             $this->mailer->send($email);
         } catch (\Throwable $e) {
-            error_log('[NotificationService] Erreur mail chauffeur : ' . $e->getMessage());
+            error_log('[NotificationService] Erreur envoi mail chauffeur ID '.$driver->getId().': ' . $e->getMessage());
         }
     }
-    
 }
-

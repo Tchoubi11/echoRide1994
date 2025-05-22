@@ -8,7 +8,7 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 class Credit
 {
     #[MongoDB\Id]
-    private string $id;
+    private ?string $id = null;
 
     #[MongoDB\Field(type: 'int')]
     private int $userId;

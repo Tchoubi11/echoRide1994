@@ -33,11 +33,21 @@ class CovoiturageType extends AbstractType
                 'label' => 'Nombre de places',
                 'required' => true,
                 'mapped' => true,
-                'constraints' => [
-                    new Assert\NotNull(['message' => 'Le nombre de places ne peut pas être nul.']),
-                    new Assert\Positive(['message' => 'Le nombre de places doit être positif.'])
-                ],
-            ])
+                'data' => 1, 
+                'attr' => [
+                'min' => 1,
+                'step' => 1,
+    ],
+    'constraints' => [
+        new Assert\NotNull(['message' => 'Le nombre de places ne peut pas être nul.']),
+        new Assert\Range([
+            'min' => 1,
+            'minMessage' => 'Le nombre de places doit être au minimum {{ limit }}.',
+        ]),
+    ],
+])
+
+
             ->add('dateArrivee', DateTimeType::class, [
                 'widget' => 'single_text',
                 'required' => false, 

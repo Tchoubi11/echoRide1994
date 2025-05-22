@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Reservation;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,36 @@ class ReservationRepository extends ServiceEntityRepository
         parent::__construct($registry, Reservation::class);
     }
 
-    //    /**
-    //     * @return Reservation[] Returns an array of Reservation objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('r.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Retourne les réservations actives (non annulées) d’un passager
+     *
+     * @param Utilisateur $passenger
+     * @return Reservation[]
+     */
+    public function findActiveReservationsForPassenger(Utilisateur $passenger): array
+    {
+        return $this->createQueryBuilder('r')
+            ->where('r.passenger = :passenger')
+            ->andWhere('r.isCancelled = false')
+            ->andWhere('r.covoiturage IS NOT NULL')
+            ->setParameter('passenger', $passenger)
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Reservation
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Retourne les réservations annulées d’un passager
+     *
+     * @param Utilisateur $passenger
+     * @return Reservation[]
+     */
+    public function findCancelledReservationsForPassenger(Utilisateur $passenger): array
+    {
+        return $this->createQueryBuilder('r')
+            ->where('r.passenger = :passenger')
+            ->andWhere('r.isCancelled = true')
+            ->setParameter('passenger', $passenger)
+            ->getQuery()
+            ->getResult();
+    }
 }

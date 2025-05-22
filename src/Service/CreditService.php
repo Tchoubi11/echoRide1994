@@ -14,38 +14,54 @@ class CreditService
         $this->dm = $dm;
     }
 
-    public function getOrCreateCredit(int $userId): Credit
-    {
-        $credit = $this->dm->getRepository(Credit::class)->findOneBy(['userId' => $userId]);
-        if (!$credit) {
-            $credit = (new Credit())->setUserId($userId)->setAmount(20); 
-            $this->dm->persist($credit);
-            $this->dm->flush();
-        }
-        return $credit;
+    /**
+     * Crée ou récupère un document Credit MongoDB pour un utilisateur donné,
+     * avec un montant initial si le document n'existe pas.
+     *
+     * @param int|string $userId
+     * @param float $initialAmount
+     * @return Credit
+     */
+    public function getOrCreateCredit(int|string $userId, float $initialAmount = 20): Credit
+{
+    if (empty($userId) || $userId === 0 || $userId === '0') {
+        throw new \InvalidArgumentException("L'ID utilisateur est invalide pour la création de crédit.");
     }
 
-    public function addCredits(int $userId, float $amount): void
+    $credit = $this->dm->getRepository(Credit::class)->findOneBy(['userId' => $userId]);
+
+    if (!$credit) {
+        $credit = new Credit();
+        $credit->setUserId($userId);
+        $credit->setAmount($initialAmount);
+        $this->dm->persist($credit);
+        $this->dm->flush();
+    }
+
+    return $credit;
+}
+
+    public function addCredits(int|string $userId, float $amount): void
     {
         $credit = $this->getOrCreateCredit($userId);
         $credit->addCredits($amount);
         $this->dm->flush();
     }
 
-    public function removeCredits(int $userId, float $amount): bool
+    public function removeCredits(int|string $userId, float $amount): bool
     {
         $credit = $this->getOrCreateCredit($userId);
         if ($credit->getAmount() < $amount) {
             return false;
         }
-
         $credit->removeCredits($amount);
         $this->dm->flush();
         return true;
     }
 
-    public function getUserCredits(int $userId): float
+    public function getUserCredits(int|string $userId): float
     {
-        return $this->getOrCreateCredit($userId)->getAmount();
+        $credit = $this->getOrCreateCredit($userId);
+        return $credit->getAmount();
     }
 }
