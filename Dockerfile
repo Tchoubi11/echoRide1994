@@ -1,5 +1,5 @@
-# Utiliser l'image PHP 8.4 FPM Alpine qui est recommandée
-FROM php:8.3-fpm-alpin
+# Utiliser l'image PHP 8.3 FPM Alpine
+FROM php:8.3-fpm-alpine
 
 # Installer les dépendances nécessaires pour Symfony et composer
 RUN apk --no-cache add \
