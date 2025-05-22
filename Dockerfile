@@ -1,8 +1,8 @@
 # Utiliser l'image PHP 8.3 FPM Alpine
 FROM php:8.3-fpm-alpine
 
-# Installer les dépendances nécessaires pour Symfony et composer
-RUN apk --no-cache add \
+# Mettre à jour les dépôts et installer les dépendances nécessaires pour Symfony et composer
+RUN apk update && apk --no-cache add \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
@@ -10,7 +10,7 @@ RUN apk --no-cache add \
     zip \
     git \
     bash \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-png-dir=/usr/include \
     && docker-php-ext-install gd pdo pdo_mysql xml opcache \
     && apk del libpng-dev libjpeg-turbo-dev freetype-dev
 
