@@ -1,7 +1,8 @@
 FROM php:8.3-fpm-alpine
 
-# Installation des dépendances nécessaires
-RUN apk update && apk --no-cache add --virtual .build-deps \
+# Ajouter explicitement le dépôt community et mettre à jour les indices
+RUN apk update && \
+    apk add --no-cache --virtual .build-deps \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
@@ -9,7 +10,7 @@ RUN apk update && apk --no-cache add --virtual .build-deps \
     zip \
     git \
     bash \
-    libicu-dev \
+    icu-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql xml opcache intl mbstring \
     && apk del .build-deps
