@@ -1,41 +1,52 @@
 FROM php:8.3-fpm-alpine
 
-# Installation des dépendances nécessaires à PHP et à Composer
-RUN apk add --no-cache \
+# 1. Mise à jour et installation des dépendances système
+RUN apk update && apk add --no-cache \
+    bash \
+    git \
+    zip \
+    unzip \
+    icu \
+    icu-libs \
+    icu-data-full \
+    oniguruma \
+    libpng \
+    libjpeg-turbo \
+    freetype \
+    libxml2 \
+    && apk add --no-cache --virtual .build-deps \
+    autoconf \
+    g++ \
+    make \
+    icu-dev \
+    oniguruma-dev \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
     libxml2-dev \
-    libicu-dev \
-    zip \
-    git \
-    bash
+    && docker-php-ext-configure gd \
+      --with-freetype \
+      --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+      intl \
+      pdo \
+      pdo_mysql \
+      opcache \
+      xml \
+      mbstring \
+      gd \
+    && apk del .build-deps
 
-# Configuration et installation de l'extension GD
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd
-
-# Installation des autres extensions PHP requises
-RUN docker-php-ext-install pdo pdo_mysql intl mbstring
-
-# Configuration du répertoire de travail
+# 2. Dossier de travail
 WORKDIR /var/www/html
 
-# Copier les fichiers du projet dans le conteneur
+# 3. Copier les fichiers de l'application
 COPY . .
 
-# Installer Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# 4. Droits pour www-data
+RUN chown -R www-data:www-data /var/www/html
 
-# Nettoyer le cache Composer + installer les dépendances
-RUN composer clear-cache && \
-    composer install --no-dev --optimize-autoloader --prefer-dist
-
-# Nettoyer les fichiers APK inutiles
-RUN rm -rf /var/cache/apk/*
-
-# Exposer le port 9000 pour PHP-FPM
+# 5. Exposer le port PHP-FPM
 EXPOSE 9000
 
-# Lancer PHP-FPM
 CMD ["php-fpm"]
