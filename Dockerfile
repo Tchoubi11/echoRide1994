@@ -1,6 +1,6 @@
 FROM php:8.3-fpm-alpine
 
-# 1. Installation des dépendances système et PHP nécessaires
+# 1. Install base + dev dependencies
 RUN apk add --no-cache \
     bash \
     git \
@@ -34,19 +34,23 @@ RUN apk add --no-cache \
     gd \
     && apk del .build-deps
 
-# 2. Installer Composer
+# 2. Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# 3. Définir le dossier de travail
+# 3. Set working directory
 WORKDIR /var/www/html
 
-# 4. Copier les fichiers de l'application
+# 4. Copy app source code
 COPY . .
 
-# 5. Définir les droits
+# 5. Install PHP dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# 6. Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
-# 6. Explication (facultative) du port PHP-FPM exposé
+# 7. Expose port
 EXPOSE 9000
 
+# 8. Run PHP-FPM
 CMD ["php-fpm"]
