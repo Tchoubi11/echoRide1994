@@ -1,40 +1,52 @@
 FROM php:8.3-fpm-alpine
 
-# Ajouter explicitement le dépôt community et mettre à jour les indices
-RUN apk update && \
-    apk add --no-cache --virtual .build-deps \
+# 1. Installation des dépendances système et PHP nécessaires
+RUN apk add --no-cache \
+    bash \
+    git \
+    zip \
+    unzip \
+    libpng \
+    libjpeg-turbo \
+    freetype \
+    icu \
+    icu-libs \
+    libxml2 \
+    oniguruma \
+    && apk add --no-cache --virtual .build-deps \
+    icu-dev \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
     libxml2-dev \
-    zip \
-    git \
-    bash \
-    icu-dev \
+    oniguruma-dev \
+    autoconf \
+    g++ \
+    make \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql xml opcache intl mbstring \
+    && docker-php-ext-install -j$(nproc) \
+    pdo \
+    pdo_mysql \
+    intl \
+    mbstring \
+    xml \
+    opcache \
+    gd \
     && apk del .build-deps
 
-# Nettoyage des paquets inutiles (si tu n'as pas besoin de Perl)
-RUN apk del perl perl-error
+# 2. Installer Composer
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Configuration du répertoire de travail
+# 3. Définir le dossier de travail
 WORKDIR /var/www/html
 
-# Copier les fichiers du projet dans le conteneur
+# 4. Copier les fichiers de l'application
 COPY . .
 
-# Installer Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# 5. Définir les droits
+RUN chown -R www-data:www-data /var/www/html
 
-# Installer les dépendances via Composer
-RUN composer install --no-dev --optimize-autoloader --prefer-dist && ls -la vendor
-
-# Nettoyer les fichiers APK inutiles
-RUN rm -rf /var/cache/apk/*
-
-# Exposer le port 9000 pour PHP-FPM
+# 6. Explication (facultative) du port PHP-FPM exposé
 EXPOSE 9000
 
-# Lancer PHP-FPM
 CMD ["php-fpm"]
